@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthPage } from "../pages/auth";
 import { PrivateRoute } from "../features/auth";
-import ChatPage from "../pages/chat/ChatPage";
+import { ChatPage } from "../pages/chat";
 
 const AppRoutes = ({ isAuthenticated }: { isAuthenticated: boolean }) => {
   return (

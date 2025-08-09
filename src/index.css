@@ -97,7 +97,13 @@
 /* Базовые стили */
 :root {
   --color-bg-app: #FFFFFF;
+  --emoji-fonts: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","EmojiOne Color","Segoe UI Symbol";
 }
+
+.emoji-text, .emoji-ui {
+  font-family: var(--emoji-fonts), system-ui, sans-serif;
+}
+
 
 body {
   @apply antialiased;

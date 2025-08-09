@@ -8,7 +8,7 @@ import { observer } from "mobx-react-lite"
 import { natsStore } from "../shared/nats/model"
 import { NatsBridge } from '../shared/nats/NatsBridge'
 
-import ChatPage from "../pages/chat/ChatPage";
+import { ChatPage } from "../pages/chat";
 import { SendBox } from "../shared/nats/SendBox";
 import { NatsLogPanel } from "../shared/nats/NatsLogPanel";
 
