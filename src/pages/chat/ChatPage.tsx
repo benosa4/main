@@ -24,6 +24,9 @@ import { storyStore } from '../../features/stories/model';
   const [theme, setTheme] = useState<'light' | 'dark'>(() =>
     (localStorage.getItem('chatTheme') as 'light' | 'dark') || 'light'
   );
+  const [layoutVersion, setLayoutVersion] = useState<'K' | 'A'>(
+    () => (localStorage.getItem('layoutVersion') as 'K' | 'A') || 'K'
+  );
   const [menuOpen, setMenuOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
@@ -45,10 +48,16 @@ import { storyStore } from '../../features/stories/model';
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
+  const toggleLayoutVersion = () => {
+    setLayoutVersion((prev) => (prev === 'K' ? 'A' : 'K'));
+  };
 
   useEffect(() => {
     localStorage.setItem('chatTheme', theme);
   }, [theme]);
+  useEffect(() => {
+    localStorage.setItem('layoutVersion', layoutVersion);
+  }, [layoutVersion]);
 
   // Theme tokens derived from provided light.html and dark.mhtml
   const tokens = theme === 'dark'
@@ -276,7 +285,9 @@ import { storyStore } from '../../features/stories/model';
   return (
     <LayoutWithFloatingBg noFrame>
       <div
-        className={`flex h-screen relative mx-[2cm] w-[calc(100%-4cm)]`}
+        className={`flex h-screen relative ${
+          layoutVersion === 'K' ? 'mx-[2cm] w-[calc(100%-4cm)]' : 'w-full'
+        }`}
         style={{
           ...themeVars,
           backgroundColor: 'var(--surface-color)',
@@ -342,21 +353,59 @@ import { storyStore } from '../../features/stories/model';
                 border: `1px solid ${tokens.borderColor}`
               }}
             >
-              {menuStore.items.map((item) => (
+              {(layoutVersion === 'A'
+                ? (() => {
+                    const more = menuStore.items.find((i) => i.id === 'more');
+                    const others = menuStore.items.filter((i) => i.id !== 'more');
+                    return more ? [...others, ...(more.children || [])] : others;
+                  })()
+                : menuStore.items
+              ).map((item) => (
                 <div
                   key={item.id}
                   className="relative group"
-                  onMouseEnter={() => item.id === 'more' && setMoreOpen(true)}
-                  onMouseLeave={() => item.id === 'more' && setMoreOpen(false)}
+                  onMouseEnter={() => layoutVersion !== 'A' && item.id === 'more' && setMoreOpen(true)}
+                  onMouseLeave={() => layoutVersion !== 'A' && item.id === 'more' && setMoreOpen(false)}
                 >
-                  <div
-                    className="flex items-center gap-2 px-4 py-2 cursor-pointer"
-                    style={{ backgroundColor: 'transparent' }}
-                  >
-                    <span>{item.icon}</span>
-                    <span>{item.label}</span>
-                  </div>
-                  {item.id === 'more' && moreOpen && (
+                  {(() => {
+                    const isDarkToggle = item.id === 'dark';
+                    const isVersionToggle = item.id === 'version';
+                    const label = isVersionToggle
+                      ? layoutVersion === 'A'
+                        ? 'Переключить в К версию'
+                        : 'Переключить в А версию'
+                      : isDarkToggle
+                      ? theme === 'dark'
+                        ? 'Выключить темный режим'
+                        : 'Включить темный режим'
+                      : item.label;
+                    const icon = isVersionToggle
+                      ? '🔄'
+                      : isDarkToggle
+                      ? theme === 'dark' ? '☀️' : '🌙'
+                      : item.icon;
+                    return (
+                      <div
+                        className="flex items-center gap-2 px-4 py-2 cursor-pointer"
+                        style={{ backgroundColor: 'transparent' }}
+                        onClick={() => {
+                          if (isDarkToggle) {
+                            toggleTheme();
+                            setMenuOpen(false);
+                            setMoreOpen(false);
+                          } else if (isVersionToggle) {
+                            toggleLayoutVersion();
+                            setMenuOpen(false);
+                            setMoreOpen(false);
+                          }
+                        }}
+                      >
+                        <span>{icon}</span>
+                        <span>{label}</span>
+                      </div>
+                    );
+                  })()}
+                  {item.id === 'more' && layoutVersion !== 'A' && moreOpen && (
                     <div
                       className="absolute top-0 left-full -ml-2 w-full rounded-lg shadow-lg text-sm"
                       style={{
@@ -367,13 +416,20 @@ import { storyStore } from '../../features/stories/model';
                     >
                       {item.children?.map((child) => {
                         const isDarkToggle = child.id === 'dark';
+                        const isVersionToggle = child.id === 'version';
                         const label = isDarkToggle
                           ? theme === 'dark'
                             ? 'Выключить темный режим'
                             : 'Включить темный режим'
+                          : isVersionToggle
+                          ? layoutVersion === 'A'
+                            ? 'Переключить в К версию'
+                            : 'Переключить в А версию'
                           : child.label;
                         const icon = isDarkToggle
                           ? theme === 'dark' ? '☀️' : '🌙'
+                          : isVersionToggle
+                          ? '🔄'
                           : child.icon;
                         return (
                           <div
@@ -385,6 +441,10 @@ import { storyStore } from '../../features/stories/model';
                             onClick={() => {
                               if (isDarkToggle) {
                                 toggleTheme();
+                                setMenuOpen(false);
+                                setMoreOpen(false);
+                              } else if (isVersionToggle) {
+                                toggleLayoutVersion();
                                 setMenuOpen(false);
                                 setMoreOpen(false);
                               }
