@@ -1,5 +1,5 @@
 // Card.tsx
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 interface CardProps {
   children: ReactNode;
@@ -8,7 +8,7 @@ interface CardProps {
 
 const Card = ({ children, className = '' }: CardProps) => {
   return (
-    <div className={`bg-white/10 backdrop-blur-xl rounded-2xl 
+    <div className={`bg-white/10 backdrop-blur-xl rounded-2xl
       p-6 shadow-xl border border-white/5 ${className}`}>
       {children}
     </div>
