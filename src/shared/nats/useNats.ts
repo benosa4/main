@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react'
+import type { Subscription } from 'nats.ws'
 import { connectToNats, getStringCodec } from './connection'
 import { natsStore } from './model'
 
 export function useNatsSubscription(token: string, subject: string, onMessage: (msg: string) => void) {
-  const subRef = useRef<any>(null)
+  const subRef = useRef<Subscription | null>(null)
 
   useEffect(() => {
     if (!subject || !token) return

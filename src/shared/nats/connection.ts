@@ -20,7 +20,7 @@ import {
   export function removeOnAuthExpired(cb: AuthExpiredListener) { authExpiredListeners.delete(cb) }
   
   function maybeAuthExpired(err?: unknown) {
-    const msg = (err as any)?.message || String(err || '')
+    const msg = (err as { message?: string } | undefined)?.message || String(err || "")
     if (/UserAuthenticationExpired|Authentication\s*Expired|authorization/i.test(msg)) {
       authExpiredListeners.forEach(cb => cb())
       return true
@@ -47,7 +47,7 @@ import {
           if (s.type === 'disconnect') {
             natsStore.setStatus('reconnecting')
             // иногда сюда прилетает причина
-            maybeAuthExpired((s as any).data?.error)
+            maybeAuthExpired((s as { data?: { error?: unknown } }).data?.error)
           }
           if (s.type === 'reconnect') {
             natsStore.setStatus('connected')

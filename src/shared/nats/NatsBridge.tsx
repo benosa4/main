@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { KeycloakTokenParsed } from 'keycloak-js'
 import { useNatsSubscription } from './useNats'
 import { keycloak } from '../../features/auth'
 import {
@@ -18,7 +19,7 @@ export function NatsBridge() {
     const update = async () => {
       if (keycloak.token) {
         setToken(keycloak.token)
-        const p: any = keycloak.tokenParsed
+        const p = keycloak.tokenParsed as KeycloakTokenParsed | undefined
         setUserId(p?.sub || null)
         setSessionId(p?.session_state || null)
       }
@@ -40,7 +41,7 @@ export function NatsBridge() {
       try {
         await keycloak.updateToken(60)
         if (keycloak.token) setToken(keycloak.token)
-      } catch {}
+      } catch (err) { console.error(err); }
     }, 30000)
 
     return () => clearInterval(t)
@@ -78,7 +79,7 @@ export function NatsBridge() {
         resetConnection()                  // гарантированно закрываем старый сокет
         await connectToNats(keycloak.token)
         // повторим presence (если уже знаем userId/sessionId)
-        const p: any = keycloak.tokenParsed
+        const p = keycloak.tokenParsed as KeycloakTokenParsed | undefined
         const uid = p?.sub
         const sid = p?.session_state
         if (uid && sid) await publishPresenceOnline(uid, sid)
