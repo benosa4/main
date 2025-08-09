@@ -1,9 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { LayoutWithFloatingBg } from '../../shared/ui/LayoutWithFloatingBg';
-import data from '@emoji-mart/data';
-import Picker from '@emoji-mart/react';
 import type { Emoji } from '@emoji-mart/data';
+import TwemojiText from '../../shared/emoji/TwemojiText';
+import EmojiPanel from '../../widgets/emoji-panel/ui/EmojiPanel';
 import { useChats } from '../../features/chats/hooks';
 import { chatStore } from '../../features/chats/model';
 import type { Chat } from '../../features/chats/api';
@@ -13,12 +13,17 @@ import { useMenu } from '../../features/menu/hooks';
 import { menuStore } from '../../features/menu/model';
 import { useStories } from '../../features/stories/hooks';
 import { storyStore } from '../../features/stories/model';
+import { natsStore } from '../../shared/nats/model';
+import { StatusText } from '../../shared/ui/StatusText';
+import Avatar from '../../shared/ui/Avatar';
+import PaperclipIcon from '../../shared/ui/icons/Paperclip';
+import TwemojiInput, { TwemojiInputHandle } from '../../shared/emoji/TwemojiInput';
 
-  const ChatPage = observer(() => {
-    useChats();
-    useMenu();
-    useStories();
-    useChatTabs();
+const ChatPage = observer(() => {
+  useChats();
+  useMenu();
+  useStories();
+  useChatTabs();
 
   const [search, setSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -27,7 +32,6 @@ import { storyStore } from '../../features/stories/model';
   const [message, setMessage] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
   const [storiesCollapsed, setStoriesCollapsed] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const storyRef = useRef<HTMLDivElement>(null);
   const tabRef = useRef<HTMLDivElement>(null);
   const burgerRef = useRef<HTMLButtonElement>(null);
@@ -39,41 +43,43 @@ import { storyStore } from '../../features/stories/model';
   const [isAnimating, setIsAnimating] = useState(false);
   const prevTabId = useRef<number | null>(null);
 
-    useEffect(() => {
-      const el = storyRef.current;
-      if (!el) return;
-      const handle = (e: WheelEvent) => {
-        e.preventDefault();
-        el.scrollLeft += e.deltaY;
-      };
-      el.addEventListener('wheel', handle, { passive: false });
-      return () => el.removeEventListener('wheel', handle);
-    }, []);
+  // 👉 ВАЖНО: реф для TwemojiInput внутри компонента
+  const inputRef = useRef<TwemojiInputHandle>(null);
 
-    useEffect(() => {
-      const el = tabRef.current;
-      if (!el) return;
-      const handle = (e: WheelEvent) => {
-        e.preventDefault();
-        el.scrollLeft += e.deltaY;
-      };
-      el.addEventListener('wheel', handle, { passive: false });
-      return () => el.removeEventListener('wheel', handle);
-    }, []);
+  useEffect(() => {
+    const el = storyRef.current;
+    if (!el) return;
+    const handle = (e: WheelEvent) => {
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+    el.addEventListener('wheel', handle, { passive: false });
+    return () => el.removeEventListener('wheel', handle);
+  }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
+  useEffect(() => {
+    const el = tabRef.current;
+    if (!el) return;
+    const handle = (e: WheelEvent) => {
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+    el.addEventListener('wheel', handle, { passive: false });
+    return () => el.removeEventListener('wheel', handle);
+  }, []);
+
+  // 👉 новый handleChange для TwemojiInput (строка)
+  const handleChange = (v: string) => {
+    setMessage(v);
   };
 
+  // 👉 новый handleEmojiSelect: вставка в TwemojiInput, плюс обновление стейта
   const handleEmojiSelect = (emoji: Emoji & { native?: string }) => {
-    setMessage((prev) => prev + (emoji.native || ''));
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
+    const native = emoji.native || '';
+    if (!native) return;
+    inputRef.current?.insert(native);
+    inputRef.current?.focus();
+    setMessage((prev) => prev + native);
   };
 
   const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -112,46 +118,46 @@ import { storyStore } from '../../features/stories/model';
     return () => document.removeEventListener('mousedown', handler);
   }, [menuOpen]);
 
-    /* eslint-disable react-hooks/exhaustive-deps */
-    useEffect(() => {
-      const computeChatsForTab = (tabId: number | null) => {
-        const tab = chatTabsStore.tabs.find((t) => t.id === tabId) || null;
-        const set = tab ? new Set(tab.chatIds) : null;
-        return chatStore.chats
-          .filter((c) => !set || set.has(c.id))
-          .filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
-      };
+  /* eslint-disable react-hooks/exhaustive-deps */
+  useEffect(() => {
+    const computeChatsForTab = (tabId: number | null) => {
+      const tab = chatTabsStore.tabs.find((t) => t.id === tabId) || null;
+      const set = tab ? new Set(tab.chatIds) : null;
+      return chatStore.chats
+        .filter((c) => !set || set.has(c.id))
+        .filter((c) => c.name.toLowerCase().includes(search.toLowerCase()));
+    };
 
-      if (prevTabId.current === null) {
-        setChatSlides([computeChatsForTab(chatTabsStore.selectedTabId)]);
-        prevTabId.current = chatTabsStore.selectedTabId;
-        return;
-      }
+    if (prevTabId.current === null) {
+      setChatSlides([computeChatsForTab(chatTabsStore.selectedTabId)]);
+      prevTabId.current = chatTabsStore.selectedTabId;
+      return;
+    }
 
-      if (chatTabsStore.selectedTabId !== prevTabId.current) {
-        const prevIndex = chatTabsStore.tabs.findIndex(
-          (t) => t.id === prevTabId.current
-        );
-        const newIndex = chatTabsStore.tabs.findIndex(
-          (t) => t.id === chatTabsStore.selectedTabId
-        );
-        const step = newIndex > prevIndex ? 1 : -1;
-        const lists: Chat[][] = [];
-        for (let i = prevIndex; i !== newIndex + step; i += step) {
-          const id = chatTabsStore.tabs[i].id;
-          lists.push(computeChatsForTab(id));
-        }
-        setChatSlides(lists);
-        setIsAnimating(true);
-        requestAnimationFrame(() =>
-          setTranslate(step * -100 * (lists.length - 1))
-        );
-        prevTabId.current = chatTabsStore.selectedTabId;
-      } else {
-        setChatSlides([computeChatsForTab(chatTabsStore.selectedTabId)]);
+    if (chatTabsStore.selectedTabId !== prevTabId.current) {
+      const prevIndex = chatTabsStore.tabs.findIndex(
+        (t) => t.id === prevTabId.current
+      );
+      const newIndex = chatTabsStore.tabs.findIndex(
+        (t) => t.id === chatTabsStore.selectedTabId
+      );
+      const step = newIndex > prevIndex ? 1 : -1;
+      const lists: Chat[][] = [];
+      for (let i = prevIndex; i !== newIndex + step; i += step) {
+        const id = chatTabsStore.tabs[i].id;
+        lists.push(computeChatsForTab(id));
       }
-    }, [chatStore.chats, chatTabsStore.selectedTabId, search, chatTabsStore.tabs]);
-    /* eslint-enable react-hooks/exhaustive-deps */
+      setChatSlides(lists);
+      setIsAnimating(true);
+      requestAnimationFrame(() =>
+        setTranslate(step * -100 * (lists.length - 1))
+      );
+      prevTabId.current = chatTabsStore.selectedTabId;
+    } else {
+      setChatSlides([computeChatsForTab(chatTabsStore.selectedTabId)]);
+    }
+  }, [chatStore.chats, chatTabsStore.selectedTabId, search, chatTabsStore.tabs]);
+  /* eslint-enable react-hooks-exhaustive-deps */
 
   const handleTransitionEnd = () => {
     if (!isAnimating) return;
@@ -172,7 +178,7 @@ import { storyStore } from '../../features/stories/model';
             : 'hover:bg-blue-600/10'
         }`}
       >
-        <img src={chat.avatar} className="w-14 h-14 rounded-full object-cover" />
+        <Avatar name={chat.name} size={56} />
         <div className="flex-1 min-w-0">
           <div className="flex justify-between">
             <span className="font-semibold">{chat.name}</span>
@@ -194,7 +200,7 @@ import { storyStore } from '../../features/stories/model';
                   : 'text-white/70'
               }`}
             >
-              {chat.lastMessage}
+              <TwemojiText text={chat.lastMessage} />
             </span>
             {chat.unread > 0 ? (
               <span
@@ -218,7 +224,12 @@ import { storyStore } from '../../features/stories/model';
 
   return (
     <LayoutWithFloatingBg noFrame>
-      <div className="flex h-screen text-white relative mx-[2cm] w-[calc(100%-4cm)]">
+      <div
+        className={`flex h-screen text-white relative ${
+          menuStore.version === 'A' ? 'mx-0 w-full' : 'mx-[2cm] w-[calc(100%-4cm)]'
+        }`}
+        data-testid="chat-page-container"
+      >
         {/* Sidebar */}
         <aside className="w-1/4 bg-white/20 backdrop-blur-md border-r border-white/20 flex flex-col relative">
           {/* Search and menu */}
@@ -227,6 +238,7 @@ import { storyStore } from '../../features/stories/model';
               ref={burgerRef}
               onClick={() => setMenuOpen((v) => !v)}
               className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center cursor-pointer"
+              aria-label="Open menu"
             >
               ☰
             </button>
@@ -235,7 +247,7 @@ import { storyStore } from '../../features/stories/model';
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search"
-                className="w-full bg-white/5 rounded-full px-4 py-2 pr-20 focus:outline-none"
+                className="w-full bg-white/5 rounded-full px-4 py-2 pr-20 focus:outline-none emoji-text"
               />
               <div
                 className={`absolute right-2 top-1/2 -translate-y-1/2 flex -space-x-2 transition-opacity duration-300 ${storiesCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
@@ -257,34 +269,68 @@ import { storyStore } from '../../features/stories/model';
                 setMenuOpen(false);
                 setMoreOpen(false);
               }}
-              className="absolute top-12 left-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20 text-sm text-black"
+              className="absolute top-12 left-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-20 text-sm text-black"
             >
-              {menuStore.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="relative group"
-                  onMouseEnter={() => item.id === 'more' && setMoreOpen(true)}
-                  onMouseLeave={() => item.id === 'more' && setMoreOpen(false)}
-                >
-                  <div className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                    <span>{item.icon}</span>
-                    <span>{item.label}</span>
-                  </div>
-                  {item.id === 'more' && moreOpen && (
-                    <div className="absolute top-0 left-full -ml-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg text-sm text-black">
-                      {item.children?.map((child) => (
-                        <div
-                          key={child.id}
-                          className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                        >
-                          <span>{child.icon}</span>
-                          <span>{child.label}</span>
-                        </div>
-                      ))}
+              {menuStore.version === 'A'
+                ? menuStore.flattenedItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => {
+                        if (item.id === 'version') {
+                          menuStore.toggleVersion();
+                        }
+                        setMenuOpen(false);
+                        setMoreOpen(false);
+                      }}
+                    >
+                      <span>{item.icon}</span>
+                      <span>{item.label}</span>
                     </div>
-                  )}
-                </div>
-              ))}
+                  ))
+                : menuStore.renderedItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="relative group"
+                      onMouseEnter={() => item.id === 'more' && setMoreOpen(true)}
+                      onMouseLeave={() => item.id === 'more' && setMoreOpen(false)}
+                    >
+                      <div
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          if (item.id === 'more') return;
+                          if (item.id === 'version') {
+                            menuStore.toggleVersion();
+                          }
+                          setMenuOpen(false);
+                          setMoreOpen(false);
+                        }}
+                      >
+                        <span>{item.icon}</span>
+                        <span>{item.label}</span>
+                      </div>
+                      {item.id === 'more' && moreOpen && (
+                        <div className="absolute top-0 left-full -ml-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg text-sm text-black">
+                          {item.children?.map((child) => (
+                            <div
+                              key={child.id}
+                              className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                              onClick={() => {
+                                if (child.id === 'version') {
+                                  menuStore.toggleVersion();
+                                }
+                                setMenuOpen(false);
+                                setMoreOpen(false);
+                              }}
+                            >
+                              <span>{child.icon}</span>
+                              <span>{child.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
             </div>
           )}
           {/* Stories */}
@@ -307,13 +353,15 @@ import { storyStore } from '../../features/stories/model';
               return (
                 <div key={story.id} className="flex flex-col items-center w-14 shrink-0">
                   <div
-                    className="w-14 h-14 rounded-full p-[2px]"
+                    className="w-14 h-14 rounded-full p-[4px]"
                     style={{ background: `conic-gradient(${gradient})` }}
                   >
-                    <img
-                      src={story.avatar}
-                      className="w-full h-full rounded-full object-cover"
-                    />
+                    <div className="w-full h-full rounded-full p-[2px] bg-white/20">
+                      <img
+                        src={story.avatar}
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    </div>
                   </div>
                   <span className="text-xs mt-1">{story.title}</span>
                 </div>
@@ -393,18 +441,26 @@ import { storyStore } from '../../features/stories/model';
                 <div className="flex flex-col">
                   <span className="font-semibold">{selected.name}</span>
                   <span className="text-sm text-white/70">
-                    {selected.type === 'private'
-                      ? selected.lastSeen
-                      : `${selected.participants} участников`}
+                    {natsStore.status !== 'connected' ? (
+                      <StatusText label="connecting" />
+                    ) : chatStore.updating ? (
+                      <StatusText label="updating" />
+                    ) : selected.type === 'private' ? (
+                      selected.lastSeen
+                    ) : (
+                      `${selected.participants} участников`
+                    )}
                   </span>
                 </div>
                 {selected.pinnedMessages && selected.pinnedMessages.length > 0 && (
                   <div className="ml-4 max-w-xs text-sm text-white/70 truncate">
-                    {
-                      selected.pinnedMessages[
-                        selected.pinnedMessages.length - 1
-                      ].text
-                    }
+                    <TwemojiText
+                      text={
+                        selected.pinnedMessages[
+                          selected.pinnedMessages.length - 1
+                        ].text
+                      }
+                    />
                   </div>
                 )}
                 <div className="ml-auto flex gap-2">
@@ -432,7 +488,7 @@ import { storyStore } from '../../features/stories/model';
                           m.sender === 'me' ? 'bg-blue-600' : 'bg-white/10'
                         } rounded-lg px-4 py-2 max-w-xs`}
                       >
-                        {m.text}
+                        <TwemojiText text={m.text} />
                       </div>
                     </div>
                   ))}
@@ -455,19 +511,24 @@ import { storyStore } from '../../features/stories/model';
                           ref={emojiPickerRef}
                           className="absolute bottom-full left-0 mb-2 z-10"
                         >
-                          <Picker data={data} onEmojiSelect={handleEmojiSelect} />
+                          <EmojiPanel
+                            onEmojiSelect={(native) =>
+                              handleEmojiSelect({ native } as any)
+                            }
+                          />
                         </div>
                       )}
                     </div>
-                    <textarea
-                      ref={textareaRef}
+                    <TwemojiInput
+                      ref={inputRef}
                       value={message}
                       onChange={handleChange}
                       placeholder="Message"
-                      rows={1}
-                      className="flex-1 bg-transparent focus:outline-none resize-none overflow-hidden"
+                      className="bg-transparent max-h-40 overflow-auto"
                     />
-                    <button className="text-xl ml-2 cursor-pointer">📎</button>
+                    <button className="text-xl ml-2 cursor-pointer" aria-label="Attachment">
+                      <PaperclipIcon className="w-5 h-5" />
+                    </button>
                   </div>
                   <button className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center cursor-pointer">✈️</button>
                 </div>

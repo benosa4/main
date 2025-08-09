@@ -7,8 +7,20 @@ interface AvatarProps {
   className?: string;
 }
 
+const toInitials = (fullName: string) => {
+  const parts = fullName
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  const single = parts[0] || fullName;
+  return (single.slice(0, 2)).toUpperCase();
+};
+
 const Avatar = ({ name = 'U', size = 96, className }: AvatarProps) => {
-  const initials = name.slice(0, 2).toUpperCase();
+  const initials = toInitials(name);
   
   return (
     <div 

@@ -1,20 +1,10 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { initKeycloak, keycloak } from "../features/auth/api";
-import { PrivateRoute } from "../features/auth/PrivateRoute";
-import { AuthPage } from "../pages/auth";
 
-import { observer } from "mobx-react-lite"
-import { natsStore } from "../shared/nats/model"
-import { NatsBridge } from '../shared/nats/NatsBridge'
-
-import Home from "../pages/home/Home";
-import Wallets from "../pages/wallets/Wallets";
-import ProfilePage from "../pages/profile/ProfilePage";
-import SendTransactionPage from "../pages/wallets/SendTransactionPage";
-import WalletDetailsPage from "../pages/wallets/WalletDetailsPage";
-import ReceiveTransactionPage from "../pages/wallets/ReceiveTransactionPage";
-import ActivityPage from "../pages/activity/ActivityPage";
+import { observer } from "mobx-react-lite";
+import { natsStore } from "../shared/nats/model";
+import { NatsBridge } from "../shared/nats/NatsBridge";
 import ChatPage from "../pages/chat/ChatPage";
 import { SendBox } from "../shared/nats/SendBox";
 import { NatsLogPanel } from "../shared/nats/NatsLogPanel";
@@ -63,34 +53,13 @@ function App() {
   return (
     <Router>
       {isAuthenticated && <NatsBridge />}
-      <div className={isAuthenticated && !natsStore.connected ? 'blur-sm pointer-events-none select-none' : ''}>
-        <Routes>
-          {/* Страница логина */}
-          <Route path="/" element={<AuthPage isAuthenticated={isAuthenticated} />} />
-          {/* Приватный роут */}
-          <Route element={<PrivateRoute isAuthenticated={isAuthenticated} />}>
-            <Route path="/home" element={<Home />} />
-            <Route path="/wallets" element={<Wallets />} />
-            <Route path="/wallet/:walletId" element={<WalletDetailsPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/activity" element={<ActivityPage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/send-transaction" element={<SendTransactionPage />} />
-            <Route path="/receive-transaction" element={<ReceiveTransactionPage />} />
-          </Route>
-        </Routes>
-      </div>
-      {/* ⬇⬇⬇ показываем виджет только когда есть соединение */}
-      {isAuthenticated && natsStore.connected && <NatsLogPanel />} {/* ⬅️ NEW */}
+      <Routes>
+        {/* Единственная страница: Chat как корень */}
+        <Route path="/" element={<ChatPage />} />
+      </Routes>
+      {/* Вспомогательные виджеты остаются неблокирующими */}
+      {isAuthenticated && natsStore.connected && <NatsLogPanel />}
       {isAuthenticated && natsStore.connected && <SendBox />}
-      {isAuthenticated && !natsStore.connected && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/80 z-50">
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-8 shadow-xl text-center text-white max-w-md mx-auto animate-fadeInScale">
-            <h2 className="text-2xl font-bold mb-2">🔌 Нет соединения</h2>
-            <p className="text-white/80">Не удалось подключиться к серверу обмена сообщениями. Проверьте соединение или перезагрузите страницу.</p>
-          </div>
-        </div>
-      )}
     </Router>
   );
 }

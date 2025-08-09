@@ -3,13 +3,9 @@ import { logout } from "../../features/auth/api";
 
 function getNavIcon(name: string) {
   const icons = {
-    Home: '🏠',
-    Wallets: '💰',
-    Activity: '📊',
     Chat: '💬',
-    Profile: '👤',
     Logout: '🚪'
-  };
+  } as const;
   return icons[name as keyof typeof icons] || '🔗';
 }
 
@@ -17,7 +13,7 @@ export function Navbar() {
 
   return (
     <nav className="flex items-center gap-6">
-      {['Home', 'Wallets', 'Activity', 'Chat', 'Profile'].map((item) => (
+      {['Chat'].map((item) => (
         <a
           key={item}
           href={`/${item.toLowerCase()}`}
