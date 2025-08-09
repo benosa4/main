@@ -60,6 +60,11 @@ import { lightTokens, darkTokens } from '../../shared/config/tokens';
   useEffect(() => {
     localStorage.setItem('layoutVersion', layoutVersion);
   }, [layoutVersion]);
+  // Apply app background token to :root for global areas/scrollbars
+  useEffect(() => {
+    const appBg = String((theme === 'dark' ? darkTokens : lightTokens).color['bg.app']);
+    document.documentElement.style.setProperty('--color-bg-app', appBg);
+  }, [theme]);
 
   const TOKENS = theme === 'dark' ? darkTokens : lightTokens;
 
