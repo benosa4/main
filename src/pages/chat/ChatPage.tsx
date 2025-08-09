@@ -21,6 +21,9 @@ import { storyStore } from '../../features/stories/model';
     useChatTabs();
 
   const [search, setSearch] = useState('');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
+    (localStorage.getItem('chatTheme') as 'light' | 'dark') || 'light'
+  );
   const [menuOpen, setMenuOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
@@ -38,6 +41,14 @@ import { storyStore } from '../../features/stories/model';
   const [translate, setTranslate] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const prevTabId = useRef<number | null>(null);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
+
+  useEffect(() => {
+    localStorage.setItem('chatTheme', theme);
+  }, [theme]);
 
     useEffect(() => {
       const el = storyRef.current;
@@ -218,7 +229,13 @@ import { storyStore } from '../../features/stories/model';
 
   return (
     <LayoutWithFloatingBg noFrame>
-      <div className="flex h-screen text-gray-900 relative mx-[2cm] w-[calc(100%-4cm)] bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50">
+      <div
+        className={`flex h-screen relative mx-[2cm] w-[calc(100%-4cm)] bg-gradient-to-br ${
+          theme === 'dark'
+            ? 'from-emerald-900 via-teal-900 to-slate-900 text-white'
+            : 'from-emerald-50 via-green-50 to-teal-50 text-gray-900'
+        }`}
+      >
         {/* Sidebar */}
         <aside className="w-1/4 bg-white/20 backdrop-blur-md border-r border-white/20 flex flex-col relative">
           {/* Search and menu */}
@@ -272,15 +289,33 @@ import { storyStore } from '../../features/stories/model';
                   </div>
                   {item.id === 'more' && moreOpen && (
                     <div className="absolute top-0 left-full -ml-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg text-sm text-black">
-                      {item.children?.map((child) => (
-                        <div
-                          key={child.id}
-                          className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                        >
-                          <span>{child.icon}</span>
-                          <span>{child.label}</span>
-                        </div>
-                      ))}
+                      {item.children?.map((child) => {
+                        const isDarkToggle = child.id === 'dark';
+                        const label = isDarkToggle
+                          ? theme === 'dark'
+                            ? 'Выключить темный режим'
+                            : 'Включить темный режим'
+                          : child.label;
+                        const icon = isDarkToggle
+                          ? theme === 'dark' ? '☀️' : '🌙'
+                          : child.icon;
+                        return (
+                          <div
+                            key={child.id}
+                            className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                            onClick={() => {
+                              if (isDarkToggle) {
+                                toggleTheme();
+                                setMenuOpen(false);
+                                setMoreOpen(false);
+                              }
+                            }}
+                          >
+                            <span>{icon}</span>
+                            <span>{label}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
