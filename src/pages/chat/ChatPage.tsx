@@ -1,9 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { LayoutWithFloatingBg } from '../../shared/ui/LayoutWithFloatingBg';
-import data from '@emoji-mart/data';
-import Picker from '@emoji-mart/react';
-import type { Emoji } from '@emoji-mart/data';
 import { useChats } from '../../features/chats/hooks';
 import { chatStore } from '../../features/chats/model';
 import type { Chat } from '../../features/chats/api';
@@ -16,6 +13,7 @@ import { storyStore } from '../../features/stories/model';
 import { lightTokens, darkTokens } from '../../shared/config/tokens';
 import { natsStore } from '../../shared/nats/model';
 import { LoadingDots } from '../../shared/ui/LoadingDots';
+import { MessageInput } from '../../features/message-input';
 
   const ChatPage = observer(() => {
     useChats();
@@ -33,17 +31,12 @@ import { LoadingDots } from '../../shared/ui/LoadingDots';
   const [menuOpen, setMenuOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
-  const [message, setMessage] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
-  const [showEmoji, setShowEmoji] = useState(false);
   const [storiesCollapsed, setStoriesCollapsed] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const storyRef = useRef<HTMLDivElement>(null);
   const tabRef = useRef<HTMLDivElement>(null);
   const burgerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const emojiBtnRef = useRef<HTMLButtonElement>(null);
-  const emojiPickerRef = useRef<HTMLDivElement>(null);
   const [chatSlides, setChatSlides] = useState<Chat[][]>([]);
   const [translate, setTranslate] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -70,15 +63,15 @@ import { LoadingDots } from '../../shared/ui/LoadingDots';
 
   const TOKENS = theme === 'dark' ? darkTokens : lightTokens;
 
-  const themeVars: React.CSSProperties = {
-    // expose variables for inline usage
-    ['--primary-color' as any]: String(TOKENS.color['icon.accent']),
-    ['--surface-color' as any]: String(TOKENS.color['bg.app']),
-    ['--primary-text-color' as any]: String(TOKENS.color['text.primary']),
-    ['--secondary-text-color' as any]: String(TOKENS.color['text.secondary']),
-    ['--message-out-background-color' as any]: String(TOKENS.color['bg.message.out']),
-    ['--message-out-primary-color' as any]: theme === 'dark' ? '#ffffff' : String(TOKENS.color['text.primary']),
-    ['--light-filled-secondary-text-color' as any]: String(TOKENS.color['bg.input']),
+  const themeVars = {
+    '--primary-color': String(TOKENS.color['icon.accent']),
+    '--surface-color': String(TOKENS.color['bg.app']),
+    '--primary-text-color': String(TOKENS.color['text.primary']),
+    '--secondary-text-color': String(TOKENS.color['text.secondary']),
+    '--message-out-background-color': String(TOKENS.color['bg.message.out']),
+    '--message-out-primary-color':
+      theme === 'dark' ? '#ffffff' : String(TOKENS.color['text.primary']),
+    '--light-filled-secondary-text-color': String(TOKENS.color['bg.input']),
   } as React.CSSProperties;
 
     useEffect(() => {
@@ -103,40 +96,10 @@ import { LoadingDots } from '../../shared/ui/LoadingDots';
       return () => el.removeEventListener('wheel', handle);
     }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-    }
-  };
-
-  const handleEmojiSelect = (emoji: Emoji & { native?: string }) => {
-    setMessage((prev) => prev + (emoji.native || ''));
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  };
 
   const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setStoriesCollapsed(e.currentTarget.scrollTop > 0);
   };
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (
-        showEmoji &&
-        emojiPickerRef.current &&
-        !emojiPickerRef.current.contains(e.target as Node) &&
-        !emojiBtnRef.current?.contains(e.target as Node)
-      ) {
-        setShowEmoji(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showEmoji]);
-
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (
@@ -550,42 +513,7 @@ import { LoadingDots } from '../../shared/ui/LoadingDots';
                   ))}
                 </div>
               </div>
-              <div className="px-6 pb-5 pt-3 flex justify-center border-t" style={{ background: String(TOKENS.color['bg.header']), borderColor: String(TOKENS.color['border.muted']), boxShadow: String(TOKENS.elevation.card) }}>
-                <div className="flex items-end w-full max-w-2xl gap-2 relative">
-                  <div className="flex items-end flex-1 rounded-[20px] px-4 py-2 relative" style={{ background: String(TOKENS.color['bg.input']) }}>
-                    <div className="relative">
-                      <button
-                        ref={emojiBtnRef}
-                        type="button"
-                        onClick={() => setShowEmoji((v) => !v)}
-                        className="text-2xl mr-2 cursor-pointer"
-                        style={{ color: String(TOKENS.color['icon.normal']) }}
-                      >
-                        😊
-                      </button>
-                      {showEmoji && (
-                        <div
-                          ref={emojiPickerRef}
-                          className="absolute bottom-full left-0 mb-2 z-10"
-                        >
-                          <Picker data={data} onEmojiSelect={handleEmojiSelect} />
-                        </div>
-                      )}
-                    </div>
-                    <textarea
-                      ref={textareaRef}
-                      value={message}
-                      onChange={handleChange}
-                      placeholder="Message"
-                      rows={1}
-                      className="flex-1 bg-transparent focus:outline-none resize-none overflow-hidden"
-                      style={{ color: String(TOKENS.color['text.primary']) }}
-                    />
-                    <button className="text-xl ml-2 cursor-pointer" style={{ color: String(TOKENS.color['icon.normal']) }}>📎</button>
-                  </div>
-                  <button className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" style={{ background: String(TOKENS.color['bg.unread.badge']), color: String(TOKENS.color['text.inverse']) }}>✈️</button>
-                </div>
-              </div>
+              <MessageInput tokens={TOKENS} />
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center" style={{ color: String(TOKENS.color['text.secondary']) }}>
