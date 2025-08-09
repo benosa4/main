@@ -1,0 +1,11 @@
+<!-- shield-with-bolt.svg -->
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path 
+    d="M32 4L10 12v18c0 12.54 8.46 24.387 20 28 11.54-3.613 20-15.46 20-28V12L32 4z" 
+    fill="#4F46E5"
+  />
+  <path
+    d="M34 18H28l-6 12h6l-6 16 16-14h-6l6-14z"
+    fill="#FBBF24"
+  />
+</svg>
