@@ -56,7 +56,7 @@ function App() {
   return (
     <Router>
       {isAuthenticated && <NatsBridge />}
-      <div className={isAuthenticated && !natsStore.connected ? 'blur-sm pointer-events-none select-none' : ''}>
+      <div>
         <Routes>
           {/* Страница логина */}
           <Route path="/" element={<AuthPage isAuthenticated={isAuthenticated} />} />
@@ -69,14 +69,6 @@ function App() {
       {/* ⬇⬇⬇ показываем виджет только когда есть соединение */}
       {isAuthenticated && natsStore.connected && <NatsLogPanel />} {/* ⬅️ NEW */}
       {isAuthenticated && natsStore.connected && <SendBox />}
-      {isAuthenticated && !natsStore.connected && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/80 z-50">
-          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-8 shadow-xl text-center text-white max-w-md mx-auto animate-fadeInScale">
-            <h2 className="text-2xl font-bold mb-2">🔌 Нет соединения</h2>
-            <p className="text-white/80">Не удалось подключиться к серверу обмена сообщениями. Проверьте соединение или перезагрузите страницу.</p>
-          </div>
-        </div>
-      )}
     </Router>
   );
 }

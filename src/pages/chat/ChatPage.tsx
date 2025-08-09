@@ -14,6 +14,8 @@ import { menuStore } from '../../features/menu/model';
 import { useStories } from '../../features/stories/hooks';
 import { storyStore } from '../../features/stories/model';
 import { lightTokens, darkTokens } from '../../shared/config/tokens';
+import { natsStore } from '../../shared/nats/model';
+import { LoadingDots } from '../../shared/ui/LoadingDots';
 
   const ChatPage = observer(() => {
     useChats();
@@ -201,59 +203,6 @@ import { lightTokens, darkTokens } from '../../shared/config/tokens';
     requestAnimationFrame(() => setTranslate(0));
   };
 
-  const renderChatList = (list: Chat[]) =>
-    list.map((chat) => (
-      <div
-        key={chat.id}
-        onClick={() => chatStore.selectChat(chat.id)}
-        className={`flex items-center gap-3 px-4 py-3 cursor-pointer rounded-lg mx-2 ${
-          chatStore.selectedChatId === chat.id
-            ? 'bg-blue-600 text-white'
-            : 'hover:bg-blue-600/10'
-        }`}
-      >
-        <img src={chat.avatar} className="w-14 h-14 rounded-full object-cover" />
-        <div className="flex-1 min-w-0">
-          <div className="flex justify-between">
-            <span className="font-semibold">{chat.name}</span>
-            <span
-              className={`text-xs ${
-                chatStore.selectedChatId === chat.id
-                  ? 'text-white/90'
-                  : 'text-white/70'
-              }`}
-            >
-              {chat.lastMessageDate}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span
-              className={`text-sm truncate ${
-                chatStore.selectedChatId === chat.id
-                  ? 'text-white/90'
-                  : 'text-white/70'
-              }`}
-            >
-              {chat.lastMessage}
-            </span>
-            {chat.unread > 0 ? (
-              <span
-                className={`ml-2 text-xs rounded-full px-2 ${
-                  chatStore.selectedChatId === chat.id
-                    ? 'bg-white text-blue-600'
-                    : 'bg-blue-600'
-                }`}
-              >
-                {chat.unread}
-              </span>
-            ) : (
-              <span className="ml-2">📌</span>
-            )}
-          </div>
-        </div>
-      </div>
-    ));
-
   const selected = chatStore.selectedChat;
 
   return (
@@ -341,8 +290,8 @@ import { lightTokens, darkTokens } from '../../shared/config/tokens';
                 <div
                   key={item.id}
                   className="relative group"
-                  onMouseEnter={() => layoutVersion !== 'A' && item.id === 'more' && setMoreOpen(true)}
-                  onMouseLeave={() => layoutVersion !== 'A' && item.id === 'more' && setMoreOpen(false)}
+                  onMouseEnter={() => layoutVersion === 'K' && item.id === 'more' && setMoreOpen(true)}
+                  onMouseLeave={() => layoutVersion === 'K' && item.id === 'more' && setMoreOpen(false)}
                 >
                   {(() => {
                     const isDarkToggle = item.id === 'dark';
@@ -382,27 +331,26 @@ import { lightTokens, darkTokens } from '../../shared/config/tokens';
                       </div>
                     );
                   })()}
-                  {item.id === 'more' && layoutVersion !== 'A' && moreOpen && (
+                  {item.id === 'more' && layoutVersion === 'K' && moreOpen && (
                     <div
                       className="absolute top-0 left-full -ml-2 w-full rounded-lg shadow-lg text-sm"
                       style={{
-                        backgroundColor: tokens.surface,
-                        color: tokens.primaryText,
-                        border: `1px solid ${tokens.borderColor}`
+                        backgroundColor: String(TOKENS.color['bg.sidebar']),
+                        color: String(TOKENS.color['text.primary']),
+                        border: `1px solid ${TOKENS.color['border.muted']}`,
                       }}
                     >
                       {item.children?.map((child) => {
                         const isDarkToggle = child.id === 'dark';
                         const isVersionToggle = child.id === 'version';
-                        const label = isDarkToggle
-                          ? theme === 'dark'
+                        let label = child.label;
+                        if (isDarkToggle) {
+                          label = theme === 'dark'
                             ? 'Выключить темный режим'
-                            : 'Включить темный режим'
-                          : isVersionToggle
-                          ? layoutVersion === 'A'
-                            ? 'Переключить в К версию'
-                            : 'Переключить в А версию'
-                          : child.label;
+                            : 'Включить темный режим';
+                        } else if (isVersionToggle) {
+                          label = 'Переключить в А версию';
+                        }
                         const icon = isDarkToggle
                           ? theme === 'dark' ? '☀️' : '🌙'
                           : isVersionToggle
@@ -412,9 +360,7 @@ import { lightTokens, darkTokens } from '../../shared/config/tokens';
                           <div
                             key={child.id}
                             className="flex items-center gap-2 px-4 py-2 cursor-pointer"
-                            style={{
-                              backgroundColor: 'transparent'
-                            }}
+                            style={{ backgroundColor: 'transparent' }}
                             onClick={() => {
                               if (isDarkToggle) {
                                 toggleTheme();
@@ -476,7 +422,7 @@ import { lightTokens, darkTokens } from '../../shared/config/tokens';
                   onScroll={handleChatScroll}
                 >
                   {list.map((chat) => (
-                    <div key={chat.id} onClick={() => chatStore.selectChat(chat.id)} className="px-3">
+                    <div key={chat.id} onClick={() => void chatStore.selectChat(chat.id)} className="px-3">
                       <div
                         className="flex items-center gap-3 px-3"
                         style={{
@@ -545,7 +491,15 @@ import { lightTokens, darkTokens } from '../../shared/config/tokens';
                 <div className="flex flex-col">
                   <span style={{ fontWeight: 600, color: String(TOKENS.color['text.primary']) }}>{selected.name}</span>
                   <span className="text-[12px]" style={{ color: String(TOKENS.color['text.secondary']) }}>
-                    {selected.type === 'private' ? selected.lastSeen : `${selected.participants} участников`}
+                    {natsStore.status !== 'connected' ? (
+                      <>Connecting<LoadingDots /></>
+                    ) : chatStore.status === 'updating' ? (
+                      <>Updating<LoadingDots /></>
+                    ) : selected.type === 'private' ? (
+                      selected.lastSeen
+                    ) : (
+                      `${selected.participants} участников`
+                    )}
                   </span>
                 </div>
                 <div className="ml-auto flex gap-2">

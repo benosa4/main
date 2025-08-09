@@ -1,20 +1,23 @@
-import React from 'react';
 import { Navbar } from './Navbar';
 import { observer } from 'mobx-react-lite'
 import { natsStore } from '../nats/model'
+import { LoadingDots } from './LoadingDots'
 
 const StatusDot = observer(() => {
   const m = {
     connected: { bg: 'bg-green-500', text: 'Connected' },
-    reconnecting: { bg: 'bg-yellow-500', text: 'Reconnecting' },
+    reconnecting: { bg: 'bg-yellow-500', text: 'Connecting' },
     connecting: { bg: 'bg-gray-400', text: 'Connecting' },
-    disconnected: { bg: 'bg-red-500', text: 'Disconnected' },
+    disconnected: { bg: 'bg-red-500', text: 'Connecting' },
   } as const
   const s = m[natsStore.status]
+  const isConnected = natsStore.status === 'connected'
   return (
     <div className="flex items-center gap-2 text-white/80 text-sm">
       <span className={`inline-block w-2.5 h-2.5 rounded-full ${s.bg}`} />
-      <span className="hidden sm:inline">{s.text}</span>
+      <span className="hidden sm:inline">
+        {isConnected ? s.text : <>{s.text}<LoadingDots /></>}
+      </span>
     </div>
   )
 })
