@@ -13,6 +13,7 @@ import { useMenu } from '../../features/menu/hooks';
 import { menuStore } from '../../features/menu/model';
 import { useStories } from '../../features/stories/hooks';
 import { storyStore } from '../../features/stories/model';
+import { lightTokens, darkTokens } from '../../shared/config/tokens';
 
   const ChatPage = observer(() => {
     useChats();
@@ -31,6 +32,7 @@ import { storyStore } from '../../features/stories/model';
   const [moreOpen, setMoreOpen] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
   const [message, setMessage] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
   const [storiesCollapsed, setStoriesCollapsed] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -59,50 +61,17 @@ import { storyStore } from '../../features/stories/model';
     localStorage.setItem('layoutVersion', layoutVersion);
   }, [layoutVersion]);
 
-  // Theme tokens derived from provided light.html and dark.mhtml
-  const tokens = theme === 'dark'
-    ? {
-        primaryColor: '#8774e1',
-        lightPrimaryColor: 'rgba(135,116,225,0.08)',
-        lightFilledPrimaryColor: '#292730',
-        msgOutBg: '#8774e1',
-        msgOutText: '#ffffff',
-        surface: '#212121',
-        primaryText: '#ffffff',
-        secondaryText: '#aaaaaa',
-        messageBg: '#212121',
-        lightFilledMessageBg: '#212121',
-        lightFilledSecondary: '#2b2b2b',
-        borderColor: 'rgba(255,255,255,0.12)'
-      }
-    : {
-        primaryColor: '#3390ec',
-        lightPrimaryColor: 'rgba(51,144,236,0.08)',
-        lightFilledPrimaryColor: '#eef6fd',
-        msgOutBg: '#e3fee0',
-        msgOutText: '#5ca853',
-        surface: '#ffffff',
-        primaryText: '#000000',
-        secondaryText: '#707579',
-        messageBg: '#ffffff',
-        lightFilledMessageBg: '#ffffff',
-        lightFilledSecondary: '#f3f3f4',
-        borderColor: 'rgba(0,0,0,0.06)'
-      };
+  const TOKENS = theme === 'dark' ? darkTokens : lightTokens;
 
   const themeVars: React.CSSProperties = {
     // expose variables for inline usage
-    ['--primary-color' as any]: tokens.primaryColor,
-    ['--light-primary-color' as any]: tokens.lightPrimaryColor,
-    ['--light-filled-primary-color' as any]: tokens.lightFilledPrimaryColor,
-    ['--message-out-background-color' as any]: tokens.msgOutBg,
-    ['--message-out-primary-color' as any]: tokens.msgOutText,
-    ['--surface-color' as any]: tokens.surface,
-    ['--primary-text-color' as any]: tokens.primaryText,
-    ['--secondary-text-color' as any]: tokens.secondaryText,
-    ['--message-background-color' as any]: tokens.messageBg,
-    ['--light-filled-message-background-color' as any]: tokens.lightFilledMessageBg,
-    ['--light-filled-secondary-text-color' as any]: tokens.lightFilledSecondary,
+    ['--primary-color' as any]: String(TOKENS.color['icon.accent']),
+    ['--surface-color' as any]: String(TOKENS.color['bg.app']),
+    ['--primary-text-color' as any]: String(TOKENS.color['text.primary']),
+    ['--secondary-text-color' as any]: String(TOKENS.color['text.secondary']),
+    ['--message-out-background-color' as any]: String(TOKENS.color['bg.message.out']),
+    ['--message-out-primary-color' as any]: theme === 'dark' ? '#ffffff' : String(TOKENS.color['text.primary']),
+    ['--light-filled-secondary-text-color' as any]: String(TOKENS.color['bg.input']),
   } as React.CSSProperties;
 
     useEffect(() => {
@@ -296,22 +265,19 @@ import { storyStore } from '../../features/stories/model';
       >
         {/* Sidebar */}
         <aside
-          className="w-1/4 flex flex-col relative border-r"
-          style={{
-            backgroundColor: tokens.lightFilledPrimaryColor,
-            borderColor: tokens.borderColor
-          }}
+          className="flex flex-col relative border-r"
+          style={{ width: 340, background: String(TOKENS.color['bg.sidebar']), borderColor: String(TOKENS.color['border.muted']) }}
         >
           {/* Search and menu */}
           <div
-            className="p-2 flex items-center gap-2 border-b"
-            style={{ borderColor: tokens.borderColor }}
+            className="p-3 flex items-center gap-2 border-b"
+            style={{ borderColor: String(TOKENS.color['border.muted']) }}
           >
             <button
               ref={burgerRef}
               onClick={() => setMenuOpen((v) => !v)}
-              className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer"
-              style={{ backgroundColor: 'var(--light-filled-secondary-text-color)' }}
+              className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer"
+              style={{ background: String(TOKENS.color['bg.input']) }}
             >
               ☰
             </button>
@@ -319,13 +285,18 @@ import { storyStore } from '../../features/stories/model';
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
                 placeholder="Search"
-                className="w-full rounded-full px-4 py-2 pr-20 focus:outline-none"
+                className="w-full rounded-[20px] h-10 pl-10 pr-20 focus:outline-none placeholder-[#9AA0A6]"
                 style={{
-                  backgroundColor: 'var(--light-filled-secondary-text-color)',
-                  color: 'var(--primary-text-color)'
+                  background: String(TOKENS.color['bg.search']),
+                  color: String(TOKENS.color['text.primary']),
+                  border: searchFocused ? `1px solid ${TOKENS.color['icon.accent']}` : '1px solid transparent',
+                  boxShadow: searchFocused ? '0 0 0 3px rgba(51,144,236,0.15)' : 'none'
                 }}
               />
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: String(TOKENS.color['icon.normal']) }}>🔍</div>
               <div
                 className={`absolute right-2 top-1/2 -translate-y-1/2 flex -space-x-2 transition-opacity duration-300 ${storiesCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
               >
@@ -333,7 +304,8 @@ import { storyStore } from '../../features/stories/model';
                   <img
                     key={s.id}
                     src={s.avatar}
-                    className="w-6 h-6 rounded-full border border-white/20 object-cover shrink-0"
+                    className="w-6 h-6 rounded-full border object-cover shrink-0"
+                    style={{ borderColor: String(TOKENS.color['border.muted']) }}
                   />
                 ))}
               </div>
@@ -348,9 +320,9 @@ import { storyStore } from '../../features/stories/model';
               }}
               className="absolute top-12 left-2 w-56 rounded-lg shadow-lg z-20 text-sm"
               style={{
-                backgroundColor: tokens.surface,
-                color: tokens.primaryText,
-                border: `1px solid ${tokens.borderColor}`
+                backgroundColor: String(TOKENS.color['bg.header']),
+                color: String(TOKENS.color['text.primary']),
+                border: `1px solid ${TOKENS.color['border.muted']}`
               }}
             >
               {(layoutVersion === 'A'
@@ -464,55 +436,24 @@ import { storyStore } from '../../features/stories/model';
           {/* Stories */}
           <div
             ref={storyRef}
-            className={`flex gap-4 overflow-x-auto hide-scrollbar transition-all duration-300 ${storiesCollapsed ? 'h-0 p-0 opacity-0 border-b-0' : 'h-24 p-2 opacity-100 border-b border-white/20'}`}
+            className={`flex gap-4 overflow-x-auto hide-scrollbar transition-all duration-300 ${storiesCollapsed ? 'h-0 p-0 opacity-0 border-b-0' : 'h-[84px] px-3 py-2 opacity-100 border-b'}`}
+            style={{ background: String(TOKENS.color['bg.story.strip']), borderColor: String(TOKENS.color['border.muted']) }}
           >
             {storyStore.stories.map((story) => {
-              const total = story.segments.length;
-              const step = 100 / total;
-              const gradient = story.segments
-                .map((seg, idx) => {
-                  const start = idx * step;
-                  const end = start + step;
-                  const color = seg.viewed ? '#9ca3af' : '#3b82f6';
-                  return `${color} ${start}% ${end}%`;
-                })
-                .join(', ');
-
+              const ringGradient = `linear-gradient(135deg, ${TOKENS.color['bg.story.ring.start']}, ${TOKENS.color['bg.story.ring.end']})`;
               return (
-                <div key={story.id} className="flex flex-col items-center w-14 shrink-0">
-                  <div
-                    className="w-14 h-14 rounded-full p-[2px]"
-                    style={{ background: `conic-gradient(${gradient})` }}
-                  >
-                    <img
-                      src={story.avatar}
-                      className="w-full h-full rounded-full object-cover"
-                    />
+                <div key={story.id} className="flex flex-col items-center w-[64px] shrink-0">
+                  <div className="w-[64px] h-[64px] rounded-full p-[3px]" style={{ background: ringGradient }}>
+                    <div className="w-full h-full rounded-full p-[2px]" style={{ background: '#fff' }}>
+                      <img src={story.avatar} className="w-full h-full rounded-full object-cover" />
+                    </div>
                   </div>
-                  <span className="text-xs mt-1">{story.title}</span>
+                  <span className="text-[12px] mt-1 truncate w-full text-center" style={{ color: String(TOKENS.color['text.secondary']) }}>{story.title}</span>
                 </div>
               );
             })}
           </div>
-          {/* Tabs */}
-          <div
-            ref={tabRef}
-            className="px-2 pt-2 flex gap-2 overflow-x-auto hide-scrollbar transition-all duration-300"
-          >
-            {chatTabsStore.tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => chatTabsStore.selectTab(tab.id)}
-                className={`px-3 py-1 rounded-t border whitespace-nowrap cursor-pointer ${
-                  chatTabsStore.selectedTabId === tab.id
-                    ? 'bg-white/20 border-white/20 border-b-0'
-                    : 'bg-white/5 border-transparent'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          {/* Tabs removed by design */}
           {/* Chat list */}
           <div className="flex-1 overflow-hidden">
             <div
@@ -526,10 +467,41 @@ import { storyStore } from '../../features/stories/model';
                 <div
                   key={idx}
                   className="w-full flex-none overflow-y-auto scrollbar-custom pt-2"
-                  style={{ backgroundColor: tokens.lightFilledPrimaryColor }}
+                  style={{ background: String(TOKENS.color['bg.sidebar']) }}
                   onScroll={handleChatScroll}
                 >
-                  {renderChatList(list)}
+                  {list.map((chat) => (
+                    <div key={chat.id} onClick={() => chatStore.selectChat(chat.id)} className="px-3">
+                      <div
+                        className="flex items-center gap-3 px-3"
+                        style={{
+                          height: 72,
+                          borderBottom: `1px solid ${TOKENS.color['border.muted']}`,
+                          background:
+                            chatStore.selectedChatId === chat.id
+                              ? String(TOKENS.color['bg.sidebar.active'])
+                              : 'transparent',
+                          borderRadius: chatStore.selectedChatId === chat.id ? 12 : 0
+                        }}
+                      >
+                        <img src={chat.avatar} className="w-11 h-11 rounded-full object-cover" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-center">
+                            <span className="truncate" style={{ fontWeight: 600, color: String(TOKENS.color['text.primary']) }}>{chat.name}</span>
+                            <span className="text-[12px]" style={{ color: String(TOKENS.color['text.muted']) }}>{chat.lastMessageDate}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-[14px] truncate" style={{ color: String(TOKENS.color['text.secondary']) }}>{chat.lastMessage}</span>
+                            {chat.unread > 0 ? (
+                              <span className="ml-2 text-[12px] rounded-full px-2 py-[2px]" style={{ background: String(TOKENS.color['bg.unread.badge']), color: String(TOKENS.color['text.inverse']) }}>
+                                {chat.unread}
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
@@ -560,45 +532,37 @@ import { storyStore } from '../../features/stories/model';
         </aside>
 
         {/* Chat window */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-[720px]">
           {selected ? (
             <>
-              <div
-                className="p-4 border-b flex items-center gap-3"
-                style={{ backgroundColor: 'var(--light-primary-color)', borderColor: tokens.borderColor }}
-              >
-                <img src={selected.avatar} className="w-14 h-14 rounded-full object-cover" />
+              <div className="px-6 h-16 border-b flex items-center gap-3" style={{ background: String(TOKENS.color['bg.header']), borderColor: String(TOKENS.color['border.muted']), boxShadow: String(TOKENS.elevation.card) }}>
+                <img src={selected.avatar} className="w-8 h-8 rounded-full object-cover" />
                 <div className="flex flex-col">
-                  <span className="font-semibold" style={{ color: 'var(--primary-text-color)' }}>{selected.name}</span>
-                  <span className="text-sm" style={{ color: 'var(--secondary-text-color)' }}>
-                    {selected.type === 'private'
-                      ? selected.lastSeen
-                      : `${selected.participants} участников`}
+                  <span style={{ fontWeight: 600, color: String(TOKENS.color['text.primary']) }}>{selected.name}</span>
+                  <span className="text-[12px]" style={{ color: String(TOKENS.color['text.secondary']) }}>
+                    {selected.type === 'private' ? selected.lastSeen : `${selected.participants} участников`}
                   </span>
                 </div>
-                {selected.pinnedMessages && selected.pinnedMessages.length > 0 && (
-                  <div className="ml-4 max-w-xs text-sm truncate" style={{ color: 'var(--secondary-text-color)' }}>
-                    {
-                      selected.pinnedMessages[
-                        selected.pinnedMessages.length - 1
-                      ].text
-                    }
-                  </div>
-                )}
                 <div className="ml-auto flex gap-2">
                   {selected.actions.map((act, idx) => (
-                    <button
-                      key={idx}
-                      className="w-8 h-8 rounded-full flex items-center justify-center"
-                      style={{ backgroundColor: 'var(--light-filled-secondary-text-color)' }}
-                    >
+                    <button key={idx} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ color: String(TOKENS.color['icon.normal']) }}>
                       {act}
                     </button>
                   ))}
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto">
-                <div className="p-4 space-y-4 max-w-2xl mx-auto">
+              {selected.pinnedMessages && selected.pinnedMessages.length > 0 && (
+                <div className="px-6 py-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[8px]" style={{ background: '#E8F5FF', color: '#2B6EA6', boxShadow: String(TOKENS.elevation.card) }}>
+                    📌
+                    <span className="text-[12px] truncate max-w-[60ch]">
+                      {selected.pinnedMessages[selected.pinnedMessages.length - 1].text}
+                    </span>
+                  </div>
+                </div>
+              )}
+              <div className="flex-1 overflow-y-auto" style={{ background: String(TOKENS.color['bg.chat']) }}>
+                <div className="px-6 py-4 space-y-2 max-w-2xl mx-auto">
                   {selected.messages.map((m) => (
                     <div
                       key={m.id}
@@ -607,20 +571,18 @@ import { storyStore } from '../../features/stories/model';
                       }`}
                     >
                       <div
-                        className={`rounded-lg px-4 py-2 max-w-xs`}
+                        className={`px-4 py-3 max-w-xs rounded-[16px]`}
                         style={{
-                          backgroundColor:
+                          background:
                             m.sender === 'me'
-                              ? 'var(--message-out-background-color)'
-                              : 'var(--light-filled-message-background-color)',
-                          color:
-                            m.sender === 'me'
-                              ? 'var(--message-out-primary-color)'
-                              : 'var(--primary-text-color)',
+                              ? String(TOKENS.color['bg.message.out'])
+                              : String(TOKENS.color['bg.message.in']),
+                          color: String(TOKENS.color['text.primary']),
                           border:
                             m.sender === 'me'
                               ? 'none'
-                              : `1px solid ${tokens.borderColor}`
+                              : `1px solid ${TOKENS.color['border.message']}`,
+                          boxShadow: `0 1px 1px ${TOKENS.color['shadow']}`
                         }}
                       >
                         {m.text}
@@ -629,18 +591,16 @@ import { storyStore } from '../../features/stories/model';
                   ))}
                 </div>
               </div>
-              <div className="p-4 pb-5 flex justify-center">
+              <div className="px-6 pb-5 pt-3 flex justify-center border-t" style={{ background: String(TOKENS.color['bg.header']), borderColor: String(TOKENS.color['border.muted']), boxShadow: String(TOKENS.elevation.card) }}>
                 <div className="flex items-end w-full max-w-2xl gap-2 relative">
-                  <div
-                    className="flex items-end flex-1 rounded-lg px-4 py-2 relative"
-                    style={{ backgroundColor: 'var(--light-filled-secondary-text-color)' }}
-                  >
+                  <div className="flex items-end flex-1 rounded-[20px] px-4 py-2 relative" style={{ background: String(TOKENS.color['bg.input']) }}>
                     <div className="relative">
                       <button
                         ref={emojiBtnRef}
                         type="button"
                         onClick={() => setShowEmoji((v) => !v)}
                         className="text-2xl mr-2 cursor-pointer"
+                        style={{ color: String(TOKENS.color['icon.normal']) }}
                       >
                         😊
                       </button>
@@ -660,21 +620,16 @@ import { storyStore } from '../../features/stories/model';
                       placeholder="Message"
                       rows={1}
                       className="flex-1 bg-transparent focus:outline-none resize-none overflow-hidden"
-                      style={{ color: 'var(--primary-text-color)' }}
+                      style={{ color: String(TOKENS.color['text.primary']) }}
                     />
-                    <button className="text-xl ml-2 cursor-pointer">📎</button>
+                    <button className="text-xl ml-2 cursor-pointer" style={{ color: String(TOKENS.color['icon.normal']) }}>📎</button>
                   </div>
-                  <button
-                    className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
-                    style={{ backgroundColor: 'var(--primary-color)', color: '#fff' }}
-                  >
-                    ✈️
-                  </button>
+                  <button className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer" style={{ background: String(TOKENS.color['bg.unread.badge']), color: String(TOKENS.color['text.inverse']) }}>✈️</button>
                 </div>
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center" style={{ color: 'var(--secondary-text-color)' }}>
+            <div className="flex-1 flex items-center justify-center" style={{ color: String(TOKENS.color['text.secondary']) }}>
               Выберите чат
             </div>
           )}

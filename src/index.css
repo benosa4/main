@@ -95,8 +95,15 @@
 }
 
 /* Базовые стили */
+:root {
+  --color-bg-app: #FFFFFF;
+}
+
 body {
-  @apply antialiased font-[Inter] bg-white text-gray-900;
+  @apply antialiased;
+  font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: var(--color-bg-app);
+  color: #111315;
 }
 
 /* Кастомные стили для текста */
@@ -137,11 +144,20 @@ body {
   scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
 }
 .scrollbar-custom::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
 }
 .scrollbar-custom::-webkit-scrollbar-button {
   display: none;
 }
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #ECECEC;
+  border-radius: 8px;
+}
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: #C9C9C9;
+  border-radius: 8px;
+}
+
 .scrollbar-custom::-webkit-scrollbar-track {
   background: transparent;
 }
