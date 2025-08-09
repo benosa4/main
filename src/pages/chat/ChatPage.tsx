@@ -50,6 +50,52 @@ import { storyStore } from '../../features/stories/model';
     localStorage.setItem('chatTheme', theme);
   }, [theme]);
 
+  // Theme tokens derived from provided light.html and dark.mhtml
+  const tokens = theme === 'dark'
+    ? {
+        primaryColor: '#8774e1',
+        lightPrimaryColor: 'rgba(135,116,225,0.08)',
+        lightFilledPrimaryColor: '#292730',
+        msgOutBg: '#8774e1',
+        msgOutText: '#ffffff',
+        surface: '#212121',
+        primaryText: '#ffffff',
+        secondaryText: '#aaaaaa',
+        messageBg: '#212121',
+        lightFilledMessageBg: '#212121',
+        lightFilledSecondary: '#2b2b2b',
+        borderColor: 'rgba(255,255,255,0.12)'
+      }
+    : {
+        primaryColor: '#3390ec',
+        lightPrimaryColor: 'rgba(51,144,236,0.08)',
+        lightFilledPrimaryColor: '#eef6fd',
+        msgOutBg: '#e3fee0',
+        msgOutText: '#5ca853',
+        surface: '#ffffff',
+        primaryText: '#000000',
+        secondaryText: '#707579',
+        messageBg: '#ffffff',
+        lightFilledMessageBg: '#ffffff',
+        lightFilledSecondary: '#f3f3f4',
+        borderColor: 'rgba(0,0,0,0.06)'
+      };
+
+  const themeVars: React.CSSProperties = {
+    // expose variables for inline usage
+    ['--primary-color' as any]: tokens.primaryColor,
+    ['--light-primary-color' as any]: tokens.lightPrimaryColor,
+    ['--light-filled-primary-color' as any]: tokens.lightFilledPrimaryColor,
+    ['--message-out-background-color' as any]: tokens.msgOutBg,
+    ['--message-out-primary-color' as any]: tokens.msgOutText,
+    ['--surface-color' as any]: tokens.surface,
+    ['--primary-text-color' as any]: tokens.primaryText,
+    ['--secondary-text-color' as any]: tokens.secondaryText,
+    ['--message-background-color' as any]: tokens.messageBg,
+    ['--light-filled-message-background-color' as any]: tokens.lightFilledMessageBg,
+    ['--light-filled-secondary-text-color' as any]: tokens.lightFilledSecondary,
+  } as React.CSSProperties;
+
     useEffect(() => {
       const el = storyRef.current;
       if (!el) return;
@@ -230,20 +276,31 @@ import { storyStore } from '../../features/stories/model';
   return (
     <LayoutWithFloatingBg noFrame>
       <div
-        className={`flex h-screen relative mx-[2cm] w-[calc(100%-4cm)] bg-gradient-to-br ${
-          theme === 'dark'
-            ? 'from-emerald-900 via-teal-900 to-slate-900 text-white'
-            : 'from-emerald-50 via-green-50 to-teal-50 text-gray-900'
-        }`}
+        className={`flex h-screen relative mx-[2cm] w-[calc(100%-4cm)]`}
+        style={{
+          ...themeVars,
+          backgroundColor: 'var(--surface-color)',
+          color: 'var(--primary-text-color)'
+        }}
       >
         {/* Sidebar */}
-        <aside className="w-1/4 bg-white/20 backdrop-blur-md border-r border-white/20 flex flex-col relative">
+        <aside
+          className="w-1/4 flex flex-col relative border-r"
+          style={{
+            backgroundColor: tokens.lightFilledPrimaryColor,
+            borderColor: tokens.borderColor
+          }}
+        >
           {/* Search and menu */}
-          <div className="p-2 flex items-center gap-2 border-b border-white/20">
+          <div
+            className="p-2 flex items-center gap-2 border-b"
+            style={{ borderColor: tokens.borderColor }}
+          >
             <button
               ref={burgerRef}
               onClick={() => setMenuOpen((v) => !v)}
-              className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center cursor-pointer"
+              className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer"
+              style={{ backgroundColor: 'var(--light-filled-secondary-text-color)' }}
             >
               ☰
             </button>
@@ -252,7 +309,11 @@ import { storyStore } from '../../features/stories/model';
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search"
-                className="w-full bg-white/5 rounded-full px-4 py-2 pr-20 focus:outline-none"
+                className="w-full rounded-full px-4 py-2 pr-20 focus:outline-none"
+                style={{
+                  backgroundColor: 'var(--light-filled-secondary-text-color)',
+                  color: 'var(--primary-text-color)'
+                }}
               />
               <div
                 className={`absolute right-2 top-1/2 -translate-y-1/2 flex -space-x-2 transition-opacity duration-300 ${storiesCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
@@ -274,7 +335,12 @@ import { storyStore } from '../../features/stories/model';
                 setMenuOpen(false);
                 setMoreOpen(false);
               }}
-              className="absolute top-12 left-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20 text-sm text-black"
+              className="absolute top-12 left-2 w-56 rounded-lg shadow-lg z-20 text-sm"
+              style={{
+                backgroundColor: tokens.surface,
+                color: tokens.primaryText,
+                border: `1px solid ${tokens.borderColor}`
+              }}
             >
               {menuStore.items.map((item) => (
                 <div
@@ -283,12 +349,22 @@ import { storyStore } from '../../features/stories/model';
                   onMouseEnter={() => item.id === 'more' && setMoreOpen(true)}
                   onMouseLeave={() => item.id === 'more' && setMoreOpen(false)}
                 >
-                  <div className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  <div
+                    className="flex items-center gap-2 px-4 py-2 cursor-pointer"
+                    style={{ backgroundColor: 'transparent' }}
+                  >
                     <span>{item.icon}</span>
                     <span>{item.label}</span>
                   </div>
                   {item.id === 'more' && moreOpen && (
-                    <div className="absolute top-0 left-full -ml-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg text-sm text-black">
+                    <div
+                      className="absolute top-0 left-full -ml-2 w-full rounded-lg shadow-lg text-sm"
+                      style={{
+                        backgroundColor: tokens.surface,
+                        color: tokens.primaryText,
+                        border: `1px solid ${tokens.borderColor}`
+                      }}
+                    >
                       {item.children?.map((child) => {
                         const isDarkToggle = child.id === 'dark';
                         const label = isDarkToggle
@@ -302,7 +378,10 @@ import { storyStore } from '../../features/stories/model';
                         return (
                           <div
                             key={child.id}
-                            className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                            className="flex items-center gap-2 px-4 py-2 cursor-pointer"
+                            style={{
+                              backgroundColor: 'transparent'
+                            }}
                             onClick={() => {
                               if (isDarkToggle) {
                                 toggleTheme();
@@ -386,7 +465,8 @@ import { storyStore } from '../../features/stories/model';
               {chatSlides.map((list, idx) => (
                 <div
                   key={idx}
-                  className="w-full flex-none overflow-y-auto scrollbar-custom bg-white/20 pt-2"
+                  className="w-full flex-none overflow-y-auto scrollbar-custom pt-2"
+                  style={{ backgroundColor: tokens.lightFilledPrimaryColor }}
                   onScroll={handleChatScroll}
                 >
                   {renderChatList(list)}
@@ -423,18 +503,21 @@ import { storyStore } from '../../features/stories/model';
         <div className="flex-1 flex flex-col">
           {selected ? (
             <>
-              <div className="p-4 bg-white/10 backdrop-blur-md border-b border-white/10 flex items-center gap-3">
+              <div
+                className="p-4 border-b flex items-center gap-3"
+                style={{ backgroundColor: 'var(--light-primary-color)', borderColor: tokens.borderColor }}
+              >
                 <img src={selected.avatar} className="w-14 h-14 rounded-full object-cover" />
                 <div className="flex flex-col">
-                  <span className="font-semibold">{selected.name}</span>
-                  <span className="text-sm text-white/70">
+                  <span className="font-semibold" style={{ color: 'var(--primary-text-color)' }}>{selected.name}</span>
+                  <span className="text-sm" style={{ color: 'var(--secondary-text-color)' }}>
                     {selected.type === 'private'
                       ? selected.lastSeen
                       : `${selected.participants} участников`}
                   </span>
                 </div>
                 {selected.pinnedMessages && selected.pinnedMessages.length > 0 && (
-                  <div className="ml-4 max-w-xs text-sm text-white/70 truncate">
+                  <div className="ml-4 max-w-xs text-sm truncate" style={{ color: 'var(--secondary-text-color)' }}>
                     {
                       selected.pinnedMessages[
                         selected.pinnedMessages.length - 1
@@ -446,7 +529,8 @@ import { storyStore } from '../../features/stories/model';
                   {selected.actions.map((act, idx) => (
                     <button
                       key={idx}
-                      className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+                      className="w-8 h-8 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: 'var(--light-filled-secondary-text-color)' }}
                     >
                       {act}
                     </button>
@@ -463,9 +547,21 @@ import { storyStore } from '../../features/stories/model';
                       }`}
                     >
                       <div
-                        className={`${
-                          m.sender === 'me' ? 'bg-blue-600' : 'bg-white/10'
-                        } rounded-lg px-4 py-2 max-w-xs`}
+                        className={`rounded-lg px-4 py-2 max-w-xs`}
+                        style={{
+                          backgroundColor:
+                            m.sender === 'me'
+                              ? 'var(--message-out-background-color)'
+                              : 'var(--light-filled-message-background-color)',
+                          color:
+                            m.sender === 'me'
+                              ? 'var(--message-out-primary-color)'
+                              : 'var(--primary-text-color)',
+                          border:
+                            m.sender === 'me'
+                              ? 'none'
+                              : `1px solid ${tokens.borderColor}`
+                        }}
                       >
                         {m.text}
                       </div>
@@ -475,7 +571,10 @@ import { storyStore } from '../../features/stories/model';
               </div>
               <div className="p-4 pb-5 flex justify-center">
                 <div className="flex items-end w-full max-w-2xl gap-2 relative">
-                  <div className="flex items-end flex-1 bg-white/5 rounded-lg px-4 py-2 relative">
+                  <div
+                    className="flex items-end flex-1 rounded-lg px-4 py-2 relative"
+                    style={{ backgroundColor: 'var(--light-filled-secondary-text-color)' }}
+                  >
                     <div className="relative">
                       <button
                         ref={emojiBtnRef}
@@ -501,15 +600,21 @@ import { storyStore } from '../../features/stories/model';
                       placeholder="Message"
                       rows={1}
                       className="flex-1 bg-transparent focus:outline-none resize-none overflow-hidden"
+                      style={{ color: 'var(--primary-text-color)' }}
                     />
                     <button className="text-xl ml-2 cursor-pointer">📎</button>
                   </div>
-                  <button className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center cursor-pointer">✈️</button>
+                  <button
+                    className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer"
+                    style={{ backgroundColor: 'var(--primary-color)', color: '#fff' }}
+                  >
+                    ✈️
+                  </button>
                 </div>
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-white/70">
+            <div className="flex-1 flex items-center justify-center" style={{ color: 'var(--secondary-text-color)' }}>
               Выберите чат
             </div>
           )}
