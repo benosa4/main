@@ -1,4 +1,3 @@
-import React from 'react';
 
 export const PaperclipIcon = ({
   className = 'w-5 h-5',
@@ -25,4 +24,3 @@ export const PaperclipIcon = ({
 );
 
 export default PaperclipIcon;
-

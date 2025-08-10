@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navbar } from './Navbar';
 import { observer } from 'mobx-react-lite'
 import { natsStore } from '../nats/model'

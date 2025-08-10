@@ -18,6 +18,8 @@ import { StatusText } from '../../shared/ui/StatusText';
 import Avatar from '../../shared/ui/Avatar';
 import PaperclipIcon from '../../shared/ui/icons/Paperclip';
 import TwemojiInput, { TwemojiInputHandle } from '../../shared/emoji/TwemojiInput';
+import MessagesContainer from '../../features/messages/ui/MessagesContainer';
+import { messageStore } from '../../features/messages/model';
 
 const ChatPage = observer(() => {
   useChats();
@@ -47,6 +49,8 @@ const ChatPage = observer(() => {
   const inputRef = useRef<TwemojiInputHandle>(null);
   // Для расчёта порога и управления скроллбаром ввода
   const messagesRef = useRef<HTMLDivElement>(null);
+  const stickToBottomRef = useRef(true);
+  const pendingPrependAdjust = useRef<{ prevHeight: number; prevTop: number } | null>(null);
   const [inputMaxPx, setInputMaxPx] = useState<number | null>(null);
   const [inputScrollable, setInputScrollable] = useState(false);
 
@@ -119,6 +123,87 @@ const ChatPage = observer(() => {
 
   const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setStoriesCollapsed(e.currentTarget.scrollTop > 0);
+  };
+
+  // Инициализация скролла списка сообщений в самый низ при выборе чата
+  useEffect(() => {
+    const el = messagesRef.current;
+    if (!el) return;
+    // при смене чата — прижимаемся к низу
+    stickToBottomRef.current = true;
+    // сброс поля ввода и панели эмодзи
+    setMessage('');
+    setShowEmoji(false);
+    requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight;
+    });
+  }, [chatStore.selectedChatId]);
+
+  // Отслеживаем изменение размеров списка/контейнера, чтобы держаться низа
+  useEffect(() => {
+    const el = messagesRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      if (pendingPrependAdjust.current) {
+        const { prevHeight, prevTop } = pendingPrependAdjust.current;
+        // корректируем позицию, чтобы текущая видимая часть не "скакала"
+        const afterHeight = el.scrollHeight;
+        const delta = afterHeight - prevHeight;
+        el.scrollTop = prevTop + delta;
+        pendingPrependAdjust.current = null;
+        return;
+      }
+      if (stickToBottomRef.current) {
+        el.scrollTop = el.scrollHeight;
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Наблюдаем изменения контента, чтобы при первой загрузке/догрузке прилипать к низу
+  useEffect(() => {
+    const el = messagesRef.current;
+    if (!el) return;
+    const mo = new MutationObserver(() => {
+      if (stickToBottomRef.current) {
+        el.scrollTop = el.scrollHeight;
+      }
+    });
+    mo.observe(el, { childList: true, subtree: true });
+    // попытка прижаться сразу после монтирования контента
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (stickToBottomRef.current) el.scrollTop = el.scrollHeight;
+      });
+    });
+    return () => mo.disconnect();
+  }, []);
+
+  // Обработчик прокрутки в области сообщений: удержание низа и догрузка истории
+  const handleMessagesScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const nearBottom = el.scrollHeight - (el.scrollTop + el.clientHeight) < 32;
+    stickToBottomRef.current = nearBottom;
+    // Догрузка более старых сообщений при достижении верха
+    if (el.scrollTop <= 60 && chatStore.selectedChatId) {
+      const convId = chatStore.selectedChatId;
+      const prevHeight = el.scrollHeight;
+      const prevTop = el.scrollTop;
+      pendingPrependAdjust.current = { prevHeight, prevTop };
+      const hidden =
+        messageStore.getTotalCount(convId) - messageStore.getVisibleCount(convId);
+      if (hidden > 0) {
+        messageStore.increaseVisible(convId, Math.min(20, hidden));
+      } else {
+        void messageStore.loadOlder(convId, 30).then((fetched) => {
+          if (!fetched) {
+            // нечего догружать — ничего не делаем
+            pendingPrependAdjust.current = null;
+          }
+        });
+      }
+    }
   };
 
   useEffect(() => {
@@ -509,25 +594,12 @@ const ChatPage = observer(() => {
                   ))}
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto" ref={messagesRef}>
-                <div className="p-4 space-y-4 max-w-2xl mx-auto">
-                  {selected.messages.map((m) => (
-                    <div
-                      key={m.id}
-                      className={`flex ${
-                        m.sender === 'me' ? 'justify-end' : 'justify-start'
-                      }`}
-                    >
-                      <div
-                        className={`${
-                          m.sender === 'me' ? 'bg-blue-600' : 'bg-white/10'
-                        } rounded-lg px-4 py-2 max-w-xs`}
-                      >
-                        <TwemojiText text={m.text} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              <div
+                className="flex-1 overflow-y-auto hide-scrollbar"
+                ref={messagesRef}
+                onScroll={handleMessagesScroll}
+              >
+                <MessagesContainer conversationId={selected?.id ?? null} />
               </div>
               <div className="p-4 pb-5 flex justify-center">
                 <div className="flex items-end w-full max-w-2xl gap-2 relative">
