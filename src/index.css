@@ -259,9 +259,20 @@ button:focus-visible {
   } */
 }
 
-/* Twemoji sizing and emoji font fallback */
-.twemoji { width: 1.25em; height: 1.25em; vertical-align: -0.2em; }
-/*.emoji-text { font-family: "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",system-ui,sans-serif; }*/
+.emoji-text img,
+img.twemoji,
+.twemoji {
+  display: inline-block !important;
+  width: 1.25em;
+  height: 1.25em;
+  line-height: 1;
+  vertical-align: -0.2em;
+  /* на всякий случай, чтобы их не растягивало */
+  max-width: none;
+  unicode-bidi: plaintext;
+  pointer-events: none !important; 
+}
+
 /* placeholder для contentEditable */
 [contenteditable][data-placeholder]:empty::before {
   content: attr(data-placeholder);

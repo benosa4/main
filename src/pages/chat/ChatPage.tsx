@@ -45,6 +45,10 @@ const ChatPage = observer(() => {
 
   // 👉 ВАЖНО: реф для TwemojiInput внутри компонента
   const inputRef = useRef<TwemojiInputHandle>(null);
+  // Для расчёта порога и управления скроллбаром ввода
+  const messagesRef = useRef<HTMLDivElement>(null);
+  const [inputMaxPx, setInputMaxPx] = useState<number | null>(null);
+  const [inputScrollable, setInputScrollable] = useState(false);
 
   useEffect(() => {
     const el = storyRef.current;
@@ -68,18 +72,49 @@ const ChatPage = observer(() => {
     return () => el.removeEventListener('wheel', handle);
   }, []);
 
+  // Порог высоты ввода = половина высоты окна чата (списка сообщений)
+  useEffect(() => {
+    function recomputeThreshold() {
+      const cont = messagesRef.current;
+      if (!cont) return;
+      const half = Math.floor(cont.clientHeight / 2);
+      setInputMaxPx(half > 0 ? half : null);
+    }
+    recomputeThreshold();
+    const ro = new ResizeObserver(recomputeThreshold);
+    if (messagesRef.current) ro.observe(messagesRef.current);
+    window.addEventListener('resize', recomputeThreshold);
+    return () => {
+      window.removeEventListener('resize', recomputeThreshold);
+      ro.disconnect();
+    };
+  }, []);
+
+  // Контроль появления полосы прокрутки в поле ввода
+  useEffect(() => {
+    const el = inputRef.current?.getElement();
+    if (!el || !inputMaxPx) {
+      setInputScrollable(false);
+      return;
+    }
+    // Если содержимое превышает порог, включаем скроллбар
+    setInputScrollable(el.scrollHeight > inputMaxPx + 1);
+  }, [message, inputMaxPx]);
+
   // 👉 новый handleChange для TwemojiInput (строка)
   const handleChange = (v: string) => {
     setMessage(v);
   };
 
   // 👉 новый handleEmojiSelect: вставка в TwemojiInput, плюс обновление стейта
+  const ZWSP = '\u200B';
+
   const handleEmojiSelect = (emoji: Emoji & { native?: string }) => {
     const native = emoji.native || '';
     if (!native) return;
-    inputRef.current?.insert(native);
+    // вставляем эмодзи с разделителями: [ZWSP][EMOJI][ZWSP]
+    inputRef.current?.insert(`${ZWSP}${native}${ZWSP}`);
     inputRef.current?.focus();
-    setMessage((prev) => prev + native);
   };
 
   const handleChatScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -474,7 +509,7 @@ const ChatPage = observer(() => {
                   ))}
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto" ref={messagesRef}>
                 <div className="p-4 space-y-4 max-w-2xl mx-auto">
                   {selected.messages.map((m) => (
                     <div
@@ -510,6 +545,7 @@ const ChatPage = observer(() => {
                         <div
                           ref={emojiPickerRef}
                           className="absolute bottom-full left-0 mb-2 z-10"
+                          onMouseLeave={() => setShowEmoji(false)}
                         >
                           <EmojiPanel
                             onEmojiSelect={(native) =>
@@ -524,7 +560,8 @@ const ChatPage = observer(() => {
                       value={message}
                       onChange={handleChange}
                       placeholder="Message"
-                      className="bg-transparent max-h-40 overflow-auto"
+                      className={`bg-transparent ${inputScrollable ? 'overflow-y-auto scrollbar-custom' : 'overflow-hidden'}`}
+                      style={inputMaxPx ? { maxHeight: `${inputMaxPx}px` } : undefined}
                     />
                     <button className="text-xl ml-2 cursor-pointer" aria-label="Attachment">
                       <PaperclipIcon className="w-5 h-5" />

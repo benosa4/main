@@ -1,12 +1,14 @@
 // src/shared/emoji/twemojify.ts
+import twemoji from 'twemoji';
+
+// Берём ассеты с jsDelivr (в 14.0.2 лежат в assets/svg и assets/72x72)
 export const TWEMOJI_BASE =
-  'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/';
+  'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/';
 
 // Unicode → codepoint(s) "1f469-200d-1f4bb"
 export function toCodePoint(unicode: string, sep = '-') {
   const r: number[] = [];
-  let c = 0;
-  let p = 0;
+  let c = 0, p = 0;
   for (let i = 0; i < unicode.length; i++) {
     c = unicode.charCodeAt(i);
     if (p) {
@@ -32,15 +34,15 @@ export function emojiToPngUrl(unicode: string) {
 }
 
 export function toTwemojiHTML(text: string) {
-  const tw = (globalThis as any).twemoji;
-  if (!tw || typeof tw.parse !== 'function') {
+  try {
+    return twemoji.parse(text || '', {
+      base: TWEMOJI_BASE,
+      folder: 'svg',
+      ext: '.svg',
+      className: 'twemoji',
+    });
+  } catch {
     // Fallback: вернём текст без подмены (но не сломаем разметку)
     return (text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
-  return tw.parse(text, {
-    base: TWEMOJI_BASE,
-    folder: 'svg',
-    ext: '.svg',
-    className: 'twemoji'
-  });
 }
