@@ -86,6 +86,132 @@ This project uses React + TypeScript + Vite with a feature-sliced structure. Bel
 - `DraftDTO`: `{ conversationId: number, text: string }`.
 - `MessageModel`: see `src/entities/message/types.ts`.
 
+## API Design (REST vs NATS)
+
+This section outlines the production‑grade API surface: what runs over REST (CRUD, pagination, uploads) vs NATS (real‑time commands/events). The current app mocks parts of this; the plan below reflects the final target.
+
+### Principles
+
+- Transport split:
+  - REST: idempotent reads/writes, pagination, initial sync, file uploads/downloads, counters queries.
+  - NATS: real‑time fan‑out (new message, edits, deletes, reactions), transient signals (typing, presence), write‑commands with request/reply ack.
+- Auth: Keycloak OIDC; client attaches `Authorization: Bearer <token>` to REST and signs NATS connection (JWT) or uses a gateway.
+- IDs: All entities use stable IDs; messages have per‑conversation `seqNo` for ordering.
+
+### REST Endpoints
+
+- Conversations
+  - `GET /conversations`: list conversations for the user (filters: `type`, `q`).
+  - `GET /conversations/{id}`: conversation details, counters snapshot (unread, mentions).
+  - `GET /conversations/{id}/messages?limit&beforeId`: history pagination (ASC time), last‐page when only `limit`.
+  - `POST /conversations/{id}/read`: body `{ messageId }` marks read up to message; returns counters snapshot.
+  - `GET /conversations/{id}/counters`: `{ unread, mentions }`.
+
+- Messages
+  - `GET /messages/{id}`: single message.
+  - `POST /conversations/{id}/messages` (optional): server‑side enqueue; in our design, preferred path is NATS command; REST remains as fallback.
+  - `PATCH /messages/{id}`: edit text/attachments.
+  - `DELETE /messages/{id}`: delete for me or for everyone.
+
+- Reactions and Views
+  - `POST /messages/{id}/reactions`: body `{ emoji }`.
+  - `DELETE /messages/{id}/reactions`: body `{ emoji }`.
+  - `GET /messages/{id}/views`: `{ count, userIds? }` (with pagination if expanded).
+
+- Drafts (server‑side persistence)
+  - `PUT /conversations/{id}/draft`: body `{ text }` upserts or clears (empty text clears).
+  - `GET /conversations/{id}/draft`: `{ text } | { text: '' }`.
+
+- Stories
+  - `GET /stories`: list story headers for the user.
+  - `GET /stories/{id}`: full story payload (segments with media URLs), gated by ACL.
+  - `POST /stories/{id}/view`: body `{ segmentIds: [] }` marks viewed segments.
+
+- Files/Media
+  - `POST /files`: multipart upload or `POST /files/presign` then PUT to object storage.
+  - `GET /files/{id}`: serve file with proper ACL; supports `Range`.
+  - Thumbnails & image proxy handled by the media service; metadata on message attachments.
+
+### NATS Subjects (Commands + Events)
+
+- Message lifecycle
+  - Command: `chat.{conversationId}.send` → payload `{ id, text, attachments?, clientTs }` → Reply `{ ok, messageId, serverTs }`.
+  - Event: `chat.{conversationId}.message.created` → `{ message }` broadcast to participants.
+  - Event: `chat.{conversationId}.message.edited` / `.deleted`.
+
+- Reactions
+  - Command: `chat.{conversationId}.reaction.add` → `{ messageId, emoji }`.
+  - Command: `chat.{conversationId}.reaction.remove` → `{ messageId, emoji }`.
+  - Event: `chat.{conversationId}.reaction.updated` → full reactions list or delta.
+
+- Read/Typing/Presence
+  - Command: `chat.{conversationId}.read` → `{ messageId }`; Event: `chat.{conversationId}.read.receipt`.
+  - Event: `chat.{conversationId}.typing` → `{ userId, state: 'on'|'off' }` (ephemeral).
+  - Event: `presence.user` → `{ userId, state: 'online'|'offline'|'away' }`.
+
+- Counters
+  - Event: `chat.{conversationId}.counters.updated` → `{ unread, mentions }`.
+
+- Drafts (optional via NATS)
+  - Command: `chat.{conversationId}.draft.set` → `{ text }`; Command: `.draft.clear`.
+  - Event: `chat.{conversationId}.draft.updated` (if multi‑device sync required).
+
+- Stories
+  - Event: `stories.viewed` → `{ storyId, segmentIds, userId }` for analytics.
+
+Notes
+- Commands use request/reply (correlationId); events are fire‑and‑forget fan‑out.
+- The client path is: initial sync via REST (conversations + last page), then incremental updates via NATS.
+
+### Microservices (Suggested)
+
+- `gateway-service`: REST API gateway, JWT verification, presigned uploads.
+- `conversations-service`: CRUD, membership, counters aggregation hooks.
+- `messages-service`: append/edit/delete messages, history pagination, indexing.
+- `reactions-service`: add/remove reactions, dedupe, totals.
+- `read-receipts-service`: read‑up‑to logic per user per conversation.
+- `counters-service`: unread/mentions aggregation and push.
+- `stories-service`: stories feed, segments, views tracking.
+- `media-service`: file uploads/storage, thumbnails, URL signing.
+- `drafts-service`: server‑side drafts (optional), multi‑device sync.
+- `presence-service`: user presence + typing signals.
+- `search-service` (optional): full‑text search over messages.
+- `notifications-service` (optional): push delivery.
+- Infra: `nats` cluster, object storage (S3‑compatible), DB (SQL/NoSQL), Keycloak.
+
+### Payload Types (JSON)
+
+- Message (event)
+```
+{
+  "id": "m-123",
+  "conversationId": 42,
+  "seqNo": 101,
+  "sender": { "id": "u1", "name": "Alice" },
+  "text": "Hello",
+  "attachments": [{ "id": "f1", "type": "image", "url": "...", "width": 320, "height": 180 }],
+  "reactions": [{ "emoji": "👍", "count": 2 }],
+  "views": { "count": 5 },
+  "createdAt": "2024-01-01T12:34:56Z"
+}
+```
+
+- Send command
+```
+{
+  "id": "client-uuid",
+  "text": "Hi",
+  "attachments": [],
+  "clientTs": 1700000000000
+}
+```
+
+### Client Sync Strategy
+
+- On app start: REST fetch conversations + last page of messages; seed IndexedDB.
+- Subscribe via NATS to per‑conversation subjects; apply events to IndexedDB and in‑memory store.
+- Use REST for history pagination and on reconnect (gap recovery).
+
 - The scroll container lives in `ChatPage` around `MessagesContainer`.
 - On chat change, the container scrolls to bottom and sets an “anchor-to-bottom” flag.
 - A `ResizeObserver` tracks content/viewport changes; if anchored, the list stays pinned to the bottom as new messages arrive or the input grows.
