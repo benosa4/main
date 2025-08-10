@@ -38,7 +38,8 @@ class AppSettingsStore {
         menuStore.version = merged.version;
         this.applyEffects();
       });
-      if (!dto) await this.persist();
+      // Всегда записываем актуальные настройки, чтобы точно существовала запись
+      await this.persist();
     } finally {
       this.loading = false;
     }
@@ -100,4 +101,3 @@ export function useAppSettings() {
   }
   return appSettingsStore;
 }
-
