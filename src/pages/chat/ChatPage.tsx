@@ -20,17 +20,12 @@ import PaperclipIcon from '../../shared/ui/icons/Paperclip';
 import TwemojiInput, { TwemojiInputHandle } from '../../shared/emoji/TwemojiInput';
 import MessagesContainer from '../../features/messages/ui/MessagesContainer';
 import { messageStore } from '../../features/messages/model';
-import { appSettingsStore } from '../../shared/config/appSettings';
 
 const ChatPage = observer(() => {
   useChats();
   useMenu();
   useStories();
   useChatTabs();
-  // Инициализация настроек приложения (тема/анимации/версия)
-  useEffect(() => {
-    appSettingsStore.init().catch(() => {});
-  }, []);
 
   const [search, setSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -351,7 +346,7 @@ const ChatPage = observer(() => {
     <LayoutWithFloatingBg noFrame>
       <div
         className={`flex h-screen text-white relative ${
-          menuStore.version === 'A' ? 'mx-0 w-full' : 'mx-[2cm] w-[calc(100%-4cm)]'
+          appSettingsStore.state.version === 'A' ? 'mx-0 w-full' : 'mx-[2cm] w-[calc(100%-4cm)]'
         }`}
         data-testid="chat-page-container"
       >
@@ -414,7 +409,21 @@ const ChatPage = observer(() => {
                       }}
                     >
                       <span>{item.icon}</span>
-                      <span>{item.label}</span>
+                      <span>
+                        {item.id === 'version'
+                          ? appSettingsStore.state.version === 'K'
+                            ? 'Переключить в А версию'
+                            : 'Переключить в К версию'
+                          : item.id === 'dark'
+                            ? appSettingsStore.state.theme === 'dark'
+                              ? 'Включить светлый режим'
+                              : 'Включить темный режим'
+                            : item.id === 'anim'
+                              ? appSettingsStore.state.animations
+                                ? 'Выключить анимацию'
+                                : 'Включить анимацию'
+                              : item.label}
+                      </span>
                     </div>
                   ))
                 : menuStore.renderedItems.map((item) => (
@@ -457,7 +466,21 @@ const ChatPage = observer(() => {
                               }}
                             >
                               <span>{child.icon}</span>
-                              <span>{child.label}</span>
+                              <span>
+                                {child.id === 'version'
+                                  ? appSettingsStore.state.version === 'K'
+                                    ? 'Переключить в А версию'
+                                    : 'Переключить в К версию'
+                                  : child.id === 'dark'
+                                    ? appSettingsStore.state.theme === 'dark'
+                                      ? 'Включить светлый режим'
+                                      : 'Включить темный режим'
+                                    : child.id === 'anim'
+                                      ? appSettingsStore.state.animations
+                                        ? 'Выключить анимацию'
+                                        : 'Включить анимацию'
+                                      : child.label}
+                              </span>
                             </div>
                           ))}
                         </div>

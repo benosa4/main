@@ -1,7 +1,6 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import type { AppSettingsDTO } from '../db';
 import { loadAppSettingsFromDB, saveAppSettingsToDB } from '../db';
-import { menuStore } from '../../features/menu/model';
 
 export type ThemeMode = 'dark' | 'light';
 
@@ -34,8 +33,6 @@ class AppSettingsStore {
         : { ...DEFAULTS };
       runInAction(() => {
         this.state = merged;
-        // sync menu version
-        menuStore.version = merged.version;
         this.applyEffects();
       });
       // Всегда записываем актуальные настройки, чтобы точно существовала запись
@@ -83,7 +80,6 @@ class AppSettingsStore {
 
   setVersion(v: 'A' | 'K') {
     this.state.version = v;
-    menuStore.version = v;
     void this.persist();
   }
 
