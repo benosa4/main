@@ -1,5 +1,5 @@
 const DB_NAME = 'chat-app';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 function getDB(): Promise<IDBDatabase> {
