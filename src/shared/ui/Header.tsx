@@ -1,6 +1,7 @@
 import { Navbar } from './Navbar';
 import { observer } from 'mobx-react-lite'
 import { natsStore } from '../nats/model'
+import { appSettingsStore } from '../config/appSettings'
 
 const StatusDot = observer(() => {
   const m = {
@@ -19,6 +20,7 @@ const StatusDot = observer(() => {
 })
 
 export const Header = observer(function Header() {
+  const version = appSettingsStore.state.version;
   return (
     <header className="w-full flex items-center justify-between px-8 py-5 
       bg-white/15 backdrop-blur-xl border-b border-white/10 shadow-sm">
@@ -41,6 +43,9 @@ export const Header = observer(function Header() {
       </div>
 
       <div className="flex items-center gap-6">
+        <div className="px-2 py-1 text-xs rounded-md bg-white/10 border border-white/10 text-white/90">
+          Версия: <span className="font-semibold">{version}</span>
+        </div>
         <StatusDot />
         <Navbar />
       </div>
