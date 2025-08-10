@@ -392,14 +392,16 @@ const ChatPage = observer(() => {
               }}
               className="absolute top-12 left-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-20 text-sm text-black"
             >
-              {menuStore.version === 'A'
+              {appSettingsStore.state.version === 'A'
                 ? menuStore.flattenedItems.map((item) => (
                     <div
                       key={item.id}
                       className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
                       onClick={() => {
                         if (item.id === 'version') {
-                          appSettingsStore.toggleVersion();
+                          const next = appSettingsStore.state.version === 'K' ? 'A' : 'K';
+                          appSettingsStore.setVersion(next);
+                          menuStore.version = next;
                         } else if (item.id === 'dark') {
                           appSettingsStore.toggleTheme();
                         } else if (item.id === 'anim') {
@@ -439,7 +441,9 @@ const ChatPage = observer(() => {
                         onClick={() => {
                           if (item.id === 'more') return;
                           if (item.id === 'version') {
-                            appSettingsStore.toggleVersion();
+                            const next = appSettingsStore.state.version === 'K' ? 'A' : 'K';
+                            appSettingsStore.setVersion(next);
+                            menuStore.version = next;
                           } else if (item.id === 'dark') {
                             appSettingsStore.toggleTheme();
                           } else if (item.id === 'anim') {
@@ -460,7 +464,13 @@ const ChatPage = observer(() => {
                               className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
                               onClick={() => {
                                 if (child.id === 'version') {
-                                  menuStore.toggleVersion();
+                                  const next = appSettingsStore.state.version === 'K' ? 'A' : 'K';
+                                  appSettingsStore.setVersion(next);
+                                  menuStore.version = next;
+                                } else if (child.id === 'dark') {
+                                  appSettingsStore.toggleTheme();
+                                } else if (child.id === 'anim') {
+                                  appSettingsStore.toggleAnimations();
                                 }
                                 setMenuOpen(false);
                                 setMoreOpen(false);
