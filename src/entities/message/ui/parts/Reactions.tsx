@@ -3,20 +3,24 @@ import type { MessageReaction } from '../../types';
 
 export interface ReactionsProps {
   reactions?: MessageReaction[];
+  onToggle?: (emoji: string) => void;
 }
 
-const Reactions: React.FC<ReactionsProps> = ({ reactions }) => {
+const Reactions: React.FC<ReactionsProps> = ({ reactions, onToggle }) => {
   if (!reactions || reactions.length === 0) return null;
   return (
     <div className="flex gap-1 mt-1">
       {reactions.map((r) => (
-        <span key={r.emoji} className="text-xs bg-white/10 px-1 rounded-full">
+        <button
+          key={r.emoji}
+          className="text-xs bg-white/10 hover:bg-white/20 px-1 rounded-full cursor-pointer"
+          onClick={() => onToggle?.(r.emoji)}
+        >
           {r.emoji} {r.count}
-        </span>
+        </button>
       ))}
     </div>
   );
 };
 
 export default Reactions;
-

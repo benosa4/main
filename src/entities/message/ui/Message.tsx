@@ -4,6 +4,7 @@ import MessageContent from './parts/MessageContent';
 import MessageMeta from './parts/MessageMeta';
 import ActionButton from './parts/ActionButton';
 import QuickReaction from './parts/QuickReaction';
+import { messageStore } from '../../../features/messages/model';
 import SvgAppendix from './parts/SvgAppendix';
 import Reactions from './parts/Reactions';
 
@@ -23,16 +24,18 @@ const Message: React.FC<MessageProps> = ({ message }) => {
           <div className={`mt-1 flex ${mine ? 'justify-end' : 'justify-start'}`}>
             <MessageMeta createdAtISO={message.createdAt} views={message.views?.count} />
           </div>
-          <Reactions reactions={message.reactions} />
+          <Reactions
+            reactions={message.reactions}
+            onToggle={(emoji) => messageStore.toggleReaction(message.conversationId, message.id, emoji)}
+          />
         </div>
         {mine && <ActionButton />}
       </div>
       <div className={`${mine ? 'mr-2' : 'ml-2'}`}>
-        <QuickReaction />
+        <QuickReaction onReact={(emoji) => messageStore.toggleReaction(message.conversationId, message.id, emoji)} />
       </div>
     </div>
   );
 };
 
 export default Message;
-

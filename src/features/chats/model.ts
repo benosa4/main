@@ -37,6 +37,12 @@ class ChatStore {
     appSettingsStore.setLastConversation(id);
     // Имитация загрузки истории сообщений по API
     this.loadMessages(id).catch(() => {})
+    // Сбросить непрочитанные для выбранного чата (mock read receipt)
+    const i = this.chats.findIndex((c) => c.id === id);
+    if (i >= 0) {
+      this.chats[i] = { ...this.chats[i], unread: 0 };
+      void saveChatsToDB(this.chats);
+    }
   }
 
   get selectedChat(): Chat | undefined {

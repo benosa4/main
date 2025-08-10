@@ -54,6 +54,8 @@ const ChatPage = observer(() => {
   const pendingPrependAdjust = useRef<{ prevHeight: number; prevTop: number } | null>(null);
   const [inputMaxPx, setInputMaxPx] = useState<number | null>(null);
   const [inputScrollable, setInputScrollable] = useState(false);
+  const [attachments, setAttachments] = useState<{ id: string; url: string; type: 'image'|'file'; name?: string }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const el = storyRef.current;
@@ -116,6 +118,15 @@ const ChatPage = observer(() => {
       import('../../shared/db').then(({ saveDraftToRemote }) => saveDraftToRemote({ conversationId: convId, text: v })).catch(() => {});
     }
   };
+
+  // typing indicator mock (local)
+  useEffect(() => {
+    const convId = chatStore.selectedChatId;
+    if (!convId) return;
+    if (message) messageStore.setTyping(convId, true);
+    const t = setTimeout(() => messageStore.setTyping(convId, false), 1200);
+    return () => clearTimeout(t);
+  }, [message, chatStore.selectedChatId]);
 
   // 👉 новый handleEmojiSelect: вставка в TwemojiInput, плюс обновление стейта
   const ZWSP = '\u200B';
@@ -624,7 +635,9 @@ const ChatPage = observer(() => {
                 <div className="flex flex-col">
                   <span className="font-semibold">{selected.name}</span>
                   <span className="text-sm text-white/70">
-                    {natsStore.status !== 'connected' ? (
+                    {messageStore.isTyping(selected.id) ? (
+                      'печатает…'
+                    ) : natsStore.status !== 'connected' ? (
                       <StatusText label="connecting" />
                     ) : chatStore.updating ? (
                       <StatusText label="updating" />
@@ -667,6 +680,23 @@ const ChatPage = observer(() => {
               <div className="p-4 pb-5 flex justify-center">
                 <div className="flex items-end w-full max-w-2xl gap-2 relative">
                   <div className="flex items-end flex-1 bg-white/5 rounded-lg px-4 py-2 relative">
+                    {attachments.length > 0 && (
+                      <div className="absolute -top-20 left-0 right-0 px-2 py-1 flex gap-2 overflow-x-auto hide-scrollbar">
+                        {attachments.map((a) => (
+                          <div key={a.id} className="relative">
+                            {a.type === 'image' ? (
+                              <img src={a.url} className="h-16 w-auto rounded-md border border-white/10" />
+                            ) : (
+                              <a href={a.url} target="_blank" className="underline text-xs" rel="noreferrer">{a.name || 'file'}</a>
+                            )}
+                            <button
+                              className="absolute -top-2 -right-2 w-5 h-5 bg-red-600 rounded-full text-xs"
+                              onClick={() => setAttachments((arr) => arr.filter((x) => x.id !== a.id))}
+                            >×</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="relative">
                       <button
                         ref={emojiBtnRef}
@@ -698,7 +728,39 @@ const ChatPage = observer(() => {
                       className={`bg-transparent ${inputScrollable ? 'overflow-y-auto scrollbar-custom' : 'overflow-hidden'}`}
                       style={inputMaxPx ? { maxHeight: `${inputMaxPx}px` } : undefined}
                     />
-                    <button className="text-xl ml-2 cursor-pointer" aria-label="Attachment">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*,application/pdf"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const f = e.target.files?.[0];
+                        if (!f) return;
+                        const { presignForUpload } = await import('../../shared/media/api');
+                        const { fileUrl } = await presignForUpload({ filename: f.name, mime: f.type });
+                        // For mock, use local data URL as preview
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          setAttachments((arr) => [
+                            ...arr,
+                            {
+                              id: `${Date.now()}`,
+                              url: (reader.result as string) || fileUrl,
+                              type: f.type.startsWith('image/') ? 'image' : 'file',
+                              name: f.name,
+                            },
+                          ]);
+                        };
+                        reader.readAsDataURL(f);
+                        // In real case, PUT to presigned URL here.
+                        e.currentTarget.value = '';
+                      }}
+                    />
+                    <button
+                      className="text-xl ml-2 cursor-pointer"
+                      aria-label="Attachment"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
                       <PaperclipIcon className="w-5 h-5" />
                     </button>
                   </div>
@@ -707,9 +769,15 @@ const ChatPage = observer(() => {
                     onClick={async () => {
                       const convId = chatStore.selectedChatId;
                       const text = message.trim();
-                      if (!convId || !text) return;
-                      await messageStore.sendMessage(convId, text);
+                      if (!convId || (!text && attachments.length === 0)) return;
+                      await messageStore.sendMessage(convId, text, attachments.map((a, idx) => ({
+                        id: `${Date.now()}-${idx}`,
+                        type: a.type,
+                        url: a.url,
+                        name: a.name,
+                      })) as any);
                       setMessage('');
+                      setAttachments([]);
                       // remove draft locally and remotely
                       import('../../shared/db').then(({ deleteDraftFromDB }) => deleteDraftFromDB(convId)).catch(() => {});
                       import('../../shared/db').then(({ deleteDraftFromRemote }) => deleteDraftFromRemote(convId)).catch(() => {});

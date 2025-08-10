@@ -19,6 +19,7 @@ class MessageStore {
   // number of visible messages per conversation (tail window from the end)
   visibleCountByConversation = new Map<number, number>();
   defaultPageSize = 30;
+  typingByConversation = new Map<number, boolean>();
 
   constructor() {
     makeAutoObservable(this);
@@ -121,7 +122,7 @@ class MessageStore {
     return older.length;
   }
 
-  async sendMessage(conversationId: number, text: string) {
+  async sendMessage(conversationId: number, text: string, attachments?: MessageModel['attachments']) {
     const existing = this.messagesByConversation.get(conversationId) || [];
     const last = existing[existing.length - 1];
     const seqNo = (last?.seqNo ?? 0) + 1;
@@ -134,6 +135,7 @@ class MessageStore {
       sender: 'me',
       text,
       createdAt,
+      attachments,
       reactions: [],
       views: { count: 0 },
       prevId: last?.id,
@@ -151,6 +153,40 @@ class MessageStore {
     // mock publish via NATS
     await publishMessage(`chat.${conversationId}.send`, { id, conversationId, text, createdAt });
     return msg;
+  }
+
+  toggleReaction(conversationId: number, messageId: string, emoji: string) {
+    const list = this.messagesByConversation.get(conversationId) || [];
+    const idx = list.findIndex((m) => m.id === messageId);
+    if (idx < 0) return;
+    const cur = list[idx];
+    const reactions = [...(cur.reactions || [])];
+    const rIdx = reactions.findIndex((r) => r.emoji === emoji);
+    if (rIdx >= 0) {
+      const nextCount = Math.max(0, reactions[rIdx].count - 1);
+      if (nextCount === 0) reactions.splice(rIdx, 1);
+      else reactions[rIdx] = { ...reactions[rIdx], count: nextCount };
+    } else {
+      reactions.push({ emoji, count: 1, byUserIds: [] });
+    }
+    const next = { ...cur, reactions } as MessageModel;
+    const newList = [...list];
+    newList[idx] = next;
+    runInAction(() => {
+      this.messagesByConversation.set(conversationId, newList);
+      this._recomputeGroups(conversationId);
+    });
+    void putMessagesToDB([next]);
+    void publishMessage(`chat.${conversationId}.reaction.toggle`, { messageId, emoji });
+  }
+
+  setTyping(conversationId: number, state: boolean) {
+    this.typingByConversation.set(conversationId, state);
+    void publishMessage(`chat.${conversationId}.typing`, { state });
+  }
+
+  isTyping(conversationId: number): boolean {
+    return this.typingByConversation.get(conversationId) || false;
   }
 }
 
