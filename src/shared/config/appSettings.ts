@@ -89,6 +89,7 @@ class AppSettingsStore {
 }
 
 export const appSettingsStore = new AppSettingsStore();
+export default appSettingsStore;
 
 export function useAppSettings() {
   // lightweight hook for init from pages

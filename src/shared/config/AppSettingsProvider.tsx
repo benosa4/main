@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { appSettingsStore } from './appSettings';
+import appSettingsStore from './appSettings';
+import { menuStore } from '../../features/menu/model';
 
 export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [ready, setReady] = useState(false);
@@ -12,8 +13,15 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
       .finally(() => {
         if (mounted) setReady(true);
       });
+    // sync version to menu when store changes (rudimentary)
+    const id = setInterval(() => {
+      if (menuStore.version !== appSettingsStore.state.version) {
+        menuStore.version = appSettingsStore.state.version;
+      }
+    }, 250);
     return () => {
       mounted = false;
+      clearInterval(id);
     };
   }, []);
 
@@ -22,4 +30,3 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
 };
 
 export default AppSettingsProvider;
-

@@ -11,6 +11,7 @@ import { useChatTabs } from '../../features/chat-tabs/hooks';
 import { chatTabsStore } from '../../features/chat-tabs/model';
 import { useMenu } from '../../features/menu/hooks';
 import { menuStore } from '../../features/menu/model';
+import appSettingsStore from '../../shared/config/appSettings';
 import { useStories } from '../../features/stories/hooks';
 import { storyStore } from '../../features/stories/model';
 import { natsStore } from '../../shared/nats/model';
