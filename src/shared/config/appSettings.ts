@@ -8,12 +8,14 @@ export interface AppSettingsState {
   theme: ThemeMode;
   animations: boolean;
   version: 'A' | 'K';
+  lastConversationId?: number | null;
 }
 
 const DEFAULTS: AppSettingsState = {
   theme: 'dark',
   animations: true,
   version: 'K',
+  lastConversationId: null,
 };
 
 class AppSettingsStore {
@@ -29,7 +31,7 @@ class AppSettingsStore {
     try {
       const dto = await loadAppSettingsFromDB();
       const merged: AppSettingsState = dto
-        ? { theme: dto.theme, animations: dto.animations, version: dto.version }
+        ? { theme: dto.theme, animations: dto.animations, version: dto.version, lastConversationId: dto.lastConversationId ?? null }
         : { ...DEFAULTS };
       runInAction(() => {
         this.state = merged;
@@ -54,6 +56,7 @@ class AppSettingsStore {
       theme: this.state.theme,
       animations: this.state.animations,
       version: this.state.version,
+      lastConversationId: this.state.lastConversationId ?? null,
     };
     await saveAppSettingsToDB(dto);
   }
@@ -85,6 +88,11 @@ class AppSettingsStore {
 
   toggleVersion() {
     this.setVersion(this.state.version === 'K' ? 'A' : 'K');
+  }
+
+  setLastConversation(id: number | null) {
+    this.state.lastConversationId = id ?? null;
+    void this.persist();
   }
 }
 

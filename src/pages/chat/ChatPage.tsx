@@ -109,6 +109,12 @@ const ChatPage = observer(() => {
   // 👉 новый handleChange для TwemojiInput (строка)
   const handleChange = (v: string) => {
     setMessage(v);
+    const convId = chatStore.selectedChatId;
+    if (convId) {
+      // persist draft locally and to mock remote (debounced by browser event queue)
+      import('../../shared/db').then(({ saveDraftToDB }) => saveDraftToDB({ conversationId: convId, text: v })).catch(() => {});
+      import('../../shared/db').then(({ saveDraftToRemote }) => saveDraftToRemote({ conversationId: convId, text: v })).catch(() => {});
+    }
   };
 
   // 👉 новый handleEmojiSelect: вставка в TwemojiInput, плюс обновление стейта
@@ -135,6 +141,16 @@ const ChatPage = observer(() => {
     // сброс поля ввода и панели эмодзи
     setMessage('');
     setShowEmoji(false);
+    // загрузить драфт для текущей переписки
+    if (chatStore.selectedChatId) {
+      const id = chatStore.selectedChatId;
+      import('../../shared/db')
+        .then(({ loadDraftFromDB }) => loadDraftFromDB(id))
+        .then((d) => {
+          if (d && typeof d.text === 'string') setMessage(d.text);
+        })
+        .catch(() => {});
+    }
     requestAnimationFrame(() => {
       el.scrollTop = el.scrollHeight;
     });
@@ -686,7 +702,21 @@ const ChatPage = observer(() => {
                       <PaperclipIcon className="w-5 h-5" />
                     </button>
                   </div>
-                  <button className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center cursor-pointer">✈️</button>
+                  <button
+                    className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center cursor-pointer"
+                    onClick={async () => {
+                      const convId = chatStore.selectedChatId;
+                      const text = message.trim();
+                      if (!convId || !text) return;
+                      await messageStore.sendMessage(convId, text);
+                      setMessage('');
+                      // remove draft locally and remotely
+                      import('../../shared/db').then(({ deleteDraftFromDB }) => deleteDraftFromDB(convId)).catch(() => {});
+                      import('../../shared/db').then(({ deleteDraftFromRemote }) => deleteDraftFromRemote(convId)).catch(() => {});
+                    }}
+                  >
+                    ✈️
+                  </button>
                 </div>
               </div>
             </>

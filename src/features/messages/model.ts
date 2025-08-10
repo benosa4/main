@@ -2,6 +2,8 @@ import { makeAutoObservable, runInAction } from 'mobx';
 import type { MessageModel } from '../../entities/message/types';
 import { fetchMessages, fetchMessagesBefore, ensureMockSeeded } from './api';
 import { groupByDate } from '../../shared/utils/dateGroups';
+import { putMessagesToDB } from '../../shared/db';
+import { publishMessage } from '../../shared/nats/api';
 
 export interface MessageGroup {
   key: string;
@@ -117,6 +119,38 @@ class MessageStore {
       this._recomputeGroups(conversationId);
     });
     return older.length;
+  }
+
+  async sendMessage(conversationId: number, text: string) {
+    const existing = this.messagesByConversation.get(conversationId) || [];
+    const last = existing[existing.length - 1];
+    const seqNo = (last?.seqNo ?? 0) + 1;
+    const id = `${conversationId}-${Date.now()}`;
+    const createdAt = new Date().toISOString();
+    const msg: MessageModel = {
+      id,
+      conversationId,
+      seqNo,
+      sender: 'me',
+      text,
+      createdAt,
+      reactions: [],
+      views: { count: 0 },
+      prevId: last?.id,
+    };
+    // optimistic local insert
+    const merged = [...existing, msg];
+    runInAction(() => {
+      this.messagesByConversation.set(conversationId, merged);
+      const curVis = this.getVisibleCount(conversationId);
+      const nextVis = Math.max(curVis, merged.length);
+      this.visibleCountByConversation.set(conversationId, nextVis);
+      this._recomputeGroups(conversationId);
+    });
+    await putMessagesToDB([msg]);
+    // mock publish via NATS
+    await publishMessage(`chat.${conversationId}.send`, { id, conversationId, text, createdAt });
+    return msg;
   }
 }
 

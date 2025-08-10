@@ -1,5 +1,5 @@
 const DB_NAME = 'chat-app';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 function getDB(): Promise<IDBDatabase> {
@@ -32,6 +32,12 @@ function getDB(): Promise<IDBDatabase> {
         }
         if (!db.objectStoreNames.contains('settings')) {
           db.createObjectStore('settings', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('drafts')) {
+          db.createObjectStore('drafts', { keyPath: 'conversationId' });
+        }
+        if (!db.objectStoreNames.contains('drafts_remote')) {
+          db.createObjectStore('drafts_remote', { keyPath: 'conversationId' });
         }
       };
       request.onsuccess = () => resolve(request.result);
@@ -168,6 +174,7 @@ export interface AppSettingsDTO {
   theme: 'dark' | 'light';
   animations: boolean;
   version: 'A' | 'K';
+  lastConversationId?: number | null;
 }
 
 export async function loadAppSettingsFromDB(): Promise<AppSettingsDTO | null> {
@@ -187,6 +194,72 @@ export async function saveAppSettingsToDB(settings: AppSettingsDTO): Promise<voi
     const tx = db.transaction('settings', 'readwrite');
     const store = tx.objectStore('settings');
     store.put({ ...settings });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// Drafts (local)
+export interface DraftDTO { conversationId: number; text: string }
+
+export async function loadDraftFromDB(conversationId: number): Promise<DraftDTO | null> {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('drafts', 'readonly');
+    const store = tx.objectStore('drafts');
+    const req = store.get(conversationId);
+    req.onsuccess = () => resolve((req.result as DraftDTO) || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function saveDraftToDB(draft: DraftDTO): Promise<void> {
+  const db = await getDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('drafts', 'readwrite');
+    tx.objectStore('drafts').put(draft);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function deleteDraftFromDB(conversationId: number): Promise<void> {
+  const db = await getDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('drafts', 'readwrite');
+    tx.objectStore('drafts').delete(conversationId);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// Drafts (mock remote)
+export async function loadDraftFromRemote(conversationId: number): Promise<DraftDTO | null> {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('drafts_remote', 'readonly');
+    const store = tx.objectStore('drafts_remote');
+    const req = store.get(conversationId);
+    req.onsuccess = () => resolve((req.result as DraftDTO) || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function saveDraftToRemote(draft: DraftDTO): Promise<void> {
+  const db = await getDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('drafts_remote', 'readwrite');
+    tx.objectStore('drafts_remote').put(draft);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function deleteDraftFromRemote(conversationId: number): Promise<void> {
+  const db = await getDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('drafts_remote', 'readwrite');
+    tx.objectStore('drafts_remote').delete(conversationId);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });

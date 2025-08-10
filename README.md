@@ -36,6 +36,10 @@ This project uses React + TypeScript + Vite with a feature-sliced structure. Bel
   - `loadMessagesByConversation({ conversationId, limit, beforeId })` — returns messages sorted by time ASC; supports pagination:
     - last page: pass `limit` only to fetch the last N messages;
     - older page: pass `beforeId` + `limit` to fetch N messages older than `beforeId`.
+  - `settings` store (id: `app`): `{ theme, animations, version, lastConversationId }` — persisted app settings and last opened chat.
+  - Drafts:
+    - local drafts store `drafts` with key `conversationId` and shape `{ conversationId, text }`.
+    - mock-remote drafts store `drafts_remote` (used by the mocked API below).
 
 ## Background Seeding and Sync
 
@@ -54,6 +58,33 @@ This project uses React + TypeScript + Vite with a feature-sliced structure. Bel
   - A light polling reload keeps the cache in sync with background inserts.
 
 ## Scroll Anchoring and Infinite Load
+
+## Drafts and Sending Flow
+
+- Drafts persistence:
+  - On every input change, the current draft `{ conversationId, text }` is saved to IndexedDB (`drafts`) and mirrored to a mock remote store via API.
+  - When switching to a conversation, the local draft is loaded and prefilled into the input.
+  - On successful send, the draft is cleared locally and in the mock remote store.
+
+- Sending messages:
+  - The send button calls `messageStore.sendMessage(conversationId, text)` which:
+    - creates an optimistic `MessageModel` with `sender='me'` and appends it to the UI,
+    - persists it to IndexedDB `messages`,
+    - publishes to NATS mock API (`publishMessage('chat.{id}.send', payload)`).
+
+## Mock APIs
+
+- NATS mock (`src/shared/nats/api.ts`):
+  - `publishMessage(subject, payload)` — logs to `natsStore` and resolves after small delay; used by sending flow.
+
+- Drafts mock (piggybacks on IndexedDB):
+  - `saveDraftToRemote`, `loadDraftFromRemote`, `deleteDraftFromRemote` — use a separate store `drafts_remote` to emulate server-side draft persistence.
+
+## Types
+
+- `AppSettingsDTO`: `{ id: 'app', theme: 'dark'|'light', animations: boolean, version: 'A'|'K', lastConversationId?: number|null }`.
+- `DraftDTO`: `{ conversationId: number, text: string }`.
+- `MessageModel`: see `src/entities/message/types.ts`.
 
 - The scroll container lives in `ChatPage` around `MessagesContainer`.
 - On chat change, the container scrolls to bottom and sets an “anchor-to-bottom” flag.

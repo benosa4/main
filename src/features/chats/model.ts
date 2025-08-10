@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { Chat, fetchChats } from './api';
 import { loadChatsFromDB, saveChatsToDB } from '../../shared/db';
+import appSettingsStore from '../../shared/config/appSettings';
 
 class ChatStore {
   chats: Chat[] = [];
@@ -22,7 +23,9 @@ class ChatStore {
         await saveChatsToDB(this.chats);
       }
       if (this.chats.length && this.selectedChatId === null) {
-        this.selectedChatId = this.chats[0].id;
+        const preferred = appSettingsStore.state.lastConversationId;
+        const exists = this.chats.find((c) => c.id === preferred);
+        this.selectedChatId = exists ? exists.id : this.chats[0].id;
       }
     } finally {
       this.updating = false;
@@ -31,6 +34,7 @@ class ChatStore {
 
   selectChat(id: number) {
     this.selectedChatId = id;
+    appSettingsStore.setLastConversation(id);
     // Имитация загрузки истории сообщений по API
     this.loadMessages(id).catch(() => {})
   }
