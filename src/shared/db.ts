@@ -30,6 +30,9 @@ function getDB(): Promise<IDBDatabase> {
             // index creation may fail on some browsers; ignore
           }
         }
+        if (!db.objectStoreNames.contains('settings')) {
+          db.createObjectStore('settings', { keyPath: 'id' });
+        }
       };
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
@@ -156,5 +159,35 @@ export async function loadMessagesByConversation({ conversationId, limit, before
       resolve(res as any);
     };
     request.onerror = () => reject(request.error);
+  });
+}
+
+// App Settings
+export interface AppSettingsDTO {
+  id: 'app';
+  theme: 'dark' | 'light';
+  animations: boolean;
+  version: 'A' | 'K';
+}
+
+export async function loadAppSettingsFromDB(): Promise<AppSettingsDTO | null> {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('settings', 'readonly');
+    const store = tx.objectStore('settings');
+    const req = store.get('app');
+    req.onsuccess = () => resolve((req.result as AppSettingsDTO) || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function saveAppSettingsToDB(settings: AppSettingsDTO): Promise<void> {
+  const db = await getDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('settings', 'readwrite');
+    const store = tx.objectStore('settings');
+    store.put({ ...settings });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
   });
 }

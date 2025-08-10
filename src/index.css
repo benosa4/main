@@ -259,6 +259,14 @@ button:focus-visible {
   } */
 }
 
+/* App settings attribute hooks */
+html[data-animations="off"] * { animation: none !important; transition: none !important; }
+html[data-theme="light"] body {
+  background-image: none !important;
+  background-color: #f8fafc !important;
+  color: #213547;
+}
+
 .emoji-text img,
 img.twemoji,
 .twemoji {

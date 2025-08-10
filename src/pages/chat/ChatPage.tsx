@@ -20,12 +20,17 @@ import PaperclipIcon from '../../shared/ui/icons/Paperclip';
 import TwemojiInput, { TwemojiInputHandle } from '../../shared/emoji/TwemojiInput';
 import MessagesContainer from '../../features/messages/ui/MessagesContainer';
 import { messageStore } from '../../features/messages/model';
+import { appSettingsStore } from '../../shared/config/appSettings';
 
 const ChatPage = observer(() => {
   useChats();
   useMenu();
   useStories();
   useChatTabs();
+  // Инициализация настроек приложения (тема/анимации/версия)
+  useEffect(() => {
+    appSettingsStore.init().catch(() => {});
+  }, []);
 
   const [search, setSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -398,7 +403,11 @@ const ChatPage = observer(() => {
                       className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
                       onClick={() => {
                         if (item.id === 'version') {
-                          menuStore.toggleVersion();
+                          appSettingsStore.toggleVersion();
+                        } else if (item.id === 'dark') {
+                          appSettingsStore.toggleTheme();
+                        } else if (item.id === 'anim') {
+                          appSettingsStore.toggleAnimations();
                         }
                         setMenuOpen(false);
                         setMoreOpen(false);
@@ -420,7 +429,11 @@ const ChatPage = observer(() => {
                         onClick={() => {
                           if (item.id === 'more') return;
                           if (item.id === 'version') {
-                            menuStore.toggleVersion();
+                            appSettingsStore.toggleVersion();
+                          } else if (item.id === 'dark') {
+                            appSettingsStore.toggleTheme();
+                          } else if (item.id === 'anim') {
+                            appSettingsStore.toggleAnimations();
                           }
                           setMenuOpen(false);
                           setMoreOpen(false);
