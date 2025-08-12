@@ -152,27 +152,23 @@ const ScreenPlaceholder = ({ title }: { title: string }) => (
 );
 
 const Screens = observer(() => {
-  const stack = settingsPanelStore.stack;
+  const current = settingsPanelStore.stack[settingsPanelStore.stack.length - 1] || 'root';
   return (
     <div className="relative flex-1 overflow-hidden">
-      <div className="h-full flex" style={{ width: `${stack.length * 100}%`, transform: `translateX(-${(stack.length - 1) * 100}%)`, transition: 'transform 420ms ease' }}>
-        {stack.map((s, idx) => (
-          <div key={idx} className="w-full flex-shrink-0 flex flex-col">
-            <NavBar />
-            {s === 'root' && <RootScreen />}
-            {s === 'general' && <GeneralScreen />}
-            {s === 'wallpapers' && <WallpapersScreen />}
-            {s === 'setColor' && <SetColorScreen />}
-            {s === 'animation' && <ScreenPlaceholder title="Экран: Анимация и скорость" />}
-            {s === 'notifications' && <ScreenPlaceholder title="Экран: Уведомления" />}
-            {s === 'data' && <ScreenPlaceholder title="Экран: Данные и память" />}
-            {s === 'privacy' && <ScreenPlaceholder title="Экран: Конфиденциальность" />}
-            {s === 'folders' && <ScreenPlaceholder title="Экран: Папки с чатами" />}
-            {s === 'sessions' && <ScreenPlaceholder title="Экран: Активные сеансы" />}
-            {s === 'language' && <ScreenPlaceholder title="Экран: Язык" />}
-            {s === 'stickers' && <ScreenPlaceholder title="Экран: Стикеры и эмодзи" />}
-          </div>
-        ))}
+      <div className="h-full flex flex-col w-full">
+        <NavBar />
+        {current === 'root' && <RootScreen />}
+        {current === 'general' && <GeneralScreen />}
+        {current === 'wallpapers' && <WallpapersScreen />}
+        {current === 'setColor' && <SetColorScreen />}
+        {current === 'animation' && <ScreenPlaceholder title="Экран: Анимация и скорость" />}
+        {current === 'notifications' && <ScreenPlaceholder title="Экран: Уведомления" />}
+        {current === 'data' && <ScreenPlaceholder title="Экран: Данные и память" />}
+        {current === 'privacy' && <ScreenPlaceholder title="Экран: Конфиденциальность" />}
+        {current === 'folders' && <ScreenPlaceholder title="Экран: Папки с чатами" />}
+        {current === 'sessions' && <ScreenPlaceholder title="Экран: Активные сеансы" />}
+        {current === 'language' && <ScreenPlaceholder title="Экран: Язык" />}
+        {current === 'stickers' && <ScreenPlaceholder title="Экран: Стикеры и эмодзи" />}
       </div>
     </div>
   );
@@ -216,32 +212,26 @@ export default SettingsPanel;
 // GENERAL SCREEN IMPLEMENTATION
 const GeneralScreen = observer(() => {
   const s = appSettingsStore.state;
-  const [textSize, setTextSize] = useState<number>(s.textSize);
-  useEffect(() => setTextSize(s.textSize), [s.textSize]);
 
   return (
     <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-custom">
       <div className="space-y-3 pr-5 pl-[5px] box-border max-w-full">
-      {/* Text Size */}
-      <div className="bg-white/10 rounded-lg p-3">
-        <div className="flex items-center justify-between">
-          <div className="font-semibold">Настройки текста</div>
-          <div className="text-white/70">{textSize}px</div>
+        {/* Text Size */}
+        <div className="bg-white/10 rounded-lg p-3">
+          <div className="flex items-center justify-between">
+            <div className="font-semibold">Настройки текста</div>
+            <div className="text-white/70">{s.textSize}px</div>
+          </div>
+          <input
+            type="range"
+            min={12}
+            max={24}
+            step={1}
+            value={s.textSize}
+            onChange={(e) => appSettingsStore.setTextSize(parseInt(e.target.value, 10))}
+            className="w-full mt-2"
+          />
         </div>
-        <input
-          type="range"
-          min={12}
-          max={24}
-          step={1}
-          value={textSize}
-          onChange={(e) => {
-            const v = parseInt(e.target.value, 10);
-            setTextSize(v);
-            appSettingsStore.setTextSize(v);
-          }}
-          className="w-full mt-2"
-        />
-      </div>
 
       {/* Wallpapers & color */}
       <button className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/10 rounded-lg" onClick={() => settingsPanelStore.push('wallpapers')}>
