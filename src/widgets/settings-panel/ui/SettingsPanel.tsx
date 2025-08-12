@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import { presignForUpload, uploadToPresignedUrl } from '../../../shared/media/api';
 import appSettingsStore from '../../../shared/config/appSettings';
 import { downloadFromUrl } from '../../../shared/media/api';
-import { observer } from 'mobx-react-lite';
 
 const NavBar = observer(() => {
   const current = settingsPanelStore.stack[settingsPanelStore.stack.length - 1] || 'root';
