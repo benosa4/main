@@ -408,7 +408,7 @@ const ChatPage = observer(() => {
                     <input
                       ref={fileInputRef}
                       type="file"
-                      accept="image/*,application/pdf"
+                      accept="image/*,video/*,application/pdf"
                       className="hidden"
                       onChange={async (e) => {
                         const f = e.target.files?.[0];
