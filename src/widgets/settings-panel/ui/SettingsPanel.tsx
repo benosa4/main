@@ -6,6 +6,8 @@ import { presignForUpload, uploadToPresignedUrl } from '../../../shared/media/ap
 import appSettingsStore from '../../../shared/config/appSettings';
 import { downloadFromUrl } from '../../../shared/media/api';
 import ColorPicker from '../../../shared/ui/ColorPicker';
+import { chatTabsStore } from '../../../features/chat-tabs/model';
+import { chatStore } from '../../../features/chats/model';
 
 const NavBar = observer(() => {
   const current = settingsPanelStore.stack[settingsPanelStore.stack.length - 1] || 'root';
@@ -191,6 +193,7 @@ const Screens = observer(() => {
           <PrivacyVisibilityScreen />
         )}
         {current === 'folders' && <ScreenPlaceholder title="Экран: Папки с чатами" />}
+        {current === 'folders' && <FoldersScreen />}
         {current === 'sessions' && <ScreenPlaceholder title="Экран: Активные сеансы" />}
         {current === 'language' && <ScreenPlaceholder title="Экран: Язык" />}
         {current === 'stickers' && <ScreenPlaceholder title="Экран: Стикеры и эмодзи" />}
@@ -546,6 +549,143 @@ const DataMemoryScreen = observer(() => {
   );
 });
 
+// FOLDERS (CHAT TABS) SCREEN
+const FoldersScreen = observer(() => {
+  // ensure tabs and chats are loaded (SettingsPanel exists over Chat page, but we guard basic init)
+  useEffect(() => {
+    if (!chatTabsStore.tabs.length) chatTabsStore.load().catch(()=>{});
+    if (!chatStore.chats.length) chatStore.load().catch(()=>{});
+  }, []);
+
+  const tabs = chatTabsStore.tabs;
+  const userTabs = tabs.filter((t) => t.id !== 1);
+  const allCount = chatStore.chats.length; // no archived notion in demo
+
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+  const [menuFor, setMenuFor] = useState<number | null>(null);
+
+  const onDrop = () => {
+    if (dragIndex == null || overIndex == null) {
+      setDragIndex(null); setOverIndex(null);
+      return;
+    }
+    // account for the All tab at top (non-draggable), we reorder within userTabs then map back
+    const from = dragIndex + 1;
+    const to = overIndex + 1;
+    chatTabsStore.reorderTabs(from, to);
+    setDragIndex(null); setOverIndex(null);
+  };
+
+  const countFor = (tabId: number) => tabs.find((t) => t.id === tabId)?.chatIds.length || 0;
+
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-4">
+      <div className="flex flex-col items-center text-center bg-white/10 rounded-lg p-6">
+        <div className="w-20 h-16 mb-2 flex items-center justify-center">
+          <span style={{fontSize: 48}}>📁</span>
+        </div>
+        <div className="text-white/80 max-w-md">Вы можете создать папки с нужными чатами и переключаться между ними.</div>
+        <button
+          className="mt-4 px-6 py-2 rounded-full bg-white/80 text-black hover:bg-white"
+          onClick={() => {
+            const name = prompt('Название папки');
+            if (!name) return;
+            chatTabsStore.addTab(name, []);
+          }}
+        >
+          Создать новую папку
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        <div className="font-semibold">Папки с чатами</div>
+        {/* All chats */}
+        <div className="flex items-center gap-3 px-3 py-2 bg-white/10 rounded-lg">
+          <span>📂</span>
+          <div className="flex-1">
+            <div className="font-semibold">Все чаты</div>
+            <div className="text-white/70 text-sm">All unarchived chats</div>
+          </div>
+          <div className="text-white/70">{allCount}</div>
+        </div>
+
+        {/* User tabs list */}
+        <div className="space-y-2">
+          {userTabs.map((t, i) => (
+            <div
+              key={t.id}
+              className={`relative flex items-center gap-3 px-3 py-2 bg-white/10 rounded-lg group ${overIndex===i?'outline outline-1 outline-blue-400':''}`}
+              draggable
+              onDragStart={() => setDragIndex(i)}
+              onDragOver={(e) => { e.preventDefault(); setOverIndex(i); }}
+              onDragEnd={() => onDrop()}
+              onDrop={(e)=>{ e.preventDefault(); onDrop(); }}
+            >
+              <span className="opacity-0 group-hover:opacity-100 cursor-grab select-none">≡</span>
+              <div className="flex-1">
+                <div className="font-semibold">{t.label}</div>
+                <div className="text-white/70 text-sm">{countFor(t.id)} чатов</div>
+              </div>
+              <button className="opacity-100 ml-auto px-2 py-1" onClick={() => setMenuFor(menuFor===t.id?null:t.id)} aria-label="more">⋮</button>
+              {menuFor === t.id && (
+                <div className="absolute top-full right-2 mt-1 bg-white text-black rounded shadow-lg text-sm z-10">
+                  <button className="px-3 py-2 hover:bg-gray-100 w-full text-left" onClick={() => { chatTabsStore.removeTab(t.id); setMenuFor(null); }}>Удалить</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="h-px bg-white/20" />
+
+      {/* Recommended */}
+      <div className="space-y-2">
+        <div className="font-semibold">Рекомендованные папки</div>
+        <div className="bg-white/10 rounded-lg">
+          <div className="flex items-center gap-3 px-3 py-2">
+            <div className="flex-1">
+              <div className="font-semibold">Новые</div>
+              <div className="text-white/70 text-sm">Чаты с новыми сообщениями</div>
+            </div>
+            <button
+              className="px-4 py-1 rounded-full bg-white/80 text-black hover:bg-white"
+              onClick={() => {
+                const ids = chatStore.chats.filter(c => (c.unread||0) > 0).map(c => c.id);
+                const exists = chatTabsStore.tabs.find(t => t.label === 'Новые');
+                if (exists) {
+                  exists.chatIds = ids; void chatTabsStore.persist();
+                } else {
+                  chatTabsStore.addTab('Новые', ids);
+                }
+              }}
+            >Добавить</button>
+          </div>
+          <div className="h-px bg-white/20 mx-1" />
+          <div className="flex items-center gap-3 px-3 py-2">
+            <div className="flex-1">
+              <div className="font-semibold">Личные</div>
+              <div className="text-white/70 text-sm">Сообщения из личных чатов</div>
+            </div>
+            <button
+              className="px-4 py-1 rounded-full bg-white/80 text-black hover:bg-white"
+              onClick={() => {
+                const ids = chatStore.chats.filter(c => c.type === 'private').map(c => c.id);
+                const exists = chatTabsStore.tabs.find(t => t.label === 'Личные');
+                if (exists) {
+                  exists.chatIds = ids; void chatTabsStore.persist();
+                } else {
+                  chatTabsStore.addTab('Личные', ids);
+                }
+              }}
+            >Добавить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
 // PRIVACY SCREEN
 const PrivacyScreen = observer(() => {
   const p = appSettingsStore.state.privacy;
