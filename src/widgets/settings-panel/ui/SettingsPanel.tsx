@@ -164,7 +164,7 @@ const Screens = observer(() => {
         {current === 'wallpapers' && <WallpapersScreen />}
         {current === 'setColor' && <SetColorScreen />}
         {current === 'animation' && <AnimationScreen />}
-        {current === 'notifications' && <ScreenPlaceholder title="Экран: Уведомления" />}
+        {current === 'notifications' && <NotificationsScreen />}
         {current === 'data' && <ScreenPlaceholder title="Экран: Данные и память" />}
         {current === 'privacy' && <ScreenPlaceholder title="Экран: Конфиденциальность" />}
         {current === 'folders' && <ScreenPlaceholder title="Экран: Папки с чатами" />}
@@ -349,6 +349,120 @@ function SubCheck({ label, value, onChange }: { label: string; value: boolean; o
     </label>
   );
 }
+
+// NOTIFICATIONS SCREEN
+const NotificationsScreen = observer(() => {
+  const s = appSettingsStore.state.notifications;
+  const onOff = (b: boolean) => (b ? 'Вкл' : 'Выкл');
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-3">
+      {/* Web notifications */}
+      <div className="bg-white/10 rounded-lg p-3 space-y-2">
+        <div className="font-semibold">Веб-уведомления</div>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={s.web} onChange={(e)=>appSettingsStore.setWebNotifications(e.target.checked)} />
+          <div className="flex-1">
+            <div>Веб-уведомления</div>
+            <div className="text-white/70 text-sm">{onOff(s.web)}</div>
+          </div>
+        </label>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={s.background} onChange={(e)=>appSettingsStore.setBackgroundNotifications(e.target.checked)} />
+          <div className="flex-1">
+            <div>Уведомления в фоне</div>
+            <div className="text-white/70 text-sm">{onOff(s.background)}</div>
+          </div>
+        </label>
+      </div>
+
+      {/* Sound volume */}
+      <div className="bg-white/10 rounded-lg p-3">
+        <div className="flex items-center justify-between">
+          <div className="font-semibold">Громкость звука</div>
+          <div className="text-white/70">{s.volume}</div>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={10}
+          step={1}
+          value={s.volume}
+          onChange={(e)=>appSettingsStore.setNotificationsVolume(parseInt(e.target.value, 10))}
+          className="w-full mt-2"
+        />
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* Direct chats */}
+      <div className="bg-white/10 rounded-lg p-3 space-y-2">
+        <div className="font-semibold">Личные чаты</div>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={s.direct.enabled} onChange={(e)=>appSettingsStore.setDirectNotifications(e.target.checked)} />
+          <div className="flex-1">
+            <div>Уведомление из личных чатов</div>
+            <div className="text-white/70 text-sm">{onOff(s.direct.enabled)}</div>
+          </div>
+        </label>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={s.direct.preview} onChange={(e)=>appSettingsStore.setDirectPreview(e.target.checked)} />
+          <div className="flex-1">
+            <div>Предпросмотр сообщений</div>
+            <div className="text-white/70 text-sm">{onOff(s.direct.preview)}</div>
+          </div>
+        </label>
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* Groups */}
+      <div className="bg-white/10 rounded-lg p-3 space-y-2">
+        <div className="font-semibold">Группы</div>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={s.groups.enabled} onChange={(e)=>appSettingsStore.setGroupNotifications(e.target.checked)} />
+          <div className="flex-1">
+            <div>Уведомления из групп</div>
+            <div className="text-white/70 text-sm">{onOff(s.groups.enabled)}</div>
+          </div>
+        </label>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={s.groups.preview} onChange={(e)=>appSettingsStore.setGroupPreview(e.target.checked)} />
+          <div className="flex-1">
+            <div>Предпросмотр сообщений</div>
+            <div className="text-white/70 text-sm">{onOff(s.groups.preview)}</div>
+          </div>
+        </label>
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* Channels */}
+      <div className="bg-white/10 rounded-lg p-3 space-y-2">
+        <div className="font-semibold">Каналы</div>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={s.channels.enabled} onChange={(e)=>appSettingsStore.setChannelNotifications(e.target.checked)} />
+          <div className="flex-1">
+            <div>Уведомления из каналов</div>
+            <div className="text-white/70 text-sm">{onOff(s.channels.enabled)}</div>
+          </div>
+        </label>
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* Other */}
+      <div className="bg-white/10 rounded-lg p-3 space-y-2">
+        <div className="font-semibold">Другой</div>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={s.other.contactJoined} onChange={(e)=>appSettingsStore.setOtherContactJoined(e.target.checked)} />
+          <div className="flex-1">
+            <div>Контакт присоединился к Telegram</div>
+          </div>
+        </label>
+      </div>
+    </div>
+  );
+});
 
 // GENERAL SCREEN IMPLEMENTATION
 const GeneralScreen = observer(() => {

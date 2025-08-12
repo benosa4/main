@@ -39,6 +39,15 @@ export interface AppSettingsState {
   textSize: number; // px
   timeFormat: '12h' | '24h';
   keyboardMode: 'enter' | 'ctrlEnter';
+  notifications: {
+    web: boolean;
+    background: boolean;
+    volume: number; // 0..10, default 5
+    direct: { enabled: boolean; preview: boolean };
+    groups: { enabled: boolean; preview: boolean };
+    channels: { enabled: boolean };
+    other: { contactJoined: boolean };
+  };
 }
 
 const DEFAULTS: AppSettingsState = {
@@ -76,6 +85,15 @@ const DEFAULTS: AppSettingsState = {
   textSize: 16,
   timeFormat: '24h',
   keyboardMode: 'enter',
+  notifications: {
+    web: false,
+    background: false,
+    volume: 5,
+    direct: { enabled: true, preview: true },
+    groups: { enabled: true, preview: true },
+    channels: { enabled: true },
+    other: { contactJoined: true },
+  },
 };
 
 class AppSettingsStore {
@@ -109,6 +127,7 @@ class AppSettingsStore {
             textSize: dto.textSize ?? DEFAULTS.textSize,
             timeFormat: dto.timeFormat ?? DEFAULTS.timeFormat,
             keyboardMode: dto.keyboardMode ?? DEFAULTS.keyboardMode,
+            notifications: dto.notifications ?? DEFAULTS.notifications,
           }
         : { ...DEFAULTS };
       runInAction(() => {
@@ -162,6 +181,7 @@ class AppSettingsStore {
       textSize: this.state.textSize,
       timeFormat: this.state.timeFormat,
       keyboardMode: this.state.keyboardMode,
+      notifications: this.state.notifications,
     };
     await saveAppSettingsToDB(dto);
     // mock remote sync
@@ -247,6 +267,45 @@ class AppSettingsStore {
 
   setKeyboardMode(mode: 'enter' | 'ctrlEnter') {
     this.state.keyboardMode = mode;
+    void this.persist();
+  }
+
+  // Notifications setters
+  setWebNotifications(on: boolean) {
+    this.state.notifications.web = on;
+    void this.persist();
+  }
+  setBackgroundNotifications(on: boolean) {
+    this.state.notifications.background = on;
+    void this.persist();
+  }
+  setNotificationsVolume(v: number) {
+    const clamped = Math.max(0, Math.min(10, Math.round(v)));
+    this.state.notifications.volume = clamped;
+    void this.persist();
+  }
+  setDirectNotifications(on: boolean) {
+    this.state.notifications.direct.enabled = on;
+    void this.persist();
+  }
+  setDirectPreview(on: boolean) {
+    this.state.notifications.direct.preview = on;
+    void this.persist();
+  }
+  setGroupNotifications(on: boolean) {
+    this.state.notifications.groups.enabled = on;
+    void this.persist();
+  }
+  setGroupPreview(on: boolean) {
+    this.state.notifications.groups.preview = on;
+    void this.persist();
+  }
+  setChannelNotifications(on: boolean) {
+    this.state.notifications.channels.enabled = on;
+    void this.persist();
+  }
+  setOtherContactJoined(on: boolean) {
+    this.state.notifications.other.contactJoined = on;
     void this.persist();
   }
 

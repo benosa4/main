@@ -218,6 +218,16 @@ export interface AppSettingsDTO {
   timeFormat?: '12h' | '24h';
   // Keyboard send mode
   keyboardMode?: 'enter' | 'ctrlEnter';
+  // Notifications
+  notifications?: {
+    web: boolean;
+    background: boolean;
+    volume: number; // 0..10
+    direct: { enabled: boolean; preview: boolean };
+    groups: { enabled: boolean; preview: boolean };
+    channels: { enabled: boolean };
+    other: { contactJoined: boolean };
+  } | null;
 }
 
 export async function loadAppSettingsFromDB(): Promise<AppSettingsDTO | null> {
