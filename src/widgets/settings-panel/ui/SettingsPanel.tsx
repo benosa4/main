@@ -220,8 +220,8 @@ const GeneralScreen = observer(() => {
   useEffect(() => setTextSize(s.textSize), [s.textSize]);
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-custom">
-      <div className="space-y-3 px-5">
+    <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-custom">
+      <div className="space-y-3 pr-5 pl-[5px] box-border max-w-full">
       {/* Text Size */}
       <div className="bg-white/10 rounded-lg p-3">
         <div className="flex items-center justify-between">
