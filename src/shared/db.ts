@@ -179,6 +179,30 @@ export interface AppSettingsDTO {
   id: 'app';
   theme: 'dark' | 'light' | 'auto';
   animations: boolean;
+  // Animation profile and detailed preferences
+  animationProfile?: 'low' | 'balanced' | 'max' | null;
+  animationPrefs?: {
+    interface: {
+      menuTransitions: boolean;
+      sendMessage: boolean;
+      mediaView: boolean;
+      typing: boolean;
+      contextMenus: boolean;
+      contextBlur: boolean;
+      rightMenu: boolean;
+      deletion: boolean;
+    };
+    stickers: {
+      emojiAnimation: boolean;
+      loopAnimation: boolean;
+      animatedReactions: boolean;
+      stickerEffects: boolean;
+    };
+    autoplay: {
+      gif: boolean;
+      video: boolean;
+    };
+  } | null;
   version: 'A' | 'K';
   lastConversationId?: number | null;
   // Chat background (wallpaper)

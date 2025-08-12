@@ -7,6 +7,29 @@ export type ThemeMode = 'dark' | 'light' | 'auto';
 export interface AppSettingsState {
   theme: ThemeMode;
   animations: boolean;
+  animationProfile: 'low' | 'balanced' | 'max';
+  animationPrefs: {
+    interface: {
+      menuTransitions: boolean;
+      sendMessage: boolean;
+      mediaView: boolean;
+      typing: boolean;
+      contextMenus: boolean;
+      contextBlur: boolean;
+      rightMenu: boolean;
+      deletion: boolean;
+    };
+    stickers: {
+      emojiAnimation: boolean;
+      loopAnimation: boolean;
+      animatedReactions: boolean;
+      stickerEffects: boolean;
+    };
+    autoplay: {
+      gif: boolean;
+      video: boolean;
+    };
+  };
   version: 'A' | 'K';
   lastConversationId?: number | null;
   chatWallpaperUrl?: string | null;
@@ -21,6 +44,29 @@ export interface AppSettingsState {
 const DEFAULTS: AppSettingsState = {
   theme: 'dark',
   animations: true,
+  animationProfile: 'balanced',
+  animationPrefs: {
+    interface: {
+      menuTransitions: true,
+      sendMessage: true,
+      mediaView: true,
+      typing: true,
+      contextMenus: true,
+      contextBlur: true,
+      rightMenu: false,
+      deletion: false,
+    },
+    stickers: {
+      emojiAnimation: false,
+      loopAnimation: false,
+      animatedReactions: false,
+      stickerEffects: false,
+    },
+    autoplay: {
+      gif: false,
+      video: false,
+    },
+  },
   version: 'K',
   lastConversationId: null,
   chatWallpaperUrl: null,
@@ -52,6 +98,8 @@ class AppSettingsStore {
         ? {
             theme: (dto.theme as ThemeMode) ?? DEFAULTS.theme,
             animations: dto.animations ?? DEFAULTS.animations,
+            animationProfile: (dto.animationProfile as any) ?? DEFAULTS.animationProfile,
+            animationPrefs: (dto.animationPrefs as any) ?? DEFAULTS.animationPrefs,
             version: dto.version ?? DEFAULTS.version,
             lastConversationId: dto.lastConversationId ?? null,
             chatWallpaperUrl: (dto as any).chatWallpaperUrl ?? (dto as any).chatBackgroundUrl ?? null,
@@ -88,6 +136,7 @@ class AppSettingsStore {
       : this.state.theme;
     root.setAttribute('data-theme', mode);
     root.setAttribute('data-animations', this.state.animations ? 'on' : 'off');
+    root.setAttribute('data-anim-profile', this.state.animationProfile);
     root.style.setProperty('--app-text-size', `${this.state.textSize}px`);
     root.style.setProperty('--chat-accent-color', this.state.chatColor);
   }
@@ -97,6 +146,8 @@ class AppSettingsStore {
       id: 'app',
       theme: this.state.theme,
       animations: this.state.animations,
+      animationProfile: this.state.animationProfile,
+      animationPrefs: this.state.animationPrefs,
       version: this.state.version,
       lastConversationId: this.state.lastConversationId ?? null,
       chatWallpaperUrl: this.state.chatWallpaperUrl ?? null,
@@ -192,6 +243,135 @@ class AppSettingsStore {
   setKeyboardMode(mode: 'enter' | 'ctrlEnter') {
     this.state.keyboardMode = mode;
     void this.persist();
+  }
+
+  // Animation profile and prefs
+  setAnimationProfile(profile: 'low' | 'balanced' | 'max') {
+    this.state.animationProfile = profile;
+    if (profile === 'low') {
+      // turn off everything
+      this.state.animations = false;
+      this.state.animationPrefs = {
+        interface: {
+          menuTransitions: false,
+          sendMessage: false,
+          mediaView: false,
+          typing: false,
+          contextMenus: false,
+          contextBlur: false,
+          rightMenu: false,
+          deletion: false,
+        },
+        stickers: {
+          emojiAnimation: false,
+          loopAnimation: false,
+          animatedReactions: false,
+          stickerEffects: false,
+        },
+        autoplay: { gif: false, video: false },
+      };
+    } else if (profile === 'balanced') {
+      this.state.animations = true;
+      this.state.animationPrefs = {
+        interface: {
+          menuTransitions: true,
+          sendMessage: true,
+          mediaView: true,
+          typing: true,
+          contextMenus: true,
+          contextBlur: true,
+          rightMenu: false,
+          deletion: false,
+        },
+        stickers: {
+          emojiAnimation: false,
+          loopAnimation: false,
+          animatedReactions: false,
+          stickerEffects: false,
+        },
+        autoplay: { gif: false, video: false },
+      };
+    } else {
+      // max
+      this.state.animations = true;
+      this.state.animationPrefs = {
+        interface: {
+          menuTransitions: true,
+          sendMessage: true,
+          mediaView: true,
+          typing: true,
+          contextMenus: true,
+          contextBlur: true,
+          rightMenu: true,
+          deletion: true,
+        },
+        stickers: {
+          emojiAnimation: true,
+          loopAnimation: true,
+          animatedReactions: true,
+          stickerEffects: true,
+        },
+        autoplay: { gif: true, video: true },
+      };
+    }
+    this.applyEffects();
+    void this.persist();
+  }
+
+  setAnimationGroupEnabled(group: 'interface' | 'stickers' | 'autoplay', enabled: boolean) {
+    const prefs = this.state.animationPrefs;
+    const groupObj = prefs[group] as any;
+    Object.keys(groupObj).forEach((k) => {
+      (groupObj as any)[k] = enabled;
+    });
+    // update global animations based on whether low or any enabled
+    const anyOn = this.anyAnimationEnabled();
+    this.state.animations = anyOn;
+    this.state.animationProfile = this.deriveProfileFromPrefs();
+    this.applyEffects();
+    void this.persist();
+  }
+
+  setAnimationItem(path: ['interface'|'stickers'|'autoplay', string], value: boolean) {
+    const [group, key] = path;
+    (this.state.animationPrefs as any)[group][key] = value;
+    const anyOn = this.anyAnimationEnabled();
+    this.state.animations = anyOn;
+    this.state.animationProfile = this.deriveProfileFromPrefs();
+    this.applyEffects();
+    void this.persist();
+  }
+
+  private anyAnimationEnabled(): boolean {
+    const p = this.state.animationPrefs;
+    return (
+      Object.values(p.interface).some(Boolean) ||
+      Object.values(p.stickers).some(Boolean) ||
+      Object.values(p.autoplay).some(Boolean)
+    );
+  }
+
+  private deriveProfileFromPrefs(): 'low'|'balanced'|'max' {
+    // If nothing enabled => low; if exactly matches DEFAULTS => balanced; if all true => max; otherwise keep current
+    const p = this.state.animationPrefs;
+    const allInterface = Object.values(p.interface).every(Boolean);
+    const allStickers = Object.values(p.stickers).every(Boolean);
+    const allAutoplay = Object.values(p.autoplay).every(Boolean);
+    if (!this.anyAnimationEnabled()) return 'low';
+    const isBalanced =
+      p.interface.menuTransitions &&
+      p.interface.sendMessage &&
+      p.interface.mediaView &&
+      p.interface.typing &&
+      p.interface.contextMenus &&
+      p.interface.contextBlur &&
+      !p.interface.rightMenu &&
+      !p.interface.deletion &&
+      !Object.values(p.stickers).some(Boolean) &&
+      !Object.values(p.autoplay).some(Boolean);
+    if (isBalanced) return 'balanced';
+    if (allInterface && allStickers && allAutoplay) return 'max';
+    return this.state.animationProfile;
   }
 }
 

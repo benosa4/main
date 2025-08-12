@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { presignForUpload, uploadToPresignedUrl } from '../../../shared/media/api';
 import appSettingsStore from '../../../shared/config/appSettings';
 import { downloadFromUrl } from '../../../shared/media/api';
+import ColorPicker from '../../../shared/ui/ColorPicker';
 
 const NavBar = observer(() => {
   const current = settingsPanelStore.stack[settingsPanelStore.stack.length - 1] || 'root';
@@ -41,7 +42,8 @@ const AvatarEditButton = observer(() => {
   return (
     <>
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={async (e) => {
-        const f = e.target.files?.[0];
+        const inputEl = e.currentTarget as HTMLInputElement;
+        const f = inputEl.files?.[0];
         if (!f) return;
         const { uploadUrl, fileUrl, headers } = await presignForUpload({ filename: f.name, mime: f.type });
         await uploadToPresignedUrl(uploadUrl, f, headers);
@@ -51,7 +53,7 @@ const AvatarEditButton = observer(() => {
           profileStore.setAvatar({ remoteUrl: fileUrl, cacheDataUrl: dataUrl });
         };
         reader.readAsDataURL(f);
-        e.currentTarget.value = '';
+        if (fileRef.current) fileRef.current.value = '';
       }} />
       <button className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center" onClick={() => fileRef.current?.click()} aria-label="Edit avatar">✏️</button>
     </>
@@ -161,7 +163,7 @@ const Screens = observer(() => {
         {current === 'general' && <GeneralScreen />}
         {current === 'wallpapers' && <WallpapersScreen />}
         {current === 'setColor' && <SetColorScreen />}
-        {current === 'animation' && <ScreenPlaceholder title="Экран: Анимация и скорость" />}
+        {current === 'animation' && <AnimationScreen />}
         {current === 'notifications' && <ScreenPlaceholder title="Экран: Уведомления" />}
         {current === 'data' && <ScreenPlaceholder title="Экран: Данные и память" />}
         {current === 'privacy' && <ScreenPlaceholder title="Экран: Конфиденциальность" />}
@@ -209,6 +211,139 @@ const SettingsPanel = observer(() => {
 
 export default SettingsPanel;
 
+// ANIMATION SCREEN
+const AnimationScreen = observer(() => {
+  const s = appSettingsStore.state;
+  const [openGroups, setOpenGroups] = useState<{[K in 'interface'|'stickers'|'autoplay']: boolean}>({ interface: true, stickers: false, autoplay: false });
+
+  const sliderSet = (v: 'low'|'balanced'|'max') => {
+    appSettingsStore.setAnimationProfile(v);
+  };
+
+  const groupChecked = (group: 'interface'|'stickers'|'autoplay') => Object.values((s.animationPrefs as any)[group]).every(Boolean);
+  const groupIndeterminate = (group: 'interface'|'stickers'|'autoplay') => {
+    const vals = Object.values((s.animationPrefs as any)[group]) as boolean[];
+    return vals.some(Boolean) && !vals.every(Boolean);
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-3">
+      <div>
+        <div className="font-semibold">Анимация</div>
+        <div className="text-white/70 text-sm">Выберите параметры анимации.</div>
+        {/* 3-position slider as segmented control */}
+        <div className="mt-3 inline-flex rounded-lg bg-white/10 overflow-hidden">
+          {[
+            {k:'low', labelLeft:'Экономия ресурсов', label:'Экономия ресурсов'},
+            {k:'balanced', labelLeft:'Баланс', label:'Баланс'},
+            {k:'max', labelLeft:'Максимум анимации', label:'Максимум анимации'},
+          ].map((opt, idx) => (
+            <button
+              key={opt.k}
+              className={`px-3 py-2 text-sm ${s.animationProfile===opt.k?'bg-white/20':''} ${idx>0?'border-l border-white/10':''}`}
+              onClick={() => sliderSet(opt.k as any)}
+            >{opt.label}</button>
+          ))}
+        </div>
+      </div>
+
+      <div className="h-px bg-white/20" />
+
+      <div>
+        <div className="font-semibold mb-2">Recourse-Intensive Processes</div>
+
+        {/* Interface animations group */}
+        <GroupRow
+          title="Анимации интерфейса"
+          checked={groupChecked('interface')}
+          indeterminate={groupIndeterminate('interface')}
+          open={openGroups.interface}
+          onToggleOpen={() => setOpenGroups({...openGroups, interface: !openGroups.interface})}
+          onToggleChecked={(val) => appSettingsStore.setAnimationGroupEnabled('interface', val)}
+        />
+        {openGroups.interface && (
+          <div className="pl-6 space-y-2 mt-2">
+            <SubCheck label="Переходы в меню и между чатами" value={s.animationPrefs.interface.menuTransitions} onChange={(v)=>appSettingsStore.setAnimationItem(['interface','menuTransitions'], v)} />
+            <SubCheck label="Анимация отправки сообщени" value={s.animationPrefs.interface.sendMessage} onChange={(v)=>appSettingsStore.setAnimationItem(['interface','sendMessage'], v)} />
+            <SubCheck label="Анимация при просмотре меди" value={s.animationPrefs.interface.mediaView} onChange={(v)=>appSettingsStore.setAnimationItem(['interface','mediaView'], v)} />
+            <SubCheck label="Анимация при наборе сообщения," value={s.animationPrefs.interface.typing} onChange={(v)=>appSettingsStore.setAnimationItem(['interface','typing'], v)} />
+            <SubCheck label="Анимация контекстных меню" value={s.animationPrefs.interface.contextMenus} onChange={(v)=>appSettingsStore.setAnimationItem(['interface','contextMenus'], v)} />
+            <SubCheck label="Размытие в контекстных меню" value={s.animationPrefs.interface.contextBlur} onChange={(v)=>appSettingsStore.setAnimationItem(['interface','contextBlur'], v)} />
+            <SubCheck label="Анимация в меню справа" value={s.animationPrefs.interface.rightMenu} onChange={(v)=>appSettingsStore.setAnimationItem(['interface','rightMenu'], v)} />
+            <SubCheck label="Анимация удаления" value={s.animationPrefs.interface.deletion} onChange={(v)=>appSettingsStore.setAnimationItem(['interface','deletion'], v)} />
+          </div>
+        )}
+
+        {/* Stickers and emoji */}
+        <GroupRow
+          title="Стикеры и эмодзи"
+          checked={groupChecked('stickers')}
+          indeterminate={groupIndeterminate('stickers')}
+          open={openGroups.stickers}
+          onToggleOpen={() => setOpenGroups({...openGroups, stickers: !openGroups.stickers})}
+          onToggleChecked={(val) => appSettingsStore.setAnimationGroupEnabled('stickers', val)}
+        />
+        {openGroups.stickers && (
+          <div className="pl-6 space-y-2 mt-2">
+            <SubCheck label="Анимация эмодзи" value={s.animationPrefs.stickers.emojiAnimation} onChange={(v)=>appSettingsStore.setAnimationItem(['stickers','emojiAnimation'], v)} />
+            <SubCheck label="Зациклить анимацию" value={s.animationPrefs.stickers.loopAnimation} onChange={(v)=>appSettingsStore.setAnimationItem(['stickers','loopAnimation'], v)} />
+            <SubCheck label="Анимированные реакции" value={s.animationPrefs.stickers.animatedReactions} onChange={(v)=>appSettingsStore.setAnimationItem(['stickers','animatedReactions'], v)} />
+            <SubCheck label="Эффекты стикеров" value={s.animationPrefs.stickers.stickerEffects} onChange={(v)=>appSettingsStore.setAnimationItem(['stickers','stickerEffects'], v)} />
+          </div>
+        )}
+
+        {/* Autoplay */}
+        <GroupRow
+          title="Автовоспроизведение"
+          checked={groupChecked('autoplay')}
+          indeterminate={groupIndeterminate('autoplay')}
+          open={openGroups.autoplay}
+          onToggleOpen={() => setOpenGroups({...openGroups, autoplay: !openGroups.autoplay})}
+          onToggleChecked={(val) => appSettingsStore.setAnimationGroupEnabled('autoplay', val)}
+        />
+        {openGroups.autoplay && (
+          <div className="pl-6 space-y-2 mt-2">
+            <SubCheck label="Автозапуск GIF" value={s.animationPrefs.autoplay.gif} onChange={(v)=>appSettingsStore.setAnimationItem(['autoplay','gif'], v)} />
+            <SubCheck label="Автозапуск видео" value={s.animationPrefs.autoplay.video} onChange={(v)=>appSettingsStore.setAnimationItem(['autoplay','video'], v)} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
+function GroupRow({ title, checked, indeterminate, open, onToggleOpen, onToggleChecked }: {
+  title: string;
+  checked: boolean;
+  indeterminate?: boolean;
+  open: boolean;
+  onToggleOpen: () => void;
+  onToggleChecked: (val: boolean) => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.indeterminate = !!indeterminate;
+  }, [indeterminate]);
+  return (
+    <div className="flex items-center gap-2 py-2">
+      <input ref={ref} type="checkbox" checked={checked} onChange={(e)=>onToggleChecked(e.target.checked)} />
+      <button className="flex-1 text-left" onClick={onToggleOpen}>{title}</button>
+      <button onClick={onToggleOpen} aria-label="toggle">
+        <span className={`inline-block transition-transform ${open?'rotate-90':''}`}>›</span>
+      </button>
+    </div>
+  );
+}
+
+function SubCheck({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-center gap-2">
+      <input type="checkbox" checked={value} onChange={(e)=>onChange(e.target.checked)} />
+      <span>{label}</span>
+    </label>
+  );
+}
+
 // GENERAL SCREEN IMPLEMENTATION
 const GeneralScreen = observer(() => {
   const s = appSettingsStore.state;
@@ -235,11 +370,11 @@ const GeneralScreen = observer(() => {
 
       {/* Wallpapers & color */}
       <button className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/10 rounded-lg" onClick={() => settingsPanelStore.push('wallpapers')}>
-        <div className="w-24 h-16 rounded-md overflow-hidden bg-white/10 flex items-center justify-center">
+        <div className="w-36 h-24 rounded-md overflow-hidden bg-white/10 flex items-center justify-center">
           {s.chatWallpaperUrl ? (
             <img src={(s.chatWallpaperGallery.find(g => g.url === s.chatWallpaperUrl)?.cacheDataUrl) || s.chatWallpaperUrl || ''} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-2xl">🖼️</span>
+            <img src={'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTIwJyBoZWlnaHQ9JzcwJyB2aWV3Qm94PScwIDAgMTIwIDcwJyBmaWxsPSdub25lJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0nZycgeDE9JzAnIHkxPScwJyB4Mj0nMTAwJScgeTI9JzEwMCUnPjxzdG9wIG9mZnNldD0nMCUnIHN0b3AtY29sb3I9JyM0MDQwNjAnLz48c3RvcCBvZmZzZXQ9JzEwMCUnIHN0b3AtY29sb3I9JyM3MDc4OTAnLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0nMTIwJyBoZWlnaHQ9JzcwJyByeD0nMTInIGZpbGw9InVybCgjZykiLz48cGF0aCBkPSdNNDQgNDZsMTItMTQgMTYgMjAgOCAxMEg0NCcgZmlsbD0nI2ZmZicgZmlsbC1vcGFjaXR5PScwLjknLz48Y2lyY2xlIGN4PSc1NCcgY3k9JzMyJyByPSc4JyBzdHJva2U9JyNmZmYnIHN0cm9rZS1vcGFjaXR5PScwLjknIGZpbGw9J25vbmUnLz48L3N2Zz4='} className="w-full h-full object-cover" />
           )}
         </div>
         <div className="flex-1 text-left">
@@ -315,7 +450,8 @@ const WallpapersScreen = observer(() => {
     <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-3">
       {/* Upload image */}
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={async (e) => {
-        const f = e.target.files?.[0];
+        const inputEl = e.currentTarget as HTMLInputElement;
+        const f = inputEl.files?.[0];
         if (!f) return;
         const { uploadUrl, fileUrl, headers } = await presignForUpload({ filename: f.name, mime: f.type });
         await uploadToPresignedUrl(uploadUrl, f, headers);
@@ -326,17 +462,22 @@ const WallpapersScreen = observer(() => {
           appSettingsStore.setChatWallpaperUrl(fileUrl);
         };
         reader.readAsDataURL(f);
-        e.currentTarget.value = '';
+        if (fileRef.current) fileRef.current.value = '';
       }} />
       <button className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/10 rounded-lg" onClick={() => fileRef.current?.click()}>
-        <span>📷</span>
-        <span className="flex-1">Загрузить изображение</span>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 7h3l2-2h6l2 2h3a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V9a2 2 0 012-2z" stroke="white" strokeOpacity="0.9"/>
+          <circle cx="12" cy="13" r="3.5" stroke="white" strokeOpacity="0.9"/>
+        </svg>
+        <span className="flex-1 text-left">Загрузить изображение</span>
       </button>
 
       {/* Set color */}
       <button className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/10 rounded-lg" onClick={() => settingsPanelStore.push('setColor')}>
-        <span>🎨</span>
-        <span className="flex-1">Задать цвет</span>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3a9 9 0 100 18 2 2 0 002-2 2 2 0 012-2h1a2 2 0 000-4h-1a2 2 0 01-2-2 2 2 0 00-2-2" stroke="white" strokeOpacity="0.9"/>
+        </svg>
+        <span className="flex-1 text-left">Задать цвет</span>
       </button>
 
       {/* Restore defaults */}
@@ -345,8 +486,10 @@ const WallpapersScreen = observer(() => {
         appSettingsStore.setChatWallpaperUrl(null);
         appSettingsStore.setChatWallpaperBlur(false);
       }}>
-        <span>⭐</span>
-        <span className="flex-1">Восстановить по умолчанию</span>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2l2.8 5.67 6.26.91-4.53 4.41 1.07 6.23L12 16.9l-5.6 2.95 1.07-6.23L2.94 8.58l6.26-.91L12 2z" stroke="white" strokeOpacity="0.9" fill="none"/>
+        </svg>
+        <span className="flex-1 text-left">Восстановить по умолчанию</span>
       </button>
 
       {/* Blur toggle */}
@@ -355,17 +498,17 @@ const WallpapersScreen = observer(() => {
         <span>Размытие</span>
       </label>
 
-      {/* Gallery grid 3 cols */}
-      <div className="grid grid-cols-3 gap-2">
+      {/* Gallery grid larger thumbs */}
+      <div className="grid grid-cols-2 gap-3">
         {s.chatWallpaperGallery.map((g, idx) => (
           <button
             key={g.url + idx}
-            className={`relative aspect-square rounded-md overflow-hidden border ${s.chatWallpaperUrl === g.url ? 'border-blue-400' : 'border-white/20'}`}
+            className={`relative aspect-[4/3] rounded-md overflow-hidden border ${s.chatWallpaperUrl === g.url ? 'border-blue-400' : 'border-white/20'}`}
             onClick={async () => {
               // ensure cached
               if (!g.cacheDataUrl) {
-                const url = await downloadFromUrl(g.url);
-                appSettingsStore.addWallpaperToGallery({ url: g.url, cacheDataUrl: url });
+                const data = await downloadFromUrl(g.url);
+                appSettingsStore.addWallpaperToGallery({ url: g.url, cacheDataUrl: data });
               }
               appSettingsStore.setChatWallpaperUrl(g.url);
             }}
@@ -373,7 +516,7 @@ const WallpapersScreen = observer(() => {
             {g.cacheDataUrl ? (
               <img src={g.cacheDataUrl} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-white/60">Нет превью</div>
+              <img src={'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMTIwJyBoZWlnaHQ9JzcwJyB2aWV3Qm94PScwIDAgMTIwIDcwJyBmaWxsPSdub25lJyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0nZycgeDE9JzAnIHkxPScwJyB4Mj0nMTAwJScgeTI9JzEwMCUnPjxzdG9wIG9mZnNldD0nMCUnIHN0b3AtY29sb3I9JyM0MDQwNjAnLz48c3RvcCBvZmZzZXQ9JzEwMCUnIHN0b3AtY29sb3I9JyM3MDc4OTAnLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0nMTIwJyBoZWlnaHQ9JzcwJyByeD0nMTInIGZpbGw9InVybCgjZykiLz48cGF0aCBkPSdNNDQgNDZsMTItMTQgMTYgMjAgOCAxMEg0NCcgZmlsbD0nI2ZmZicgZmlsbC1vcGFjaXR5PScwLjknLz48Y2lyY2xlIGN4PSc1NCcgY3k9JzMyJyByPSc4JyBzdHJva2U9JyNmZmYnIHN0cm9rZS1vcGFjaXR5PScwLjknIGZpbGw9J25vbmUnLz48L3N2Zz4='} className="w-full h-full object-cover opacity-80" />
             )}
           </button>
         ))}
@@ -397,6 +540,8 @@ const SetColorScreen = observer(() => {
 
   const applyColor = (h: string) => {
     appSettingsStore.setChatColor(h);
+    // remove wallpaper when choosing a color theme
+    appSettingsStore.setChatWallpaperUrl(null);
   };
 
   const handleHexInput = (val: string) => {
@@ -443,7 +588,32 @@ const SetColorScreen = observer(() => {
     <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-3">
       {/* Visual picker */}
       <div className="bg-white/10 rounded-lg p-3 space-y-3">
-        <input type="color" value={hex} onChange={(e) => { setHex(e.target.value); setRgb(hexToRgbString(e.target.value)); applyColor(e.target.value); }} className="w-full h-20 rounded-md p-0 border-0" />
+        <div className="flex items-center justify-between">
+          <div className="font-semibold">Палитра</div>
+          {'EyeDropper' in window ? (
+            <button
+              className="px-3 py-1 rounded bg-white/10 hover:bg-white/20 text-sm"
+              onClick={async () => {
+                try {
+                  // @ts-ignore experimental API
+                  const ed = new (window as any).EyeDropper();
+                  const res = await ed.open();
+                  if (res?.sRGBHex) {
+                    setHex(res.sRGBHex);
+                    setRgb(hexToRgbString(res.sRGBHex));
+                    applyColor(res.sRGBHex);
+                  }
+                } catch {}
+              }}
+            >
+              Пипетка
+            </button>
+          ) : null}
+        </div>
+        <ColorPicker
+          hex={hex}
+          onChange={(h) => { setHex(h); setRgb(hexToRgbString(h)); applyColor(h); }}
+        />
         <div className="flex items-center gap-2">
           <span className="text-sm text-white/70">Теплые</span>
           <input type="range" min={-100} max={100} step={1} value={temp} onChange={(e) => handleTemp(parseInt(e.target.value, 10))} className="flex-1" />
