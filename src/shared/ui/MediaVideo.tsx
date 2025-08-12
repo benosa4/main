@@ -23,6 +23,7 @@ export default function MediaVideo({ url, className, mime }: { url: string; clas
   const isVideo = useMemo(() => isVideoUrl(url, mime), [url, mime]);
   const [poster, setPoster] = useState<string | null>(null);
   const [show, setShow] = useState<boolean>(autoplay);
+  const [durationLabel, setDurationLabel] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isVideo || autoplay) {
@@ -47,6 +48,12 @@ export default function MediaVideo({ url, className, mime }: { url: string; clas
             ctx.drawImage(vid, 0, 0, w, h);
             const data = canvas.toDataURL('image/png');
             if (!cancelled) setPoster(data);
+          }
+          const dur = Number.isFinite(vid.duration) ? Math.max(0, Math.floor(vid.duration)) : null;
+          if (!cancelled && dur != null) {
+            const mm = Math.floor(dur / 60).toString();
+            const ss = (dur % 60).toString().padStart(2, '0');
+            setDurationLabel(`${mm}:${ss}`);
           }
         } catch {
           if (!cancelled) setPoster(null);
@@ -83,6 +90,11 @@ export default function MediaVideo({ url, className, mime }: { url: string; clas
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-white text-3xl">►</span>
         </div>
+        {durationLabel && (
+          <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/70 text-white text-[10px] leading-none">
+            {durationLabel}
+          </div>
+        )}
       </button>
     );
   }
