@@ -18,11 +18,11 @@ export function isVideoLike(url: string, mime?: string): boolean {
   return isVideoUrl(url, mime);
 }
 
-export default function MediaVideo({ url, className, mime }: { url: string; className?: string; mime?: string }) {
+export default function MediaVideo({ url, className, mime, autoDownload = true }: { url: string; className?: string; mime?: string; autoDownload?: boolean }) {
   const autoplay = appSettingsStore.state.animations && appSettingsStore.state.animationPrefs.autoplay.video;
   const isVideo = useMemo(() => isVideoUrl(url, mime), [url, mime]);
   const [poster, setPoster] = useState<string | null>(null);
-  const [show, setShow] = useState<boolean>(autoplay);
+  const [show, setShow] = useState<boolean>(autoDownload ? autoplay : false);
   const [durationLabel, setDurationLabel] = useState<string | null>(null);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export default function MediaVideo({ url, className, mime }: { url: string; clas
     );
   }
 
-  if (!show && !autoplay) {
+  if (!show) {
     return (
       <button
         type="button"
