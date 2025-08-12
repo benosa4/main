@@ -54,6 +54,27 @@ export interface AppSettingsState {
     autoFiles: { contacts: boolean; direct: boolean; groups: boolean; channels: boolean };
     maxFileSizeMb: number; // 0..10
   };
+  privacy: {
+    blacklistCount: number;
+    passcodeEnabled: boolean;
+    cloudPasswordEnabled: boolean;
+    activeSitesCount: number;
+    visibilities: {
+      phoneNumber: 'nobody'|'contacts'|'everyone'|'not_used';
+      lastSeen: 'everyone'|'contacts'|'nobody';
+      profilePhotos: 'everyone'|'contacts'|'nobody';
+      about: 'everyone'|'contacts'|'nobody';
+      birthday: 'contacts'|'everyone'|'nobody';
+      gifts: 'miniapps'|'everyone'|'contacts'|'nobody';
+      forwardLink: 'not_used'|'everyone'|'contacts'|'nobody';
+      calls: 'everyone'|'contacts'|'nobody';
+      voiceMsgs: 'everyone'|'contacts'|'nobody';
+      messages: 'everyone'|'contacts'|'nobody';
+      groupAdd: 'everyone'|'contacts'|'nobody';
+    };
+    sensitive18plus: boolean;
+    showChatWindowTitle: boolean;
+  };
 }
 
 const DEFAULTS: AppSettingsState = {
@@ -106,6 +127,27 @@ const DEFAULTS: AppSettingsState = {
     autoFiles: { contacts: false, direct: false, groups: false, channels: false },
     maxFileSizeMb: 5,
   },
+  privacy: {
+    blacklistCount: 3,
+    passcodeEnabled: false,
+    cloudPasswordEnabled: false,
+    activeSitesCount: 2,
+    visibilities: {
+      phoneNumber: 'not_used',
+      lastSeen: 'everyone',
+      profilePhotos: 'everyone',
+      about: 'everyone',
+      birthday: 'contacts',
+      gifts: 'miniapps',
+      forwardLink: 'not_used',
+      calls: 'everyone',
+      voiceMsgs: 'everyone',
+      messages: 'everyone',
+      groupAdd: 'everyone',
+    },
+    sensitive18plus: false,
+    showChatWindowTitle: true,
+  },
 };
 
 class AppSettingsStore {
@@ -141,6 +183,7 @@ class AppSettingsStore {
             keyboardMode: dto.keyboardMode ?? DEFAULTS.keyboardMode,
             notifications: dto.notifications ?? DEFAULTS.notifications,
             dataMemory: dto.dataMemory ?? DEFAULTS.dataMemory,
+            privacy: dto.privacy ?? DEFAULTS.privacy,
           }
         : { ...DEFAULTS };
       runInAction(() => {
@@ -196,6 +239,7 @@ class AppSettingsStore {
       keyboardMode: this.state.keyboardMode,
       notifications: this.state.notifications,
       dataMemory: this.state.dataMemory,
+      privacy: this.state.privacy,
     };
     await saveAppSettingsToDB(dto);
     // mock remote sync
@@ -339,6 +383,28 @@ class AppSettingsStore {
   setMaxFileSizeMb(v: number) {
     const clamped = Math.max(0, Math.min(10, Math.round(v)));
     this.state.dataMemory.maxFileSizeMb = clamped;
+    void this.persist();
+  }
+
+  // Privacy setters
+  setPasscodeEnabled(on: boolean) {
+    this.state.privacy.passcodeEnabled = on;
+    void this.persist();
+  }
+  setCloudPasswordEnabled(on: boolean) {
+    this.state.privacy.cloudPasswordEnabled = on;
+    void this.persist();
+  }
+  setSensitive18(on: boolean) {
+    this.state.privacy.sensitive18plus = on;
+    void this.persist();
+  }
+  setShowChatWindowTitle(on: boolean) {
+    this.state.privacy.showChatWindowTitle = on;
+    void this.persist();
+  }
+  setPrivacyVisibility<K extends keyof AppSettingsState['privacy']['visibilities']>(key: K, value: AppSettingsState['privacy']['visibilities'][K]) {
+    (this.state.privacy.visibilities[key] as any) = value as any;
     void this.persist();
   }
 

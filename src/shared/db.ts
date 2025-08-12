@@ -235,6 +235,28 @@ export interface AppSettingsDTO {
     autoFiles: { contacts: boolean; direct: boolean; groups: boolean; channels: boolean };
     maxFileSizeMb: number; // 0..10
   } | null;
+  // Privacy
+  privacy?: {
+    blacklistCount: number;
+    passcodeEnabled: boolean;
+    cloudPasswordEnabled: boolean;
+    activeSitesCount: number;
+    visibilities: {
+      phoneNumber: 'nobody'|'contacts'|'everyone'|'not_used';
+      lastSeen: 'everyone'|'contacts'|'nobody';
+      profilePhotos: 'everyone'|'contacts'|'nobody';
+      about: 'everyone'|'contacts'|'nobody';
+      birthday: 'contacts'|'everyone'|'nobody';
+      gifts: 'miniapps'|'everyone'|'contacts'|'nobody';
+      forwardLink: 'not_used'|'everyone'|'contacts'|'nobody';
+      calls: 'everyone'|'contacts'|'nobody';
+      voiceMsgs: 'everyone'|'contacts'|'nobody';
+      messages: 'everyone'|'contacts'|'nobody';
+      groupAdd: 'everyone'|'contacts'|'nobody';
+    };
+    sensitive18plus: boolean;
+    showChatWindowTitle: boolean;
+  } | null;
 }
 
 export async function loadAppSettingsFromDB(): Promise<AppSettingsDTO | null> {

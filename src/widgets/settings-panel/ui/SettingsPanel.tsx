@@ -17,6 +17,21 @@ const NavBar = observer(() => {
     current === 'notifications' ? 'Уведомления' :
     current === 'data' ? 'Данные и память' :
     current === 'privacy' ? 'Конфиденциальность' :
+    current === 'privacy_blacklist' ? 'Конфиденциальность' :
+    current === 'privacy_passcode' ? 'Код-пароль' :
+    current === 'privacy_cloudpass' ? 'Облачный пароль' :
+    current === 'privacy_sites' ? 'Подключенные сайты' :
+    current === 'privacy_phone' ? 'Номер телефона' :
+    current === 'privacy_lastSeen' ? 'Время захода' :
+    current === 'privacy_photos' ? 'Фотографии профиля' :
+    current === 'privacy_about' ? 'О себе' :
+    current === 'privacy_birthday' ? 'Дата рождения' :
+    current === 'privacy_gifts' ? 'Подарки' :
+    current === 'privacy_forward' ? 'Пересылка сообщений' :
+    current === 'privacy_calls' ? 'Звонки' :
+    current === 'privacy_voice' ? 'Голосовые сообщения' :
+    current === 'privacy_messages' ? 'Сообщения' :
+    current === 'privacy_groups' ? 'Группы' :
     current === 'folders' ? 'Папки с чатами' :
     current === 'sessions' ? 'Активные сеансы' :
     current === 'language' ? 'Язык' :
@@ -167,7 +182,14 @@ const Screens = observer(() => {
         {current === 'notifications' && <NotificationsScreen />}
         {current === 'data' && <ScreenPlaceholder title="Экран: Данные и память" />}
         {current === 'data' && <DataMemoryScreen />}
-        {current === 'privacy' && <ScreenPlaceholder title="Экран: Конфиденциальность" />}
+        {current === 'privacy' && <PrivacyScreen />}
+        {current === 'privacy_blacklist' && <ScreenPlaceholder title="Черный список" />}
+        {current === 'privacy_passcode' && <PasscodeScreen />}
+        {current === 'privacy_cloudpass' && <CloudPasswordScreen />}
+        {current === 'privacy_sites' && <ScreenPlaceholder title="Подключенные сайты" />}
+        {(current === 'privacy_phone' || current === 'privacy_lastSeen' || current === 'privacy_photos' || current === 'privacy_about' || current === 'privacy_birthday' || current === 'privacy_gifts' || current === 'privacy_forward' || current === 'privacy_calls' || current === 'privacy_voice' || current === 'privacy_messages' || current === 'privacy_groups') && (
+          <PrivacyVisibilityScreen />
+        )}
         {current === 'folders' && <ScreenPlaceholder title="Экран: Папки с чатами" />}
         {current === 'sessions' && <ScreenPlaceholder title="Экран: Активные сеансы" />}
         {current === 'language' && <ScreenPlaceholder title="Экран: Язык" />}
@@ -519,6 +541,253 @@ const DataMemoryScreen = observer(() => {
           onChange={(e)=>appSettingsStore.setMaxFileSizeMb(parseInt(e.target.value,10))}
           className="w-full mt-2"
         />
+      </div>
+    </div>
+  );
+});
+
+// PRIVACY SCREEN
+const PrivacyScreen = observer(() => {
+  const p = appSettingsStore.state.privacy;
+  const sub = (v: string) => v;
+  const vis = p.visibilities;
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-3">
+      {/* Top items */}
+      <div className="bg-white/10 rounded-lg">
+        <button className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/10" onClick={() => settingsPanelStore.push('privacy_blacklist')}>
+          <span>🚫</span>
+          <div className="flex-1 text-left">
+            <div className="font-semibold">Чёрный список</div>
+          </div>
+          <span className="text-white/70">{p.blacklistCount}</span>
+        </button>
+        <div className="h-px bg-white/20 mx-1" />
+        <button className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/10" onClick={() => settingsPanelStore.push('privacy_passcode')}>
+          <span>🔑</span>
+          <div className="flex-1 text-left">
+            <div className="font-semibold">Код-пароль</div>
+            <div className="text-white/70 text-sm">{p.passcodeEnabled ? 'Вкл' : 'Выкл'}</div>
+          </div>
+          <span>›</span>
+        </button>
+        <div className="h-px bg-white/20 mx-1" />
+        <button className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/10" onClick={() => settingsPanelStore.push('privacy_cloudpass')}>
+          <span>🔒</span>
+          <div className="flex-1 text-left">
+            <div className="font-semibold">Облачный пароль</div>
+            <div className="text-white/70 text-sm">{p.cloudPasswordEnabled ? 'Вкл' : 'Выкл'}</div>
+          </div>
+          <span>›</span>
+        </button>
+        <div className="h-px bg-white/20 mx-1" />
+        <button className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/10" onClick={() => settingsPanelStore.push('privacy_sites')}>
+          <span>🌐</span>
+          <div className="flex-1 text-left">
+            <div className="font-semibold">Активные сайты</div>
+          </div>
+          <span className="text-white/70">{p.activeSitesCount}</span>
+        </button>
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* Privacy block */}
+      <div className="bg-white/10 rounded-lg">
+        <ItemRow label="Кто видит мой номер телефона?" subtitle="Не использовать номер" onClick={() => settingsPanelStore.push('privacy_phone')} />
+        <Divider />
+        <ItemRow label="Кто видит время моего последнего захода?" subtitle={vis.lastSeen === 'everyone' ? 'Все' : vis.lastSeen === 'contacts' ? 'Контакты' : 'Никто'} onClick={() => settingsPanelStore.push('privacy_lastSeen')} />
+        <Divider />
+        <ItemRow label="Кто видит фото в моём профиле?" subtitle={vis.profilePhotos === 'everyone' ? 'Все' : vis.profilePhotos === 'contacts' ? 'Контакты' : 'Никто'} onClick={() => settingsPanelStore.push('privacy_photos')} />
+        <Divider />
+        <ItemRow label="О себе" subtitle={vis.about === 'everyone' ? 'Все' : vis.about === 'contacts' ? 'Контакты' : 'Никто'} onClick={() => settingsPanelStore.push('privacy_about')} />
+        <Divider />
+        <ItemRow label="Дата рождения" subtitle={vis.birthday === 'everyone' ? 'Все' : vis.birthday === 'contacts' ? 'Контакты' : 'Никто'} onClick={() => settingsPanelStore.push('privacy_birthday')} />
+        <Divider />
+        <ItemRow label="Подарки" subtitle={vis.gifts === 'miniapps' ? 'Мини-приложения' : vis.gifts === 'everyone' ? 'Все' : vis.gifts === 'contacts' ? 'Контакты' : 'Никто'} onClick={() => settingsPanelStore.push('privacy_gifts')} />
+        <Divider />
+        <ItemRow label="Кто может ссылаться на мой аккаунт при пересылке сообщений?" subtitle={vis.forwardLink === 'not_used' ? 'Не использовать' : vis.forwardLink === 'everyone' ? 'Все' : vis.forwardLink === 'contacts' ? 'Контакты' : 'Никто'} onClick={() => settingsPanelStore.push('privacy_forward')} />
+        <Divider />
+        <ItemRow label="Кто может мне звонить?" subtitle={vis.calls === 'everyone' ? 'Все' : vis.calls === 'contacts' ? 'Контакты' : 'Никто'} onClick={() => settingsPanelStore.push('privacy_calls')} />
+        <Divider />
+        <ItemRow label="Кто может отправлять мне голосовые и видеосообщения?" subtitle={vis.voiceMsgs === 'everyone' ? 'Все' : vis.voiceMsgs === 'contacts' ? 'Контакты' : 'Никто'} onClick={() => settingsPanelStore.push('privacy_voice')} />
+        <Divider />
+        <ItemRow label="Кто может отправлять мне сообщения?" subtitle={vis.messages === 'everyone' ? 'Все' : vis.messages === 'contacts' ? 'Контакты' : 'Никто'} onClick={() => settingsPanelStore.push('privacy_messages')} />
+        <Divider />
+        <ItemRow label="Кто может добавлять меня в группы?" subtitle={vis.groupAdd === 'everyone' ? 'Все' : vis.groupAdd === 'contacts' ? 'Контакты' : 'Никто'} onClick={() => settingsPanelStore.push('privacy_groups')} />
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* Sensitive materials */}
+      <div className="bg-white/10 rounded-lg p-3 space-y-2">
+        <div className="font-semibold">Материалы деликатного характера</div>
+        <label className="flex items-start gap-2">
+          <input type="checkbox" checked={p.sensitive18plus} onChange={(e)=>appSettingsStore.setSensitive18(e.target.checked)} />
+          <div>
+            <div>Показывать материалы 18+</div>
+            <div className="text-white/70 text-sm">Не скрывать медиафайлы, предназначенные только для взрослых</div>
+          </div>
+        </label>
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* Window title */}
+      <div className="bg-white/10 rounded-lg p-3">
+        <div className="font-semibold mb-2">Название окна</div>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={p.showChatWindowTitle} onChange={(e)=>appSettingsStore.setShowChatWindowTitle(e.target.checked)} />
+          <span>Показывать название чата</span>
+        </label>
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* Delete account */}
+      <div className="bg-white/10 rounded-lg">
+        <button className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/10" onClick={()=>setShowDeleteModal(true)}>
+          <div className="flex-1 text-left">
+            <div className="font-semibold">Удалить мой аккаунт</div>
+          </div>
+          <span>Если я не захожу</span>
+        </button>
+      </div>
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={()=>setShowDeleteModal(false)}>
+          <div className="bg-white text-black rounded-lg p-4 w-[min(420px,90vw)]" onClick={(e)=>e.stopPropagation()}>
+            <div className="font-semibold mb-2">Удалить мой аккаунт</div>
+            <div className="text-sm mb-4">Эмуляция: настройка периода не реализована в демо. Закройте окно.</div>
+            <div className="flex justify-end">
+              <button className="px-3 py-1 rounded bg-gray-200" onClick={()=>setShowDeleteModal(false)}>Закрыть</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+
+const Divider = () => <div className="h-px bg-white/20 mx-1" />;
+const ItemRow = ({ label, subtitle, onClick }: { label: string; subtitle?: string; onClick?: ()=>void }) => (
+  <button className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/10" onClick={onClick}>
+    <div className="flex-1 text-left">
+      <div className="font-semibold">{label}</div>
+      {subtitle && <div className="text-white/70 text-sm">{subtitle}</div>}
+    </div>
+    <span>›</span>
+  </button>
+);
+
+// Detail: Passcode
+const PasscodeScreen = observer(() => {
+  const on = appSettingsStore.state.privacy.passcodeEnabled;
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3">
+      <label className="flex items-center gap-2 bg-white/10 rounded-lg p-3">
+        <input type="checkbox" checked={on} onChange={(e)=>appSettingsStore.setPasscodeEnabled(e.target.checked)} />
+        <div className="flex-1">
+          <div className="font-semibold">Код-пароль</div>
+          <div className="text-white/70 text-sm">{on ? 'Вкл' : 'Выкл'}</div>
+        </div>
+      </label>
+    </div>
+  );
+});
+
+// Detail: Cloud password
+const CloudPasswordScreen = observer(() => {
+  const on = appSettingsStore.state.privacy.cloudPasswordEnabled;
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3">
+      <label className="flex items-center gap-2 bg-white/10 rounded-lg p-3">
+        <input type="checkbox" checked={on} onChange={(e)=>appSettingsStore.setCloudPasswordEnabled(e.target.checked)} />
+        <div className="flex-1">
+          <div className="font-semibold">Облачный пароль</div>
+          <div className="text-white/70 text-sm">{on ? 'Вкл' : 'Выкл'}</div>
+        </div>
+      </label>
+    </div>
+  );
+});
+
+// Detail: Visibility generic screen
+const PrivacyVisibilityScreen = observer(() => {
+  const current = settingsPanelStore.stack[settingsPanelStore.stack.length - 1] as string;
+  const map: Record<string, { key: keyof typeof appSettingsStore.state.privacy.visibilities; label: string; options: {k:any; label:string}[] }> = {
+    privacy_phone: { key: 'phoneNumber', label: 'Номер телефона', options: [
+      { k: 'not_used', label: 'Не использовать' },
+      { k: 'everyone', label: 'Все' },
+      { k: 'contacts', label: 'Контакты' },
+      { k: 'nobody', label: 'Никто' },
+    ] },
+    privacy_lastSeen: { key: 'lastSeen', label: 'Время захода', options: [
+      { k: 'everyone', label: 'Все' },
+      { k: 'contacts', label: 'Контакты' },
+      { k: 'nobody', label: 'Никто' },
+    ] },
+    privacy_photos: { key: 'profilePhotos', label: 'Фотографии профиля', options: [
+      { k: 'everyone', label: 'Все' },
+      { k: 'contacts', label: 'Контакты' },
+      { k: 'nobody', label: 'Никто' },
+    ] },
+    privacy_about: { key: 'about', label: 'О себе', options: [
+      { k: 'everyone', label: 'Все' },
+      { k: 'contacts', label: 'Контакты' },
+      { k: 'nobody', label: 'Никто' },
+    ] },
+    privacy_birthday: { key: 'birthday', label: 'Дата рождения', options: [
+      { k: 'everyone', label: 'Все' },
+      { k: 'contacts', label: 'Контакты' },
+      { k: 'nobody', label: 'Никто' },
+    ] },
+    privacy_gifts: { key: 'gifts', label: 'Подарки', options: [
+      { k: 'miniapps', label: 'Мини-приложения' },
+      { k: 'everyone', label: 'Все' },
+      { k: 'contacts', label: 'Контакты' },
+      { k: 'nobody', label: 'Никто' },
+    ] },
+    privacy_forward: { key: 'forwardLink', label: 'Пересылка сообщений', options: [
+      { k: 'not_used', label: 'Не использовать' },
+      { k: 'everyone', label: 'Все' },
+      { k: 'contacts', label: 'Контакты' },
+      { k: 'nobody', label: 'Никто' },
+    ] },
+    privacy_calls: { key: 'calls', label: 'Звонки', options: [
+      { k: 'everyone', label: 'Все' },
+      { k: 'contacts', label: 'Контакты' },
+      { k: 'nobody', label: 'Никто' },
+    ] },
+    privacy_voice: { key: 'voiceMsgs', label: 'Голосовые сообщения', options: [
+      { k: 'everyone', label: 'Все' },
+      { k: 'contacts', label: 'Контакты' },
+      { k: 'nobody', label: 'Никто' },
+    ] },
+    privacy_messages: { key: 'messages', label: 'Сообщения', options: [
+      { k: 'everyone', label: 'Все' },
+      { k: 'contacts', label: 'Контакты' },
+      { k: 'nobody', label: 'Никто' },
+    ] },
+    privacy_groups: { key: 'groupAdd', label: 'Группы', options: [
+      { k: 'everyone', label: 'Все' },
+      { k: 'contacts', label: 'Контакты' },
+      { k: 'nobody', label: 'Никто' },
+    ] },
+  };
+  const conf = map[current];
+  const value = appSettingsStore.state.privacy.visibilities[conf.key] as any;
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3">
+      <div className="bg-white/10 rounded-lg p-3 space-y-2">
+        <div className="font-semibold mb-1">{conf.label}</div>
+        {conf.options.map(opt => (
+          <label key={opt.k} className="flex items-center gap-2">
+            <input type="radio" name={`vis_${conf.key}`} checked={value === opt.k} onChange={()=>appSettingsStore.setPrivacyVisibility(conf.key as any, opt.k as any)} />
+            <span>{opt.label}</span>
+          </label>
+        ))}
       </div>
     </div>
   );
