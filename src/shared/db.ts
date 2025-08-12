@@ -212,7 +212,9 @@ export async function saveAppSettingsToDB(settings: AppSettingsDTO): Promise<voi
   return new Promise<void>((resolve, reject) => {
     const tx = db.transaction('settings', 'readwrite');
     const store = tx.objectStore('settings');
-    store.put({ ...settings });
+    // ensure we store a plain-clone (mobx observables can't be cloned by IDB)
+    const plain = JSON.parse(JSON.stringify(settings));
+    store.put(plain);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
@@ -235,7 +237,8 @@ export async function saveAppSettingsToRemote(settings: AppSettingsDTO): Promise
   return new Promise<void>((resolve, reject) => {
     const tx = db.transaction('settings_remote', 'readwrite');
     const store = tx.objectStore('settings_remote');
-    store.put({ ...settings });
+    const plain = JSON.parse(JSON.stringify(settings));
+    store.put(plain);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
