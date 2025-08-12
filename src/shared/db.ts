@@ -246,6 +246,16 @@ export interface AppSettingsDTO {
   selectedChatTabId?: number | null;
   // Sessions config
   sessionsConfig?: { autoEndAfter: '1w' | '1m' | '3m' | '6m' } | null;
+  // Subscription
+  premium?: boolean | null;
+  // Language settings
+  language?: {
+    showTranslateButton: boolean;
+    translateWholeChats: boolean; // premium feature
+    selected: string; // e.g., 'ru', 'en'
+    available: { code: string; nameNative: string; nameRu: string }[];
+    resources?: Record<string, Record<string, string>>; // lang -> key -> text
+  } | null;
   // Privacy
   privacy?: {
     blacklistCount: number;

@@ -58,6 +58,14 @@ export interface AppSettingsState {
   chatTabs: { id: number; label: string; chatIds: number[] }[];
   selectedChatTabId: number | null;
   sessionsConfig: { autoEndAfter: '1w' | '1m' | '3m' | '6m' };
+  premium: boolean;
+  language: {
+    showTranslateButton: boolean;
+    translateWholeChats: boolean;
+    selected: string;
+    available: { code: string; nameNative: string; nameRu: string }[];
+    resources: Record<string, Record<string, string>>;
+  };
   privacy: {
     blacklistCount: number;
     blacklist: { id: string; displayName: string; username: string; avatarUrl?: string | null }[];
@@ -135,6 +143,20 @@ const DEFAULTS: AppSettingsState = {
   chatTabs: [],
   selectedChatTabId: null,
   sessionsConfig: { autoEndAfter: '3m' },
+  premium: false,
+  language: {
+    showTranslateButton: false,
+    translateWholeChats: false,
+    selected: 'ru',
+    available: [
+      { code: 'ru', nameNative: 'Русский', nameRu: 'Русский' },
+      { code: 'en', nameNative: 'English', nameRu: 'Английский' },
+    ],
+    resources: {
+      ru: {},
+      en: {},
+    },
+  },
   privacy: {
     blacklistCount: 3,
     blacklist: [
@@ -199,6 +221,8 @@ class AppSettingsStore {
             chatTabs: dto.chatTabs ?? DEFAULTS.chatTabs,
             selectedChatTabId: dto.selectedChatTabId ?? DEFAULTS.selectedChatTabId,
             sessionsConfig: dto.sessionsConfig ?? DEFAULTS.sessionsConfig,
+            premium: (dto.premium ?? DEFAULTS.premium) as boolean,
+            language: (dto.language as any) ?? DEFAULTS.language,
             privacy: {
               blacklistCount: (dto.privacy?.blacklist?.length ?? dto.privacy?.blacklistCount ?? DEFAULTS.privacy.blacklistCount) as number,
               blacklist: dto.privacy?.blacklist ?? DEFAULTS.privacy.blacklist,
@@ -267,6 +291,8 @@ class AppSettingsStore {
       chatTabs: this.state.chatTabs,
       selectedChatTabId: this.state.selectedChatTabId,
       sessionsConfig: this.state.sessionsConfig,
+      premium: this.state.premium,
+      language: this.state.language,
       privacy: {
         ...this.state.privacy,
         blacklistCount: this.state.privacy.blacklist?.length ?? this.state.privacy.blacklistCount,
@@ -283,6 +309,22 @@ class AppSettingsStore {
 
   setSessionsAutoEnd(val: '1w'|'1m'|'3m'|'6m') {
     this.state.sessionsConfig.autoEndAfter = val;
+    void this.persist();
+  }
+
+  // Language setters
+  setShowTranslateButton(on: boolean) {
+    this.state.language.showTranslateButton = on;
+    void this.persist();
+  }
+  setTranslateWholeChats(on: boolean) {
+    this.state.language.translateWholeChats = on;
+    void this.persist();
+  }
+  setInterfaceLanguage(code: string) {
+    if (!this.state.language.available.find(l => l.code === code)) return;
+    this.state.language.selected = code;
+    document.documentElement.setAttribute('data-lang', code);
     void this.persist();
   }
 

@@ -194,7 +194,7 @@ const Screens = observer(() => {
         )}
         {current === 'folders' && <FoldersScreen />}
         {current === 'sessions' && <SessionsScreen />}
-        {current === 'language' && <ScreenPlaceholder title="Экран: Язык" />}
+        {current === 'language' && <LanguageScreen />}
         {current === 'stickers' && <ScreenPlaceholder title="Экран: Стикеры и эмодзи" />}
       </div>
     </div>
@@ -1060,6 +1060,43 @@ const PrivacyVisibilityScreen = observer(() => {
           <label key={opt.k} className="flex items-center gap-2">
             <input type="radio" name={`vis_${conf.key}`} checked={value === opt.k} onChange={()=>appSettingsStore.setPrivacyVisibility(conf.key as any, opt.k as any)} />
             <span>{opt.label}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+});
+
+// LANGUAGE SCREEN
+const LanguageScreen = observer(() => {
+  const s = appSettingsStore.state.language;
+  const isPremium = appSettingsStore.state.premium;
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-3">
+      {/* Translate options */}
+      <div className="bg-white/10 rounded-lg p-3 space-y-2">
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={s.showTranslateButton} onChange={(e)=>appSettingsStore.setShowTranslateButton(e.target.checked)} />
+          <span>Показывать кнопку "Перевести"</span>
+        </label>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={s.translateWholeChats && isPremium} disabled={!isPremium} onChange={(e)=>appSettingsStore.setTranslateWholeChats(e.target.checked)} />
+          <span>Переводить чаты целиком</span>
+          <span className="ml-2 text-white/70">{isPremium ? '✔︎' : '🔒'}</span>
+        </label>
+        <div className="text-white/70 text-sm">Кнопка "Перевести" появится в меню действий для сообщений, содержащих текст.</div>
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* Interface language */}
+      <div className="bg-white/10 rounded-lg p-3 space-y-2">
+        <div className="font-semibold">Язык интерфейса</div>
+        {s.available.map((opt) => (
+          <label key={opt.code} className="flex items-center gap-2">
+            <input type="radio" name="uiLang" checked={s.selected === opt.code} onChange={()=>appSettingsStore.setInterfaceLanguage(opt.code)} />
+            <span>{opt.nameNative}</span>
+            <span className="text-white/60 text-sm">({opt.nameRu})</span>
           </label>
         ))}
       </div>
