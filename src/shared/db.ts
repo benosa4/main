@@ -235,6 +235,9 @@ export interface AppSettingsDTO {
     autoFiles: { contacts: boolean; direct: boolean; groups: boolean; channels: boolean };
     maxFileSizeMb: number; // 0..10
   } | null;
+  // Chat folders (tabs) persisted in settings
+  chatTabs?: { id: number; label: string; chatIds: number[] }[] | null;
+  selectedChatTabId?: number | null;
   // Privacy
   privacy?: {
     blacklistCount: number;

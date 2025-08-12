@@ -54,6 +54,9 @@ export interface AppSettingsState {
     autoFiles: { contacts: boolean; direct: boolean; groups: boolean; channels: boolean };
     maxFileSizeMb: number; // 0..10
   };
+  // Folders/tabs
+  chatTabs: { id: number; label: string; chatIds: number[] }[];
+  selectedChatTabId: number | null;
   privacy: {
     blacklistCount: number;
     blacklist: { id: string; displayName: string; username: string; avatarUrl?: string | null }[];
@@ -128,6 +131,8 @@ const DEFAULTS: AppSettingsState = {
     autoFiles: { contacts: false, direct: false, groups: false, channels: false },
     maxFileSizeMb: 5,
   },
+  chatTabs: [],
+  selectedChatTabId: null,
   privacy: {
     blacklistCount: 3,
     blacklist: [
@@ -189,6 +194,8 @@ class AppSettingsStore {
             keyboardMode: dto.keyboardMode ?? DEFAULTS.keyboardMode,
             notifications: dto.notifications ?? DEFAULTS.notifications,
             dataMemory: dto.dataMemory ?? DEFAULTS.dataMemory,
+            chatTabs: dto.chatTabs ?? DEFAULTS.chatTabs,
+            selectedChatTabId: dto.selectedChatTabId ?? DEFAULTS.selectedChatTabId,
             privacy: {
               blacklistCount: (dto.privacy?.blacklist?.length ?? dto.privacy?.blacklistCount ?? DEFAULTS.privacy.blacklistCount) as number,
               blacklist: dto.privacy?.blacklist ?? DEFAULTS.privacy.blacklist,
@@ -254,6 +261,8 @@ class AppSettingsStore {
       keyboardMode: this.state.keyboardMode,
       notifications: this.state.notifications,
       dataMemory: this.state.dataMemory,
+      chatTabs: this.state.chatTabs,
+      selectedChatTabId: this.state.selectedChatTabId,
       privacy: {
         ...this.state.privacy,
         blacklistCount: this.state.privacy.blacklist?.length ?? this.state.privacy.blacklistCount,
@@ -401,6 +410,16 @@ class AppSettingsStore {
   setMaxFileSizeMb(v: number) {
     const clamped = Math.max(0, Math.min(10, Math.round(v)));
     this.state.dataMemory.maxFileSizeMb = clamped;
+    void this.persist();
+  }
+
+  // Folders/tabs setters
+  setChatTabs(tabs: { id: number; label: string; chatIds: number[] }[]) {
+    this.state.chatTabs = JSON.parse(JSON.stringify(tabs));
+    void this.persist();
+  }
+  setSelectedChatTabId(id: number | null) {
+    this.state.selectedChatTabId = id;
     void this.persist();
   }
 

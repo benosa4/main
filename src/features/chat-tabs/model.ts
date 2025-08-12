@@ -1,6 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { ChatTab, fetchChatTabs } from './api';
 import { loadTabsFromDB, saveTabsToDB } from '../../shared/db';
+import appSettingsStore from '../../shared/config/appSettings';
 
 class ChatTabsStore {
   tabs: ChatTab[] = [];
@@ -11,28 +12,38 @@ class ChatTabsStore {
   }
 
   async load() {
-    const stored = await loadTabsFromDB();
-    if (stored.length) {
+    // Prefer tabs persisted inside settings
+    const fromSettings = appSettingsStore.state.chatTabs;
+    if (fromSettings && fromSettings.length) {
+      this.tabs = JSON.parse(JSON.stringify(fromSettings));
+    } else {
+      const stored = await loadTabsFromDB();
+      if (stored.length) {
       runInAction(() => {
         this.tabs = stored;
       });
-    } else {
-      const fetched = await fetchChatTabs();
-      runInAction(() => {
-        this.tabs = fetched;
-      });
-      await saveTabsToDB(fetched);
+      } else {
+        const fetched = await fetchChatTabs();
+        runInAction(() => {
+          this.tabs = fetched;
+        });
+        await saveTabsToDB(fetched);
+      }
+      // Save initial set into settings as source of truth
+      appSettingsStore.setChatTabs(this.tabs);
     }
     runInAction(() => {
-      if (this.tabs.length && this.selectedTabId === null) {
-        this.selectedTabId = this.tabs[0].id;
-      }
+      const savedSel = appSettingsStore.state.selectedChatTabId;
+      if (typeof savedSel === 'number' && this.tabs.some(t => t.id === savedSel)) this.selectedTabId = savedSel;
+      else if (this.tabs.length && this.selectedTabId === null) this.selectedTabId = this.tabs[0].id;
     });
+    appSettingsStore.setSelectedChatTabId(this.selectedTabId);
   }
 
   selectTab(id: number) {
     if (this.selectedTabId === id) return;
     this.selectedTabId = id;
+    appSettingsStore.setSelectedChatTabId(id);
   }
 
   get selectedTab(): ChatTab | undefined {
@@ -41,6 +52,7 @@ class ChatTabsStore {
 
   async persist() {
     await saveTabsToDB(this.tabs);
+    appSettingsStore.setChatTabs(this.tabs);
   }
 
   addTab(label: string, chatIds: number[] = []) {
@@ -49,6 +61,7 @@ class ChatTabsStore {
     this.tabs = [...this.tabs, tab];
     void this.persist();
     if (!this.selectedTabId) this.selectedTabId = tab.id;
+    appSettingsStore.setSelectedChatTabId(this.selectedTabId);
   }
 
   removeTab(id: number) {
@@ -57,6 +70,7 @@ class ChatTabsStore {
     this.tabs = this.tabs.filter((t) => t.id !== id);
     if (this.selectedTabId === id) this.selectedTabId = this.tabs[0]?.id ?? null;
     void this.persist();
+    appSettingsStore.setSelectedChatTabId(this.selectedTabId);
   }
 
   reorderTabs(fromIndex: number, toIndex: number) {
