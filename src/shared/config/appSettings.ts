@@ -48,6 +48,12 @@ export interface AppSettingsState {
     channels: { enabled: boolean };
     other: { contactJoined: boolean };
   };
+  dataMemory: {
+    autoPhoto: { contacts: boolean; direct: boolean; groups: boolean; channels: boolean };
+    autoVideoGif: { contacts: boolean; direct: boolean; groups: boolean; channels: boolean };
+    autoFiles: { contacts: boolean; direct: boolean; groups: boolean; channels: boolean };
+    maxFileSizeMb: number; // 0..10
+  };
 }
 
 const DEFAULTS: AppSettingsState = {
@@ -94,6 +100,12 @@ const DEFAULTS: AppSettingsState = {
     channels: { enabled: true },
     other: { contactJoined: true },
   },
+  dataMemory: {
+    autoPhoto: { contacts: true, direct: true, groups: false, channels: false },
+    autoVideoGif: { contacts: false, direct: false, groups: false, channels: false },
+    autoFiles: { contacts: false, direct: false, groups: false, channels: false },
+    maxFileSizeMb: 5,
+  },
 };
 
 class AppSettingsStore {
@@ -128,6 +140,7 @@ class AppSettingsStore {
             timeFormat: dto.timeFormat ?? DEFAULTS.timeFormat,
             keyboardMode: dto.keyboardMode ?? DEFAULTS.keyboardMode,
             notifications: dto.notifications ?? DEFAULTS.notifications,
+            dataMemory: dto.dataMemory ?? DEFAULTS.dataMemory,
           }
         : { ...DEFAULTS };
       runInAction(() => {
@@ -182,6 +195,7 @@ class AppSettingsStore {
       timeFormat: this.state.timeFormat,
       keyboardMode: this.state.keyboardMode,
       notifications: this.state.notifications,
+      dataMemory: this.state.dataMemory,
     };
     await saveAppSettingsToDB(dto);
     // mock remote sync
@@ -306,6 +320,25 @@ class AppSettingsStore {
   }
   setOtherContactJoined(on: boolean) {
     this.state.notifications.other.contactJoined = on;
+    void this.persist();
+  }
+
+  // Data & memory setters
+  setAutoPhoto(category: 'contacts'|'direct'|'groups'|'channels', on: boolean) {
+    this.state.dataMemory.autoPhoto[category] = on;
+    void this.persist();
+  }
+  setAutoVideoGif(category: 'contacts'|'direct'|'groups'|'channels', on: boolean) {
+    this.state.dataMemory.autoVideoGif[category] = on;
+    void this.persist();
+  }
+  setAutoFiles(category: 'contacts'|'direct'|'groups'|'channels', on: boolean) {
+    this.state.dataMemory.autoFiles[category] = on;
+    void this.persist();
+  }
+  setMaxFileSizeMb(v: number) {
+    const clamped = Math.max(0, Math.min(10, Math.round(v)));
+    this.state.dataMemory.maxFileSizeMb = clamped;
     void this.persist();
   }
 

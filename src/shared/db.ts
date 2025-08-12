@@ -228,6 +228,13 @@ export interface AppSettingsDTO {
     channels: { enabled: boolean };
     other: { contactJoined: boolean };
   } | null;
+  // Data & Memory
+  dataMemory?: {
+    autoPhoto: { contacts: boolean; direct: boolean; groups: boolean; channels: boolean };
+    autoVideoGif: { contacts: boolean; direct: boolean; groups: boolean; channels: boolean };
+    autoFiles: { contacts: boolean; direct: boolean; groups: boolean; channels: boolean };
+    maxFileSizeMb: number; // 0..10
+  } | null;
 }
 
 export async function loadAppSettingsFromDB(): Promise<AppSettingsDTO | null> {

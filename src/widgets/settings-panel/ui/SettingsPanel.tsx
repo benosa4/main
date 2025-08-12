@@ -166,6 +166,7 @@ const Screens = observer(() => {
         {current === 'animation' && <AnimationScreen />}
         {current === 'notifications' && <NotificationsScreen />}
         {current === 'data' && <ScreenPlaceholder title="Экран: Данные и память" />}
+        {current === 'data' && <DataMemoryScreen />}
         {current === 'privacy' && <ScreenPlaceholder title="Экран: Конфиденциальность" />}
         {current === 'folders' && <ScreenPlaceholder title="Экран: Папки с чатами" />}
         {current === 'sessions' && <ScreenPlaceholder title="Экран: Активные сеансы" />}
@@ -459,6 +460,65 @@ const NotificationsScreen = observer(() => {
             <div>Контакт присоединился к Telegram</div>
           </div>
         </label>
+      </div>
+    </div>
+  );
+});
+
+// DATA & MEMORY SCREEN
+const DataMemoryScreen = observer(() => {
+  const s = appSettingsStore.state.dataMemory;
+  const Row = ({ label, group, onToggle }: { label: string; group: { contacts: boolean; direct: boolean; groups: boolean; channels: boolean }; onToggle: (k: 'contacts'|'direct'|'groups'|'channels', v: boolean)=>void }) => (
+    <div className="space-y-2">
+      <div className="font-semibold">{label}</div>
+      {([
+        {k: 'contacts', label: 'Контакты'},
+        {k: 'direct', label: 'Другие личные чаты'},
+        {k: 'groups', label: 'Группы'},
+        {k: 'channels', label: 'Каналы'},
+      ] as const).map(opt => (
+        <label key={opt.k} className="flex items-center gap-2">
+          <input type="checkbox" checked={group[opt.k]} onChange={(e)=>onToggle(opt.k, e.target.checked)} />
+          <span>{opt.label}</span>
+        </label>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-3">
+      <div className="bg-white/10 rounded-lg p-3">
+        <Row label="Автозагрузка фото" group={s.autoPhoto} onToggle={(k,v)=>appSettingsStore.setAutoPhoto(k,v)} />
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      <div className="bg-white/10 rounded-lg p-3">
+        <Row label="Автозагрузка видео и GIF" group={s.autoVideoGif} onToggle={(k,v)=>appSettingsStore.setAutoVideoGif(k,v)} />
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      <div className="bg-white/10 rounded-lg p-3">
+        <Row label="Автозагрузка файлов" group={s.autoFiles} onToggle={(k,v)=>appSettingsStore.setAutoFiles(k,v)} />
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      <div className="bg-white/10 rounded-lg p-3">
+        <div className="flex items-center justify-between">
+          <div className="font-semibold">Максимальный размер файла</div>
+          <div className="text-white/70">до {s.maxFileSizeMb} МБ</div>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={10}
+          step={1}
+          value={s.maxFileSizeMb}
+          onChange={(e)=>appSettingsStore.setMaxFileSizeMb(parseInt(e.target.value,10))}
+          className="w-full mt-2"
+        />
       </div>
     </div>
   );
