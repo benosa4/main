@@ -8,6 +8,7 @@ import { downloadFromUrl } from '../../../shared/media/api';
 import ColorPicker from '../../../shared/ui/ColorPicker';
 import { chatTabsStore } from '../../../features/chat-tabs/model';
 import { chatStore } from '../../../features/chats/model';
+import { loadSessionsFromDB, loadSessionsFromRemote, saveSessionsToDB, saveSessionsToRemote, type SessionDTO } from '../../../shared/db';
 
 const NavBar = observer(() => {
   const current = settingsPanelStore.stack[settingsPanelStore.stack.length - 1] || 'root';
@@ -192,7 +193,7 @@ const Screens = observer(() => {
           <PrivacyVisibilityScreen />
         )}
         {current === 'folders' && <FoldersScreen />}
-        {current === 'sessions' && <ScreenPlaceholder title="Экран: Активные сеансы" />}
+        {current === 'sessions' && <SessionsScreen />}
         {current === 'language' && <ScreenPlaceholder title="Экран: Язык" />}
         {current === 'stickers' && <ScreenPlaceholder title="Экран: Стикеры и эмодзи" />}
       </div>
@@ -680,6 +681,110 @@ const FoldersScreen = observer(() => {
             >Добавить</button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+});
+
+// SESSIONS SCREEN
+const SessionsScreen = observer(() => {
+  const [sessions, setSessions] = useState<SessionDTO[]>([]);
+
+  // Load sessions from DB, fallback to mock, then persist
+  useEffect(() => {
+    (async () => {
+      const local = await loadSessionsFromDB();
+      if (local && local.length) {
+        setSessions(local);
+        return;
+      }
+      let remote = await loadSessionsFromRemote();
+      if (!remote || !remote.length) {
+        // seed mock remote
+        const now = Date.now();
+        remote = [
+          { id: 's1', browser: 'Chrome', clientVersion: 'Web 1.0.0', location: 'Moscow, RU', lastActiveAt: new Date(now - 3600_000).toISOString() },
+          { id: 's2', browser: 'Firefox', clientVersion: 'Web 1.0.0', location: 'Berlin, DE', lastActiveAt: new Date(now - 86400_000).toISOString() },
+        ];
+        await saveSessionsToRemote(remote);
+      }
+      await saveSessionsToDB(remote);
+      setSessions(remote);
+    })().catch(() => {});
+  }, []);
+
+  // Current device info
+  const ua = navigator.userAgent;
+  const browser = /Chrome/i.test(ua) && !/Edge|OPR/i.test(ua) ? 'Chrome' : /Firefox/i.test(ua) ? 'Firefox' : /Safari/i.test(ua) && !/Chrome/i.test(ua) ? 'Safari' : /Edg/i.test(ua) ? 'Edge' : 'Web';
+  const icon = browser === 'Chrome' ? '🔵' : browser === 'Firefox' ? '🦊' : browser === 'Safari' ? '🧭' : browser === 'Edge' ? '🟢' : '🌐';
+  const clientVersion = 'Web ' + (import.meta?.env?.VITE_APP_VERSION || '1.0.0');
+  const location = 'Your location';
+
+  const opts: { key: any; label: string }[] = [
+    { key: '1w', label: '1 нед.' },
+    { key: '1m', label: '1 месяц' },
+    { key: '3m', label: '3 месяца' },
+    { key: '6m', label: '6 месяцев' },
+  ];
+
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-3">
+      {/* This device */}
+      <div className="bg-white/10 rounded-lg">
+        <div className="flex items-center gap-3 px-3 py-3">
+          <div className="w-10 h-10 rounded-full bg-white/20 grid place-items-center text-xl">{icon}</div>
+          <div className="flex-1">
+            <div className="font-semibold">{browser}</div>
+            <div className="text-white/70 text-sm">{clientVersion}</div>
+            <div className="text-white/70 text-sm">вход с: {location}</div>
+          </div>
+        </div>
+        <div className="h-px bg-white/20 mx-1" />
+        <button className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/10" onClick={() => {
+          // mock: "завершить все другие сеансы" — очистим локальные кроме текущего (не храним id текущего — no-op)
+          setSessions([]);
+          saveSessionsToDB([]).catch(()=>{});
+          saveSessionsToRemote([]).catch(()=>{});
+        }}>
+          <span>🗑️</span>
+          <div className="flex-1 text-left">
+            <div className="font-semibold">Завершить все другие сеансы</div>
+          </div>
+        </button>
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* Active sessions list */}
+      <div className="bg-white/10 rounded-lg">
+        <div className="px-3 py-2 font-semibold">Активные сеансы</div>
+        {sessions.length === 0 ? (
+          <div className="px-3 py-3 text-white/70">Сеансов нет</div>
+        ) : sessions.map((s) => (
+          <div key={s.id} className="flex items-center gap-3 px-3 py-3 border-t border-white/10">
+            <div className="w-10 h-10 rounded-full bg-white/20 grid place-items-center text-xl">{icon}</div>
+            <div className="flex-1">
+              <div className="font-semibold">{s.browser}</div>
+              <div className="text-white/70 text-sm">{s.clientVersion}</div>
+              <div className="text-white/70 text-sm">вход с: {s.location}</div>
+            </div>
+            <div className="text-white/70 text-sm whitespace-nowrap">{new Date(s.lastActiveAt).toLocaleString()}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* Auto end */}
+      <div className="bg-white/10 rounded-lg p-3">
+        <div className="font-semibold mb-2">Автоматически завершать сеансы</div>
+        <div className="mb-1">Если сеанс не активен:</div>
+        {opts.map((o) => (
+          <label key={o.key} className="flex items-center gap-2">
+            <input type="radio" name="autoEndSessions" checked={appSettingsStore.state.sessionsConfig.autoEndAfter === o.key} onChange={()=>appSettingsStore.setSessionsAutoEnd(o.key)} />
+            <span>{o.label}</span>
+          </label>
+        ))}
       </div>
     </div>
   );

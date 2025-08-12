@@ -57,6 +57,7 @@ export interface AppSettingsState {
   // Folders/tabs
   chatTabs: { id: number; label: string; chatIds: number[] }[];
   selectedChatTabId: number | null;
+  sessionsConfig: { autoEndAfter: '1w' | '1m' | '3m' | '6m' };
   privacy: {
     blacklistCount: number;
     blacklist: { id: string; displayName: string; username: string; avatarUrl?: string | null }[];
@@ -133,6 +134,7 @@ const DEFAULTS: AppSettingsState = {
   },
   chatTabs: [],
   selectedChatTabId: null,
+  sessionsConfig: { autoEndAfter: '3m' },
   privacy: {
     blacklistCount: 3,
     blacklist: [
@@ -196,6 +198,7 @@ class AppSettingsStore {
             dataMemory: dto.dataMemory ?? DEFAULTS.dataMemory,
             chatTabs: dto.chatTabs ?? DEFAULTS.chatTabs,
             selectedChatTabId: dto.selectedChatTabId ?? DEFAULTS.selectedChatTabId,
+            sessionsConfig: dto.sessionsConfig ?? DEFAULTS.sessionsConfig,
             privacy: {
               blacklistCount: (dto.privacy?.blacklist?.length ?? dto.privacy?.blacklistCount ?? DEFAULTS.privacy.blacklistCount) as number,
               blacklist: dto.privacy?.blacklist ?? DEFAULTS.privacy.blacklist,
@@ -263,6 +266,7 @@ class AppSettingsStore {
       dataMemory: this.state.dataMemory,
       chatTabs: this.state.chatTabs,
       selectedChatTabId: this.state.selectedChatTabId,
+      sessionsConfig: this.state.sessionsConfig,
       privacy: {
         ...this.state.privacy,
         blacklistCount: this.state.privacy.blacklist?.length ?? this.state.privacy.blacklistCount,
@@ -275,6 +279,11 @@ class AppSettingsStore {
     } catch {
       // ignore remote errors in mock
     }
+  }
+
+  setSessionsAutoEnd(val: '1w'|'1m'|'3m'|'6m') {
+    this.state.sessionsConfig.autoEndAfter = val;
+    void this.persist();
   }
 
   setTheme(mode: ThemeMode) {

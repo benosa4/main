@@ -1,5 +1,5 @@
 const DB_NAME = 'chat-app';
-const DB_VERSION = 7;
+const DB_VERSION = 8;
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 function getDB(): Promise<IDBDatabase> {
@@ -35,6 +35,12 @@ function getDB(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains('settings_remote')) {
         db.createObjectStore('settings_remote', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('app_sessions')) {
+        db.createObjectStore('app_sessions', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('app_sessions_remote')) {
+        db.createObjectStore('app_sessions_remote', { keyPath: 'id' });
       }
       if (!db.objectStoreNames.contains('profile')) {
         db.createObjectStore('profile', { keyPath: 'id' });
@@ -238,6 +244,8 @@ export interface AppSettingsDTO {
   // Chat folders (tabs) persisted in settings
   chatTabs?: { id: number; label: string; chatIds: number[] }[] | null;
   selectedChatTabId?: number | null;
+  // Sessions config
+  sessionsConfig?: { autoEndAfter: '1w' | '1m' | '3m' | '6m' } | null;
   // Privacy
   privacy?: {
     blacklistCount: number;
@@ -261,6 +269,59 @@ export interface AppSettingsDTO {
     sensitive18plus: boolean;
     showChatWindowTitle: boolean;
   } | null;
+}
+
+// Sessions
+export interface SessionDTO {
+  id: string; // unique per session
+  browser: string; // e.g., Chrome, Firefox
+  clientVersion: string; // app/web client version
+  location: string; // like City, Country
+  lastActiveAt: string; // ISO
+}
+
+export async function saveSessionsToDB(sessions: SessionDTO[]) {
+  const db = await getDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('app_sessions', 'readwrite');
+    const store = tx.objectStore('app_sessions');
+    sessions.forEach((s) => store.put(JSON.parse(JSON.stringify(s))));
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function loadSessionsFromDB(): Promise<SessionDTO[]> {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('app_sessions', 'readonly');
+    const store = tx.objectStore('app_sessions');
+    const req = store.getAll();
+    req.onsuccess = () => resolve((req.result as SessionDTO[]) || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function loadSessionsFromRemote(): Promise<SessionDTO[] | null> {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('app_sessions_remote', 'readonly');
+    const store = tx.objectStore('app_sessions_remote');
+    const req = store.getAll();
+    req.onsuccess = () => resolve((req.result as SessionDTO[]) || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function saveSessionsToRemote(sessions: SessionDTO[]): Promise<void> {
+  const db = await getDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('app_sessions_remote', 'readwrite');
+    const store = tx.objectStore('app_sessions_remote');
+    sessions.forEach((s) => store.put(JSON.parse(JSON.stringify(s))));
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
 }
 
 export async function loadAppSettingsFromDB(): Promise<AppSettingsDTO | null> {
