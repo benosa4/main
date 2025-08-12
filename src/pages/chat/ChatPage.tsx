@@ -423,7 +423,9 @@ const ChatPage = observer(() => {
                             {
                               id: `${Date.now()}`,
                               url: (reader.result as string) || fileUrl,
-                              type: f.type.startsWith('image/') ? 'image' : 'file',
+                              type: f.type.startsWith('image/') ? 'image' : (f.type.startsWith('video/') ? 'video' : 'file'),
+                              mime: f.type,
+                              size: f.size,
                               name: f.name,
                             },
                           ]);

@@ -17,15 +17,15 @@ const MessageContent: React.FC<Props> = ({ message }) => {
         if (att.type === 'image') {
           return (
             <div key={key} className="rounded-md overflow-hidden border border-white/10">
-              <MediaImage url={att.url} alt={att.name || 'image'} className="max-w-xs rounded-md" />
+              <MediaImage url={att.url} alt={att.name || 'image'} mime={att.mime} className="max-w-xs rounded-md" />
             </div>
           );
         }
-        // if it's a file, try to render as video when URL suggests so
-        if (att.type === 'file' && isVideoLike(att.url)) {
+        // if it's a file or declared video, try to render as video when URL/MIME suggests so
+        if ((att.type === 'file' || att.type === 'video') && isVideoLike(att.url, att.mime)) {
           return (
             <div key={key} className="rounded-md overflow-hidden border border-white/10">
-              <MediaVideo url={att.url} className="max-w-sm rounded-md" />
+              <MediaVideo url={att.url} mime={att.mime} className="max-w-sm rounded-md" />
             </div>
           );
         }
