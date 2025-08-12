@@ -1,5 +1,5 @@
 const DB_NAME = 'chat-app';
-const DB_VERSION = 4;
+const DB_VERSION = 6;
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 function getDB(): Promise<IDBDatabase> {
@@ -30,9 +30,15 @@ function getDB(): Promise<IDBDatabase> {
             // index creation may fail on some browsers; ignore
           }
         }
-        if (!db.objectStoreNames.contains('settings')) {
-          db.createObjectStore('settings', { keyPath: 'id' });
-        }
+      if (!db.objectStoreNames.contains('settings')) {
+        db.createObjectStore('settings', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('settings_remote')) {
+        db.createObjectStore('settings_remote', { keyPath: 'id' });
+      }
+      if (!db.objectStoreNames.contains('profile')) {
+        db.createObjectStore('profile', { keyPath: 'id' });
+      }
         if (!db.objectStoreNames.contains('drafts')) {
           db.createObjectStore('drafts', { keyPath: 'conversationId' });
         }
@@ -175,6 +181,7 @@ export interface AppSettingsDTO {
   animations: boolean;
   version: 'A' | 'K';
   lastConversationId?: number | null;
+  chatBackgroundUrl?: string | null;
 }
 
 export async function loadAppSettingsFromDB(): Promise<AppSettingsDTO | null> {
@@ -194,6 +201,63 @@ export async function saveAppSettingsToDB(settings: AppSettingsDTO): Promise<voi
     const tx = db.transaction('settings', 'readwrite');
     const store = tx.objectStore('settings');
     store.put({ ...settings });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// Mock remote persistence for settings
+export async function loadAppSettingsFromRemote(): Promise<AppSettingsDTO | null> {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('settings_remote', 'readonly');
+    const store = tx.objectStore('settings_remote');
+    const req = store.get('app');
+    req.onsuccess = () => resolve((req.result as AppSettingsDTO) || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function saveAppSettingsToRemote(settings: AppSettingsDTO): Promise<void> {
+  const db = await getDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('settings_remote', 'readwrite');
+    const store = tx.objectStore('settings_remote');
+    store.put({ ...settings });
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+// Profile
+export interface ProfileDTO {
+  id: 'me';
+  displayName: string;
+  username: string;
+  phone: string;
+  about?: string | null;
+  birthdayLabel?: string | null;
+  avatarUrl?: string | null;
+  avatarCacheDataUrl?: string | null;
+}
+
+export async function loadProfileFromDB(): Promise<ProfileDTO | null> {
+  const db = await getDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('profile', 'readonly');
+    const store = tx.objectStore('profile');
+    const req = store.get('me');
+    req.onsuccess = () => resolve((req.result as ProfileDTO) || null);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function saveProfileToDB(profile: ProfileDTO): Promise<void> {
+  const db = await getDB();
+  return new Promise<void>((resolve, reject) => {
+    const tx = db.transaction('profile', 'readwrite');
+    const store = tx.objectStore('profile');
+    store.put({ ...profile });
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });

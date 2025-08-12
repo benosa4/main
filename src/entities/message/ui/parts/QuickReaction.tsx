@@ -6,13 +6,28 @@ export interface QuickReactionProps {
 
 const QUICK = ['👍', '❤️', '🔥', '😂'];
 
+const colorForEmoji = (emoji: string) => {
+  switch (emoji) {
+    case '👍':
+      return 'bg-green-500 text-white';
+    case '❤️':
+      return 'bg-rose-500 text-white';
+    case '🔥':
+      return 'bg-orange-500 text-white';
+    case '😂':
+      return 'bg-yellow-400 text-black';
+    default:
+      return 'bg-white/20 text-white';
+  }
+};
+
 const QuickReaction: React.FC<QuickReactionProps> = ({ onReact }) => {
   return (
     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
       {QUICK.map((e) => (
         <button
           key={e}
-          className="text-xs rounded-full bg-white/10 hover:bg-white/20 px-1 cursor-pointer"
+          className={`text-xs rounded-full px-1 cursor-pointer ${colorForEmoji(e)} hover:opacity-90`}
           onClick={() => onReact?.(e)}
         >
           {e}
@@ -23,4 +38,3 @@ const QuickReaction: React.FC<QuickReactionProps> = ({ onReact }) => {
 };
 
 export default QuickReaction;
-

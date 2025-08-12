@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import appSettingsStore from './appSettings';
+import { profileStore } from '../../features/profile/model';
 import { menuStore } from '../../features/menu/model';
 
 export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -7,9 +8,10 @@ export const AppSettingsProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   useEffect(() => {
     let mounted = true;
-    appSettingsStore
-      .init()
-      .catch(() => {})
+    Promise.all([
+      appSettingsStore.init().catch(() => {}),
+      profileStore.load().catch(() => {}),
+    ])
       .finally(() => {
         if (mounted) setReady(true);
       });

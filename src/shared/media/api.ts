@@ -9,3 +9,15 @@ export async function presignForUpload(req: PresignRequest): Promise<PresignResp
   return { uploadUrl, fileUrl, headers: { 'x-mock': '1' } };
 }
 
+// Mock PUT upload to S3 signed URL
+export async function uploadToPresignedUrl(url: string, _file: Blob, _headers?: Record<string,string>): Promise<void> {
+  // no-op mock; in real life we'd PUT to `url`
+  void url; void _file; void _headers;
+  return Promise.resolve();
+}
+
+// Mock download: returns the same URL for <img src>, or a DataURL if needed
+export async function downloadFromUrl(url: string): Promise<string> {
+  // In a real app, fetch blob and return object URL or DataURL
+  return Promise.resolve(url);
+}

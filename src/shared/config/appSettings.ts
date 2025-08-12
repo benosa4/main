@@ -9,6 +9,7 @@ export interface AppSettingsState {
   animations: boolean;
   version: 'A' | 'K';
   lastConversationId?: number | null;
+  chatBackgroundUrl?: string | null;
 }
 
 const DEFAULTS: AppSettingsState = {
@@ -16,6 +17,7 @@ const DEFAULTS: AppSettingsState = {
   animations: true,
   version: 'K',
   lastConversationId: null,
+  chatBackgroundUrl: null,
 };
 
 class AppSettingsStore {
@@ -31,7 +33,7 @@ class AppSettingsStore {
     try {
       const dto = await loadAppSettingsFromDB();
       const merged: AppSettingsState = dto
-        ? { theme: dto.theme, animations: dto.animations, version: dto.version, lastConversationId: dto.lastConversationId ?? null }
+        ? { theme: dto.theme, animations: dto.animations, version: dto.version, lastConversationId: dto.lastConversationId ?? null, chatBackgroundUrl: dto.chatBackgroundUrl ?? null }
         : { ...DEFAULTS };
       runInAction(() => {
         this.state = merged;
@@ -57,8 +59,16 @@ class AppSettingsStore {
       animations: this.state.animations,
       version: this.state.version,
       lastConversationId: this.state.lastConversationId ?? null,
+      chatBackgroundUrl: this.state.chatBackgroundUrl ?? null,
     };
     await saveAppSettingsToDB(dto);
+    // mock remote sync
+    try {
+      const { saveAppSettingsToRemote } = await import('../db');
+      await saveAppSettingsToRemote(dto);
+    } catch {
+      // ignore remote errors in mock
+    }
   }
 
   setTheme(mode: ThemeMode) {
@@ -92,6 +102,11 @@ class AppSettingsStore {
 
   setLastConversation(id: number | null) {
     this.state.lastConversationId = id ?? null;
+    void this.persist();
+  }
+
+  setChatBackgroundUrl(url: string | null) {
+    this.state.chatBackgroundUrl = url ?? null;
     void this.persist();
   }
 }
