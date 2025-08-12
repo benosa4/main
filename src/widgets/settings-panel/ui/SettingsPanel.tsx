@@ -199,8 +199,14 @@ const SettingsPanel = observer(() => {
       <div
         className="absolute top-0 right-0 bottom-0 left-0 bg-black border-l border-white/20 will-change-transform flex flex-col overflow-hidden"
         style={{
-          transform: slideIn ? 'translateX(0%)' : 'translateX(100%)',
-          transition: 'transform 420ms ease',
+          transform:
+            appSettingsStore.state.animations && appSettingsStore.state.animationPrefs.interface.rightMenu
+              ? (slideIn ? 'translateX(0%)' : 'translateX(100%)')
+              : 'translateX(0%)',
+          transition:
+            appSettingsStore.state.animations && appSettingsStore.state.animationPrefs.interface.rightMenu
+              ? 'transform 420ms ease'
+              : 'none',
         }}
       >
         <Screens />

@@ -5,6 +5,7 @@ import { chatTabsStore } from '../../../features/chat-tabs/model';
 import type { Chat } from '../../../features/chats/api';
 import Avatar from '../../../shared/ui/Avatar';
 import TwemojiText from '../../../shared/emoji/TwemojiText';
+import appSettingsStore from '../../../shared/config/appSettings';
 
 interface Props {
   search: string;
@@ -139,7 +140,7 @@ const ChatsPanel = observer(({ search, onStoriesCollapseChange }: Props) => {
     <div className="flex-1 min-h-0 flex flex-col">
       <div
         ref={tabRef}
-        className="px-2 pt-2 flex gap-2 overflow-x-auto hide-scrollbar transition-all duration-300"
+        className={`px-2 pt-2 flex gap-2 overflow-x-auto hide-scrollbar ${appSettingsStore.state.animations && appSettingsStore.state.animationPrefs.interface.menuTransitions ? 'transition-all duration-300' : ''}`}
       >
         {chatTabsStore.tabs.map((tab) => (
           <button
@@ -158,7 +159,7 @@ const ChatsPanel = observer(({ search, onStoriesCollapseChange }: Props) => {
       <div className="flex-1 min-h-0 overflow-hidden">
         <div
           className={`flex h-full ${
-            isAnimating ? 'transition-transform duration-300' : ''
+            isAnimating && appSettingsStore.state.animations && appSettingsStore.state.animationPrefs.interface.menuTransitions ? 'transition-transform duration-300' : ''
           }`}
           style={{ transform: `translateX(${translate}%)` }}
           onTransitionEnd={handleTransitionEnd}

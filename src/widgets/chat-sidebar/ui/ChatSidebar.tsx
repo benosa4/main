@@ -8,6 +8,7 @@ import SearchBar from './SearchBar';
 import StoriesBar from './StoriesBar';
 import ChatsPanel from './ChatsPanel';
 import SettingsPanel from '../../settings-panel/ui/SettingsPanel';
+import appSettingsStore from '../../../shared/config/appSettings';
 
 const ChatSidebar = observer(() => {
   useChats();
@@ -19,10 +20,11 @@ const ChatSidebar = observer(() => {
   const [fabOpen, setFabOpen] = useState(false);
   const [storiesCollapsed, setStoriesCollapsed] = useState(false);
 
+  const blurOn = appSettingsStore.state.animations && appSettingsStore.state.animationPrefs.interface.contextBlur;
   return (
-    <aside className="w-1/4 bg-white/20 backdrop-blur-md border-r border-white/20 flex flex-col relative">
+    <aside className={`w-1/4 bg-white/20 ${blurOn ? 'backdrop-blur-md' : ''} border-r border-white/20 flex flex-col relative`}>
       <SearchBar search={search} onSearch={setSearch} storiesCollapsed={storiesCollapsed} />
-      <div className={`${storiesCollapsed ? 'h-0 p-0 opacity-0 border-b-0' : ''} transition-all duration-300`}>
+      <div className={`${storiesCollapsed ? 'h-0 p-0 opacity-0 border-b-0' : ''} ${appSettingsStore.state.animationPrefs.interface.menuTransitions && appSettingsStore.state.animations ? 'transition-all duration-300' : ''}`}>
         {!storiesCollapsed && <StoriesBar />}
       </div>
       <ChatsPanel search={search} onStoriesCollapseChange={setStoriesCollapsed} />

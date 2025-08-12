@@ -1,4 +1,5 @@
 import React from 'react';
+import appSettingsStore from '../../../../shared/config/appSettings';
 import type { MessageReaction } from '../../types';
 
 export interface ReactionsProps {
@@ -27,12 +28,13 @@ const colorForEmoji = (emoji: string) => {
 
 const Reactions: React.FC<ReactionsProps> = ({ reactions, onToggle }) => {
   if (!reactions || reactions.length === 0) return null;
+  const animate = appSettingsStore.state.animations && appSettingsStore.state.animationPrefs.stickers.animatedReactions;
   return (
     <div className="flex gap-1 mt-1">
       {reactions.map((r) => (
         <button
           key={r.emoji}
-          className={`text-[11px] px-1 rounded-full cursor-pointer ${colorForEmoji(r.emoji)} hover:opacity-90`}
+          className={`text-[11px] px-1 rounded-full cursor-pointer ${colorForEmoji(r.emoji)} ${animate ? 'transition-transform hover:scale-110' : ''}`}
           onClick={() => onToggle?.(r.emoji)}
         >
           {r.emoji} {r.count}

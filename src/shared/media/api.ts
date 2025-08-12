@@ -18,6 +18,19 @@ export async function uploadToPresignedUrl(url: string, _file: Blob, _headers?: 
 
 // Mock download: returns the same URL for <img src>, or a DataURL if needed
 export async function downloadFromUrl(url: string): Promise<string> {
-  // In a real app, fetch blob and return object URL or DataURL
-  return Promise.resolve(url);
+  const fallback = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4////HwAF/gJ+5oVTRwAAAABJRU5ErkJggg==';
+  try {
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) return fallback;
+    const blob = await res.blob();
+    const reader = new FileReader();
+    return await new Promise((resolve) => {
+      reader.onload = () => resolve((reader.result as string) || fallback);
+      reader.onerror = () => resolve(fallback);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    // mock domain may be unreachable; return placeholder
+    return fallback;
+  }
 }

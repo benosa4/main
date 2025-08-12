@@ -57,7 +57,7 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
           className="w-full bg-white/5 rounded-full px-4 py-2 pr-20 focus:outline-none emoji-text"
         />
         <div
-          className={`absolute right-2 top-1/2 -translate-y-1/2 flex -space-x-2 transition-opacity duration-300 ${storiesCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`absolute right-2 top-1/2 -translate-y-1/2 flex -space-x-2 ${appSettingsStore.state.animations && appSettingsStore.state.animationPrefs.interface.menuTransitions ? 'transition-opacity duration-300' : ''} ${storiesCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
           {storyStore.stories.slice(0, 3).map((s) => (
             <img
@@ -76,7 +76,8 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
             setMenuOpen(false);
             setMoreOpen(false);
           }}
-          className="absolute top-12 left-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-20 text-sm text-black"
+          className={`absolute top-12 left-2 w-56 bg-white border border-gray-200 rounded-lg z-20 text-sm text-black ${appSettingsStore.state.animationPrefs.interface.contextBlur && appSettingsStore.state.animations ? 'backdrop-blur-sm' : ''} ${appSettingsStore.state.animationPrefs.interface.contextMenus && appSettingsStore.state.animations ? 'transition transform origin-top-left duration-200' : ''}`}
+          style={appSettingsStore.state.animationPrefs.interface.contextMenus && appSettingsStore.state.animations ? { animation: 'none' } : undefined}
         >
             {appSettingsStore.state.version === 'A'
               ? menuStore.flattenedItems.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as MenuItem]).map((item) => (
@@ -193,7 +194,7 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
                     )}
                   </div>
                   {item.id === 'more' && moreOpen && (
-                    <div className="absolute top-0 left-full -ml-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg text-sm text-black">
+                    <div className={`absolute top-0 left-full -ml-2 w-full bg-white border border-gray-200 rounded-lg text-sm text-black ${appSettingsStore.state.animationPrefs.interface.contextBlur && appSettingsStore.state.animations ? 'backdrop-blur-sm' : ''} ${appSettingsStore.state.animationPrefs.interface.contextMenus && appSettingsStore.state.animations ? 'transition transform origin-top-left duration-200' : ''}`}>
                       {item.children?.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as MenuItem]).map((child) => (
                         <div
                           key={child.id}
@@ -261,18 +262,19 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
         accept="image/*"
         className="hidden"
         onChange={async (e) => {
-          const f = e.target.files?.[0];
+          const inputEl = e.currentTarget as HTMLInputElement;
+          const f = inputEl.files?.[0];
           if (!f) return;
           // mock presign + read local preview URL
-          await presignForUpload({ filename: f.name, mime: f.type });
+          const { fileUrl } = await presignForUpload({ filename: f.name, mime: f.type });
           const reader = new FileReader();
           reader.onload = async () => {
             const dataUrl = (reader.result as string) || '';
-            appSettingsStore.setChatWallpaperUrl(dataUrl);
-            appSettingsStore.addWallpaperToGallery({ url: dataUrl, cacheDataUrl: dataUrl });
+            appSettingsStore.addWallpaperToGallery({ url: fileUrl, cacheDataUrl: dataUrl });
+            appSettingsStore.setChatWallpaperUrl(fileUrl);
           };
           reader.readAsDataURL(f);
-          e.currentTarget.value = '';
+          if (fileRef.current) fileRef.current.value = '';
         }}
       />
     </div>

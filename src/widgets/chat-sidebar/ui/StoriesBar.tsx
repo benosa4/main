@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { storyStore } from '../../../features/stories/model';
+import appSettingsStore from '../../../shared/config/appSettings';
 
 const StoriesBar = observer(() => {
   const storyRef = useRef<HTMLDivElement>(null);
@@ -16,10 +17,11 @@ const StoriesBar = observer(() => {
     return () => el.removeEventListener('wheel', handle);
   }, []);
 
+  const t = appSettingsStore.state.animations && appSettingsStore.state.animationPrefs.interface.menuTransitions;
   return (
     <div
       ref={storyRef}
-      className="flex gap-4 overflow-x-auto hide-scrollbar transition-all duration-300 h-24 p-2 opacity-100 border-b border-white/20"
+      className={`flex gap-4 overflow-x-auto hide-scrollbar h-24 p-2 opacity-100 border-b border-white/20 ${t ? 'transition-all duration-300' : ''}`}
     >
       {storyStore.stories.map((story) => {
         const total = story.segments.length;

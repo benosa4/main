@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import { Story, fetchStories } from './api';
 
 class StoryStore {
@@ -9,7 +9,10 @@ class StoryStore {
   }
 
   async load() {
-    this.stories = await fetchStories();
+    const data = await fetchStories();
+    runInAction(() => {
+      this.stories = data;
+    });
   }
 }
 

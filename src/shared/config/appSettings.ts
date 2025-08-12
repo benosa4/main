@@ -137,6 +137,11 @@ class AppSettingsStore {
     root.setAttribute('data-theme', mode);
     root.setAttribute('data-animations', this.state.animations ? 'on' : 'off');
     root.setAttribute('data-anim-profile', this.state.animationProfile);
+    root.setAttribute('data-emoji-anim', this.state.animationPrefs.stickers.emojiAnimation ? 'on' : 'off');
+    root.setAttribute('data-emoji-loop', this.state.animationPrefs.stickers.loopAnimation ? 'on' : 'off');
+    // allow CSS to know about autoplay preferences (for future hooks)
+    root.setAttribute('data-autoplay-gif', this.state.animationPrefs.autoplay.gif ? 'on' : 'off');
+    root.setAttribute('data-autoplay-video', this.state.animationPrefs.autoplay.video ? 'on' : 'off');
     root.style.setProperty('--app-text-size', `${this.state.textSize}px`);
     root.style.setProperty('--chat-accent-color', this.state.chatColor);
   }

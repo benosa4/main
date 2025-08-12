@@ -225,19 +225,33 @@ const ChatPage = observer(() => {
 
         {/* Chat window */}
         <div className="flex-1 flex flex-col relative overflow-hidden">
-          {appSettingsStore.state.chatWallpaperUrl && (
-            <div
-              className="absolute inset-0 -z-10"
-              style={{
-                backgroundImage: `url(${appSettingsStore.state.chatWallpaperUrl})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                filter: appSettingsStore.state.chatWallpaperBlur ? 'blur(8px)' : 'none',
-                transform: 'translateZ(0)',
-              }}
-            />
-          )}
+          {(() => {
+            const url = appSettingsStore.state.chatWallpaperUrl;
+            const gallery = appSettingsStore.state.chatWallpaperGallery || [];
+            if (url) {
+              const cache = gallery.find((g) => g.url === url)?.cacheDataUrl || url;
+              return (
+                <div
+                  className="absolute inset-0 -z-10"
+                  style={{
+                    backgroundImage: `url(${cache})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    filter: appSettingsStore.state.chatWallpaperBlur ? 'blur(8px)' : 'none',
+                    transform: 'translateZ(0)',
+                  }}
+                />
+              );
+            }
+            // No wallpaper — fill chat window with selected solid color
+            return (
+              <div
+                className="absolute inset-0 -z-10"
+                style={{ backgroundColor: appSettingsStore.state.chatColor }}
+              />
+            );
+          })()}
           {/* content overlay */}
           {selected ? (
             <>
@@ -290,8 +304,16 @@ const ChatPage = observer(() => {
               </div>
               {selected && messageStore.isRemoteTyping(selected.id) && (
                 <div className="px-6 -mt-2 mb-1 flex justify-center">
-                  <div className="text-xs text-white/70 bg-white/10 px-3 py-1 rounded-full">
-                    {selected.type === 'private' ? `${selected.name} печатает…` : 'Кто-то печатает…'}
+                  <div className="text-xs text-white/70 bg-white/10 px-3 py-1 rounded-full flex items-center gap-2">
+                    <span>{selected.type === 'private' ? `${selected.name}` : 'Кто-то'}</span>
+                    <span>печатает</span>
+                    {appSettingsStore.state.animations && appSettingsStore.state.animationPrefs.interface.typing ? (
+                      <span className="typing-dots animated" aria-hidden>
+                        <span></span><span></span><span></span>
+                      </span>
+                    ) : (
+                      <span>…</span>
+                    )}
                   </div>
                 </div>
               )}

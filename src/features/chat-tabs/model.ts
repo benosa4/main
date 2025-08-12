@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import { ChatTab, fetchChatTabs } from './api';
 import { loadTabsFromDB, saveTabsToDB } from '../../shared/db';
 
@@ -13,14 +13,21 @@ class ChatTabsStore {
   async load() {
     const stored = await loadTabsFromDB();
     if (stored.length) {
-      this.tabs = stored;
+      runInAction(() => {
+        this.tabs = stored;
+      });
     } else {
-      this.tabs = await fetchChatTabs();
-      await saveTabsToDB(this.tabs);
+      const fetched = await fetchChatTabs();
+      runInAction(() => {
+        this.tabs = fetched;
+      });
+      await saveTabsToDB(fetched);
     }
-    if (this.tabs.length && this.selectedTabId === null) {
-      this.selectedTabId = this.tabs[0].id;
-    }
+    runInAction(() => {
+      if (this.tabs.length && this.selectedTabId === null) {
+        this.selectedTabId = this.tabs[0].id;
+      }
+    });
   }
 
   selectTab(id: number) {

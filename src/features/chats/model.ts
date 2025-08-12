@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import { Chat, fetchChats } from './api';
 import { loadChatsFromDB, saveChatsToDB } from '../../shared/db';
 import appSettingsStore from '../../shared/config/appSettings';
@@ -17,18 +17,27 @@ class ChatStore {
     try {
       const stored = await loadChatsFromDB();
       if (stored.length) {
-        this.chats = stored;
+        runInAction(() => {
+          this.chats = stored;
+        });
       } else {
-        this.chats = await fetchChats();
-        await saveChatsToDB(this.chats);
+        const fetched = await fetchChats();
+        runInAction(() => {
+          this.chats = fetched;
+        });
+        await saveChatsToDB(fetched);
       }
-      if (this.chats.length && this.selectedChatId === null) {
-        const preferred = appSettingsStore.state.lastConversationId;
-        const exists = this.chats.find((c) => c.id === preferred);
-        this.selectedChatId = exists ? exists.id : this.chats[0].id;
-      }
+      runInAction(() => {
+        if (this.chats.length && this.selectedChatId === null) {
+          const preferred = appSettingsStore.state.lastConversationId;
+          const exists = this.chats.find((c) => c.id === preferred);
+          this.selectedChatId = exists ? exists.id : this.chats[0].id;
+        }
+      });
     } finally {
-      this.updating = false;
+      runInAction(() => {
+        this.updating = false;
+      });
     }
   }
 
