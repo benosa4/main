@@ -59,7 +59,7 @@ const MenuDots = () => (
 );
 
 const ProfileTop = observer(() => {
-  const p: any = profileStore.profile as any;
+  const p = profileStore.profile;
   return (
     <div className="px-3 pt-3">
       <div className="w-full aspect-square rounded-md bg-gray-500/40 overflow-hidden flex items-center justify-center">
@@ -193,7 +193,7 @@ const SettingsPanel = observer(() => {
   return (
     <div className="absolute inset-0 z-30">
       <div
-        className="absolute top-0 right-0 bottom-0 left-0 bg-black border-l border-white/20 will-change-transform"
+        className="absolute top-0 right-0 bottom-0 left-0 bg-black border-l border-white/20 will-change-transform flex flex-col"
         style={{
           transform: slideIn ? 'translateX(0%)' : 'translateX(100%)',
           transition: 'transform 420ms ease',

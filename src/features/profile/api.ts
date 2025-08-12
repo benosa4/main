@@ -5,6 +5,7 @@ export interface Profile {
   about?: string | null;
   birthdayLabel?: string | null;
   avatarUrl?: string | null;
+  avatarCacheDataUrl?: string | null;
 }
 
 // Mock REST API call

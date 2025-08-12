@@ -17,7 +17,6 @@ interface LayoutProps {
 
 export const LayoutWithFloatingBg = observer(function LayoutWithFloatingBg({ children, noFrame = false }: LayoutProps) {
   const showAnims = appSettingsStore.state.animations;
-  const theme = appSettingsStore.state.theme;
   return (
     <div className="flex flex-col min-h-screen relative bg-gradient-to-br from-purple-900/80 via-indigo-900/80 to-blue-900/80 text-white overflow-hidden">
 

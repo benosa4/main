@@ -24,10 +24,12 @@ class ProfileStore {
             about: cached.about ?? null,
             birthdayLabel: cached.birthdayLabel ?? null,
             avatarUrl: cached.avatarUrl ?? null,
+            avatarCacheDataUrl: cached.avatarCacheDataUrl ?? null,
           };
-          // @ts-ignore keep cache DataURL for UI if present
-          (this.profile as any).avatarCacheDataUrl = (cached as any).avatarCacheDataUrl || null;
         });
+        if (cached.avatarUrl && !cached.avatarCacheDataUrl) {
+          void this.cacheAvatarFromUrl(cached.avatarUrl);
+        }
         return;
       }
       const data = await fetchProfile();
@@ -43,10 +45,12 @@ class ProfileStore {
         birthdayLabel: data.birthdayLabel ?? null,
         avatarUrl: data.avatarUrl ?? null,
         // keep empty cache on first fetch
-        // @ts-ignore
         avatarCacheDataUrl: null,
       };
       await saveProfileToDB(dto);
+      if (data.avatarUrl) {
+        void this.cacheAvatarFromUrl(data.avatarUrl);
+      }
     } finally {
       this.loading = false;
     }
@@ -55,8 +59,7 @@ class ProfileStore {
   async setAvatar({ remoteUrl, cacheDataUrl }: { remoteUrl: string; cacheDataUrl: string }) {
     if (!this.profile) return;
     this.profile.avatarUrl = remoteUrl;
-    // @ts-ignore ephemeral cache for UI
-    (this.profile as any).avatarCacheDataUrl = cacheDataUrl;
+    this.profile.avatarCacheDataUrl = cacheDataUrl;
     const dto: ProfileDTO = {
       id: 'me',
       displayName: this.profile.displayName,
@@ -65,10 +68,24 @@ class ProfileStore {
       about: this.profile.about ?? null,
       birthdayLabel: this.profile.birthdayLabel ?? null,
       avatarUrl: this.profile.avatarUrl ?? null,
-      // @ts-ignore persist cached DataURL
       avatarCacheDataUrl: cacheDataUrl,
-    } as any;
+    };
     await saveProfileToDB(dto);
+  }
+
+  private async cacheAvatarFromUrl(url: string) {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const reader = new FileReader();
+      const dataUrl: string = await new Promise((resolve) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+      await this.setAvatar({ remoteUrl: url, cacheDataUrl: dataUrl });
+    } catch (err) {
+      console.error('failed to cache avatar', err);
+    }
   }
 }
 

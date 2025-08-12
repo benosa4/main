@@ -7,6 +7,7 @@ import { presignForUpload } from '../../../shared/media/api';
 import { profileStore } from '../../../features/profile/model';
 import { settingsPanelStore } from '../../../features/settings-panel/model';
 import Avatar from '../../../shared/ui/Avatar';
+import type { MenuItem } from '../../../features/menu/api';
 
 interface Props {
   search: string;
@@ -77,8 +78,8 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
           }}
           className="absolute top-12 left-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-20 text-sm text-black"
         >
-          {appSettingsStore.state.version === 'A'
-            ? menuStore.flattenedItems.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as any]).map((item) => (
+            {appSettingsStore.state.version === 'A'
+              ? menuStore.flattenedItems.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as MenuItem]).map((item) => (
                 <div
                   key={item.id}
                   className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
@@ -108,7 +109,9 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
                 >
                   {item.id === 'user' ? (
                     <>
-                      {profileStore.profile?.avatarUrl ? (
+                      {profileStore.profile?.avatarCacheDataUrl ? (
+                        <img src={profileStore.profile.avatarCacheDataUrl} className="w-8 h-8 rounded-full object-cover" />
+                      ) : profileStore.profile?.avatarUrl ? (
                         <img src={profileStore.profile.avatarUrl} className="w-8 h-8 rounded-full object-cover" />
                       ) : (
                         <Avatar name={profileStore.profile?.displayName || 'U'} size={32} />
@@ -137,7 +140,7 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
                   )}
                 </div>
               ))
-            : menuStore.renderedItems.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as any]).map((item) => (
+            : menuStore.renderedItems.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as MenuItem]).map((item) => (
                 <div
                   key={item.id}
                   className="relative group"
@@ -173,7 +176,9 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
                   >
                     {item.id === 'user' ? (
                       <>
-                        {profileStore.profile?.avatarUrl ? (
+                        {profileStore.profile?.avatarCacheDataUrl ? (
+                          <img src={profileStore.profile.avatarCacheDataUrl} className="w-8 h-8 rounded-full object-cover" />
+                        ) : profileStore.profile?.avatarUrl ? (
                           <img src={profileStore.profile.avatarUrl} className="w-8 h-8 rounded-full object-cover" />
                         ) : (
                           <Avatar name={profileStore.profile?.displayName || 'U'} size={32} />
@@ -189,7 +194,7 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
                   </div>
                   {item.id === 'more' && moreOpen && (
                     <div className="absolute top-0 left-full -ml-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg text-sm text-black">
-                      {item.children?.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as any]).map((child) => (
+                      {item.children?.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as MenuItem]).map((child) => (
                         <div
                           key={child.id}
                           className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
@@ -212,7 +217,9 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
                         >
                           {child.id === 'user' ? (
                             <>
-                              {profileStore.profile?.avatarUrl ? (
+                              {profileStore.profile?.avatarCacheDataUrl ? (
+                                <img src={profileStore.profile.avatarCacheDataUrl} className="w-8 h-8 rounded-full object-cover" />
+                              ) : profileStore.profile?.avatarUrl ? (
                                 <img src={profileStore.profile.avatarUrl} className="w-8 h-8 rounded-full object-cover" />
                               ) : (
                                 <Avatar name={profileStore.profile?.displayName || 'U'} size={32} />
