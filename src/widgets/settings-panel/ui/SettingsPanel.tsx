@@ -182,7 +182,6 @@ const Screens = observer(() => {
         {current === 'setColor' && <SetColorScreen />}
         {current === 'animation' && <AnimationScreen />}
         {current === 'notifications' && <NotificationsScreen />}
-        {current === 'data' && <ScreenPlaceholder title="Экран: Данные и память" />}
         {current === 'data' && <DataMemoryScreen />}
         {current === 'privacy' && <PrivacyScreen />}
         {current === 'privacy_blacklist' && <BlacklistScreen />}
@@ -192,7 +191,6 @@ const Screens = observer(() => {
         {(current === 'privacy_phone' || current === 'privacy_lastSeen' || current === 'privacy_photos' || current === 'privacy_about' || current === 'privacy_birthday' || current === 'privacy_gifts' || current === 'privacy_forward' || current === 'privacy_calls' || current === 'privacy_voice' || current === 'privacy_messages' || current === 'privacy_groups') && (
           <PrivacyVisibilityScreen />
         )}
-        {current === 'folders' && <ScreenPlaceholder title="Экран: Папки с чатами" />}
         {current === 'folders' && <FoldersScreen />}
         {current === 'sessions' && <ScreenPlaceholder title="Экран: Активные сеансы" />}
         {current === 'language' && <ScreenPlaceholder title="Экран: Язык" />}
