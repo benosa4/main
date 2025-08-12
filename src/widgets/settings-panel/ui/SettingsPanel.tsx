@@ -220,8 +220,8 @@ const GeneralScreen = observer(() => {
   useEffect(() => setTextSize(s.textSize), [s.textSize]);
 
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-custom p-3">
-      <div className="max-w-[640px] mx-auto space-y-3">
+    <div className="flex-1 overflow-y-auto scrollbar-custom">
+      <div className="space-y-3 px-5">
       {/* Text Size */}
       <div className="bg-white/10 rounded-lg p-3">
         <div className="flex items-center justify-between">
@@ -234,9 +234,11 @@ const GeneralScreen = observer(() => {
           max={24}
           step={1}
           value={textSize}
-          onChange={(e) => setTextSize(parseInt(e.target.value, 10))}
-          onMouseUp={() => appSettingsStore.setTextSize(textSize)}
-          onTouchEnd={() => appSettingsStore.setTextSize(textSize)}
+          onChange={(e) => {
+            const v = parseInt(e.target.value, 10);
+            setTextSize(v);
+            appSettingsStore.setTextSize(v);
+          }}
           className="w-full mt-2"
         />
       </div>
