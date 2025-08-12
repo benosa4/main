@@ -7,6 +7,7 @@ import QuickReaction from './parts/QuickReaction';
 import { messageStore } from '../../../features/messages/model';
 import SvgAppendix from './parts/SvgAppendix';
 import Reactions from './parts/Reactions';
+import appSettingsStore from '../../../shared/config/appSettings';
 
 export interface MessageProps {
   message: MessageModel;
@@ -18,7 +19,10 @@ const Message: React.FC<MessageProps> = ({ message }) => {
     <div className={`flex ${mine ? 'justify-end' : 'justify-start'} group`}>
       <div className="flex items-end gap-2 max-w-[70%]">
         {!mine && <ActionButton />}
-        <div className={`relative rounded-lg px-3 py-2 ${mine ? 'bg-blue-600 text-white' : 'bg-white/10 text-white'} shadow-sm`}>
+        <div
+          className={`relative rounded-lg px-3 py-2 ${mine ? 'text-white' : 'bg-white/10 text-white'} shadow-sm`}
+          style={mine ? { backgroundColor: appSettingsStore.state.chatColor } : undefined}
+        >
           <SvgAppendix side={mine ? 'right' : 'left'} />
           <MessageContent message={message} />
           <div className={`mt-1 flex ${mine ? 'justify-end' : 'justify-start'}`}>

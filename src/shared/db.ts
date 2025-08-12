@@ -1,5 +1,5 @@
 const DB_NAME = 'chat-app';
-const DB_VERSION = 6;
+const DB_VERSION = 7;
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 function getDB(): Promise<IDBDatabase> {
@@ -177,11 +177,23 @@ export async function loadMessagesByConversation({ conversationId, limit, before
 // App Settings
 export interface AppSettingsDTO {
   id: 'app';
-  theme: 'dark' | 'light';
+  theme: 'dark' | 'light' | 'auto';
   animations: boolean;
   version: 'A' | 'K';
   lastConversationId?: number | null;
-  chatBackgroundUrl?: string | null;
+  // Chat background (wallpaper)
+  chatWallpaperUrl?: string | null;
+  chatWallpaperBlur?: boolean;
+  // Cached gallery of wallpapers (data URLs optional)
+  chatWallpaperGallery?: { url: string; cacheDataUrl?: string | null }[];
+  // Chat accent color (HEX string like #RRGGBB)
+  chatColor?: string | null;
+  // Global text size in px
+  textSize?: number | null;
+  // Time format: 12h or 24h
+  timeFormat?: '12h' | '24h';
+  // Keyboard send mode
+  keyboardMode?: 'enter' | 'ctrlEnter';
 }
 
 export async function loadAppSettingsFromDB(): Promise<AppSettingsDTO | null> {

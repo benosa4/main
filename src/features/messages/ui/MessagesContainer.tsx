@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useMessages } from '../../messages/hooks';
 import MessageDateGroup from '../../../entities/message-date-group/ui/MessageDateGroup';
 
-const MessagesContainer = observer(({ conversationId }: { conversationId: number | null | undefined }) => {
+const MessagesContainer = observer(({ conversationId, textSizePx }: { conversationId: number | null | undefined; textSizePx?: number }) => {
   const store = useMessages(conversationId);
   if (!conversationId) return null;
   const groups = store.getGroups(conversationId);
@@ -17,7 +17,7 @@ const MessagesContainer = observer(({ conversationId }: { conversationId: number
 
   return (
     <div className="min-h-full flex flex-col justify-end">
-      <div className="p-4 space-y-4 max-w-2xl mx-auto w-full">
+      <div className="p-4 space-y-4 max-w-2xl mx-auto w-full" style={textSizePx ? { fontSize: `${textSizePx}px` } : undefined}>
         {groups.map((g) => (
           <MessageDateGroup key={g.key} label={g.label} messages={g.items} />
         ))}

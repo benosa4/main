@@ -224,15 +224,21 @@ const ChatPage = observer(() => {
         <ChatSidebar />
 
         {/* Chat window */}
-        <div
-          className="flex-1 flex flex-col"
-          style={appSettingsStore.state.chatBackgroundUrl ? {
-            backgroundImage: `url(${appSettingsStore.state.chatBackgroundUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          } : undefined}
-        >
+        <div className="flex-1 flex flex-col relative overflow-hidden">
+          {appSettingsStore.state.chatWallpaperUrl && (
+            <div
+              className="absolute inset-0 -z-10"
+              style={{
+                backgroundImage: `url(${appSettingsStore.state.chatWallpaperUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                filter: appSettingsStore.state.chatWallpaperBlur ? 'blur(8px)' : 'none',
+                transform: 'translateZ(0)',
+              }}
+            />
+          )}
+          {/* content overlay */}
           {selected ? (
             <>
               <div className="p-4 bg-white/10 backdrop-blur-md border-b border-white/10 flex items-center gap-3">
@@ -280,7 +286,7 @@ const ChatPage = observer(() => {
                 ref={messagesRef}
                 onScroll={handleMessagesScroll}
               >
-                <MessagesContainer conversationId={selected?.id ?? null} />
+                <MessagesContainer conversationId={selected?.id ?? null} textSizePx={appSettingsStore.state.textSize} />
               </div>
               {selected && messageStore.isRemoteTyping(selected.id) && (
                 <div className="px-6 -mt-2 mb-1 flex justify-center">
@@ -339,6 +345,43 @@ const ChatPage = observer(() => {
                       placeholder="Message"
                       className={`bg-transparent ${inputScrollable ? 'overflow-y-auto scrollbar-custom' : 'overflow-hidden'}`}
                       style={inputMaxPx ? { maxHeight: `${inputMaxPx}px` } : undefined}
+                      onKeyDown={(e) => {
+                        const mode = appSettingsStore.state.keyboardMode;
+                        if (mode === 'enter') {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            // click send
+                            (async () => {
+                              const convId = chatStore.selectedChatId;
+                              const text = message.trim();
+                              if (!convId || (!text && attachments.length === 0)) return;
+                              await messageStore.sendMessage(convId, text, attachments.map((a, idx) => ({ id: `${Date.now()}-${idx}`, type: a.type, url: a.url, name: a.name })) as any);
+                              setMessage('');
+                              setAttachments([]);
+                              if (convId) {
+                                import('../../shared/db').then(({ deleteDraftFromDB }) => deleteDraftFromDB(convId)).catch(() => {});
+                                import('../../shared/db').then(({ deleteDraftFromRemote }) => deleteDraftFromRemote(convId)).catch(() => {});
+                              }
+                            })();
+                          }
+                        } else {
+                          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                            e.preventDefault();
+                            (async () => {
+                              const convId = chatStore.selectedChatId;
+                              const text = message.trim();
+                              if (!convId || (!text && attachments.length === 0)) return;
+                              await messageStore.sendMessage(convId, text, attachments.map((a, idx) => ({ id: `${Date.now()}-${idx}`, type: a.type, url: a.url, name: a.name })) as any);
+                              setMessage('');
+                              setAttachments([]);
+                              if (convId) {
+                                import('../../shared/db').then(({ deleteDraftFromDB }) => deleteDraftFromDB(convId)).catch(() => {});
+                                import('../../shared/db').then(({ deleteDraftFromRemote }) => deleteDraftFromRemote(convId)).catch(() => {});
+                              }
+                            })();
+                          }
+                        }
+                      }}
                     />
                     <input
                       ref={fileInputRef}

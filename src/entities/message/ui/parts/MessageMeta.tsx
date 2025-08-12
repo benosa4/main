@@ -1,5 +1,6 @@
 import React from 'react';
 import EyeIcon from '../../../../shared/ui/icons/Eye';
+import appSettingsStore from '../../../../shared/config/appSettings';
 
 export interface MessageMetaProps {
   createdAtISO: string;
@@ -8,7 +9,8 @@ export interface MessageMetaProps {
 
 const MessageMeta: React.FC<MessageMetaProps> = ({ createdAtISO, views }) => {
   const d = new Date(createdAtISO);
-  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const hour12 = appSettingsStore.state.timeFormat === '12h';
+  const time = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12 });
   return (
     <div className="flex items-center gap-1 text-[10px] text-white/70">
       {views !== undefined && (
@@ -23,4 +25,3 @@ const MessageMeta: React.FC<MessageMetaProps> = ({ createdAtISO, views }) => {
 };
 
 export default MessageMeta;
-

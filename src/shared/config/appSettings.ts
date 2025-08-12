@@ -1,15 +1,21 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import type { AppSettingsDTO } from '../db';
-import { loadAppSettingsFromDB, saveAppSettingsToDB } from '../db';
+import { loadAppSettingsFromDB, saveAppSettingsToDB, loadAppSettingsFromRemote, saveAppSettingsToRemote } from '../db';
 
-export type ThemeMode = 'dark' | 'light';
+export type ThemeMode = 'dark' | 'light' | 'auto';
 
 export interface AppSettingsState {
   theme: ThemeMode;
   animations: boolean;
   version: 'A' | 'K';
   lastConversationId?: number | null;
-  chatBackgroundUrl?: string | null;
+  chatWallpaperUrl?: string | null;
+  chatWallpaperBlur: boolean;
+  chatWallpaperGallery: { url: string; cacheDataUrl?: string | null }[];
+  chatColor: string; // HEX
+  textSize: number; // px
+  timeFormat: '12h' | '24h';
+  keyboardMode: 'enter' | 'ctrlEnter';
 }
 
 const DEFAULTS: AppSettingsState = {
@@ -17,7 +23,13 @@ const DEFAULTS: AppSettingsState = {
   animations: true,
   version: 'K',
   lastConversationId: null,
-  chatBackgroundUrl: null,
+  chatWallpaperUrl: null,
+  chatWallpaperBlur: false,
+  chatWallpaperGallery: [],
+  chatColor: '#2563eb', // tailwind blue-600
+  textSize: 16,
+  timeFormat: '24h',
+  keyboardMode: 'enter',
 };
 
 class AppSettingsStore {
@@ -31,14 +43,37 @@ class AppSettingsStore {
   async init() {
     this.loading = true;
     try {
-      const dto = await loadAppSettingsFromDB();
+      let dto = await loadAppSettingsFromDB();
+      if (!dto) {
+        // fallback to mock remote when local missing
+        dto = await loadAppSettingsFromRemote();
+      }
       const merged: AppSettingsState = dto
-        ? { theme: dto.theme, animations: dto.animations, version: dto.version, lastConversationId: dto.lastConversationId ?? null, chatBackgroundUrl: dto.chatBackgroundUrl ?? null }
+        ? {
+            theme: (dto.theme as ThemeMode) ?? DEFAULTS.theme,
+            animations: dto.animations ?? DEFAULTS.animations,
+            version: dto.version ?? DEFAULTS.version,
+            lastConversationId: dto.lastConversationId ?? null,
+            chatWallpaperUrl: (dto as any).chatWallpaperUrl ?? (dto as any).chatBackgroundUrl ?? null,
+            chatWallpaperBlur: dto.chatWallpaperBlur ?? DEFAULTS.chatWallpaperBlur,
+            chatWallpaperGallery: dto.chatWallpaperGallery ?? DEFAULTS.chatWallpaperGallery,
+            chatColor: dto.chatColor ?? DEFAULTS.chatColor,
+            textSize: dto.textSize ?? DEFAULTS.textSize,
+            timeFormat: dto.timeFormat ?? DEFAULTS.timeFormat,
+            keyboardMode: dto.keyboardMode ?? DEFAULTS.keyboardMode,
+          }
         : { ...DEFAULTS };
       runInAction(() => {
         this.state = merged;
         this.applyEffects();
       });
+      // Ensure current wallpaper present in gallery
+      if (this.state.chatWallpaperUrl) {
+        const exists = this.state.chatWallpaperGallery.find((g) => g.url === this.state.chatWallpaperUrl);
+        if (!exists) {
+          this.state.chatWallpaperGallery = [{ url: this.state.chatWallpaperUrl, cacheDataUrl: null }, ...this.state.chatWallpaperGallery];
+        }
+      }
       // Всегда записываем актуальные настройки, чтобы точно существовала запись
       await this.persist();
     } finally {
@@ -48,8 +83,13 @@ class AppSettingsStore {
 
   private applyEffects() {
     const root = document.documentElement;
-    root.setAttribute('data-theme', this.state.theme);
+    const mode = this.state.theme === 'auto'
+      ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : this.state.theme;
+    root.setAttribute('data-theme', mode);
     root.setAttribute('data-animations', this.state.animations ? 'on' : 'off');
+    root.style.setProperty('--app-text-size', `${this.state.textSize}px`);
+    root.style.setProperty('--chat-accent-color', this.state.chatColor);
   }
 
   async persist() {
@@ -59,12 +99,17 @@ class AppSettingsStore {
       animations: this.state.animations,
       version: this.state.version,
       lastConversationId: this.state.lastConversationId ?? null,
-      chatBackgroundUrl: this.state.chatBackgroundUrl ?? null,
+      chatWallpaperUrl: this.state.chatWallpaperUrl ?? null,
+      chatWallpaperBlur: this.state.chatWallpaperBlur,
+      chatWallpaperGallery: this.state.chatWallpaperGallery,
+      chatColor: this.state.chatColor,
+      textSize: this.state.textSize,
+      timeFormat: this.state.timeFormat,
+      keyboardMode: this.state.keyboardMode,
     };
     await saveAppSettingsToDB(dto);
     // mock remote sync
     try {
-      const { saveAppSettingsToRemote } = await import('../db');
       await saveAppSettingsToRemote(dto);
     } catch {
       // ignore remote errors in mock
@@ -78,7 +123,8 @@ class AppSettingsStore {
   }
 
   toggleTheme() {
-    this.setTheme(this.state.theme === 'dark' ? 'light' : 'dark');
+    const next = this.state.theme === 'dark' ? 'light' : this.state.theme === 'light' ? 'auto' : 'dark';
+    this.setTheme(next);
   }
 
   setAnimations(on: boolean) {
@@ -105,8 +151,46 @@ class AppSettingsStore {
     void this.persist();
   }
 
-  setChatBackgroundUrl(url: string | null) {
-    this.state.chatBackgroundUrl = url ?? null;
+  setChatWallpaperUrl(url: string | null) {
+    this.state.chatWallpaperUrl = url ?? null;
+    void this.persist();
+  }
+
+  setChatWallpaperBlur(on: boolean) {
+    this.state.chatWallpaperBlur = on;
+    void this.persist();
+  }
+
+  addWallpaperToGallery(item: { url: string; cacheDataUrl?: string | null }) {
+    const exists = this.state.chatWallpaperGallery.find((g) => g.url === item.url);
+    if (exists) {
+      exists.cacheDataUrl = item.cacheDataUrl ?? exists.cacheDataUrl ?? null;
+    } else {
+      this.state.chatWallpaperGallery = [item, ...this.state.chatWallpaperGallery].slice(0, 60);
+    }
+    void this.persist();
+  }
+
+  setChatColor(hex: string) {
+    this.state.chatColor = hex;
+    this.applyEffects();
+    void this.persist();
+  }
+
+  setTextSize(px: number) {
+    const v = Math.max(12, Math.min(24, Math.round(px)));
+    this.state.textSize = v;
+    this.applyEffects();
+    void this.persist();
+  }
+
+  setTimeFormat(fmt: '12h' | '24h') {
+    this.state.timeFormat = fmt;
+    void this.persist();
+  }
+
+  setKeyboardMode(mode: 'enter' | 'ctrlEnter') {
+    this.state.keyboardMode = mode;
     void this.persist();
   }
 }

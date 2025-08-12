@@ -3,6 +3,8 @@ import { makeAutoObservable } from 'mobx';
 export type SettingsScreen =
   | 'root'
   | 'general'
+  | 'wallpapers'
+  | 'setColor'
   | 'animation'
   | 'notifications'
   | 'data'
@@ -45,4 +47,3 @@ class SettingsPanelStore {
 }
 
 export const settingsPanelStore = new SettingsPanelStore();
-

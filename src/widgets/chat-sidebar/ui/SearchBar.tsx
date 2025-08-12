@@ -268,7 +268,8 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
           const reader = new FileReader();
           reader.onload = async () => {
             const dataUrl = (reader.result as string) || '';
-            appSettingsStore.setChatBackgroundUrl(dataUrl);
+            appSettingsStore.setChatWallpaperUrl(dataUrl);
+            appSettingsStore.addWallpaperToGallery({ url: dataUrl, cacheDataUrl: dataUrl });
           };
           reader.readAsDataURL(f);
           e.currentTarget.value = '';
