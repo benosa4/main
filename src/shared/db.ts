@@ -238,6 +238,7 @@ export interface AppSettingsDTO {
   // Privacy
   privacy?: {
     blacklistCount: number;
+    blacklist?: { id: string; displayName: string; username: string; avatarUrl?: string | null }[];
     passcodeEnabled: boolean;
     cloudPasswordEnabled: boolean;
     activeSitesCount: number;

@@ -183,7 +183,7 @@ const Screens = observer(() => {
         {current === 'data' && <ScreenPlaceholder title="Экран: Данные и память" />}
         {current === 'data' && <DataMemoryScreen />}
         {current === 'privacy' && <PrivacyScreen />}
-        {current === 'privacy_blacklist' && <ScreenPlaceholder title="Черный список" />}
+        {current === 'privacy_blacklist' && <BlacklistScreen />}
         {current === 'privacy_passcode' && <PasscodeScreen />}
         {current === 'privacy_cloudpass' && <CloudPasswordScreen />}
         {current === 'privacy_sites' && <ScreenPlaceholder title="Подключенные сайты" />}
@@ -561,7 +561,7 @@ const PrivacyScreen = observer(() => {
           <div className="flex-1 text-left">
             <div className="font-semibold">Чёрный список</div>
           </div>
-          <span className="text-white/70">{p.blacklistCount}</span>
+          <span className="text-white/70">{(p.blacklist && p.blacklist.length) || p.blacklistCount || 0}</span>
         </button>
         <div className="h-px bg-white/20 mx-1" />
         <button className="w-full flex items-center gap-3 px-3 py-3 hover:bg-white/10" onClick={() => settingsPanelStore.push('privacy_passcode')}>
@@ -680,6 +680,37 @@ const ItemRow = ({ label, subtitle, onClick }: { label: string; subtitle?: strin
     <span>›</span>
   </button>
 );
+
+// Detail: Blacklist list
+const BlacklistScreen = observer(() => {
+  const list = appSettingsStore.state.privacy.blacklist || [];
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-3">
+      <div className="bg-white/10 rounded-lg p-3 text-sm text-white/80">
+        Заблокированные пользователи не могут писать Вам и приглашать Вас в группы. Они также не видят Вашу фотографию, истории и время последнего захода.Э
+      </div>
+      <div className="bg-white/10 rounded-lg">
+        {list.length === 0 ? (
+          <div className="px-3 py-3 text-white/70">Список пуст</div>
+        ) : (
+          list.map((u) => (
+            <div key={u.id} className="flex items-center gap-3 px-3 py-2 border-b border-white/10 last:border-b-0">
+              {u.avatarUrl ? (
+                <img src={u.avatarUrl} className="w-10 h-10 rounded-full object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">{(u.displayName||'U').slice(0,1)}</div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold truncate">{u.displayName}</div>
+                <div className="text-white/70 text-sm truncate">гыуктфьу {u.username}</div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+});
 
 // Detail: Passcode
 const PasscodeScreen = observer(() => {

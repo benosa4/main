@@ -56,6 +56,7 @@ export interface AppSettingsState {
   };
   privacy: {
     blacklistCount: number;
+    blacklist: { id: string; displayName: string; username: string; avatarUrl?: string | null }[];
     passcodeEnabled: boolean;
     cloudPasswordEnabled: boolean;
     activeSitesCount: number;
@@ -129,6 +130,11 @@ const DEFAULTS: AppSettingsState = {
   },
   privacy: {
     blacklistCount: 3,
+    blacklist: [
+      { id: 'u1', displayName: 'Иван Петров', username: 'ivan_petrov', avatarUrl: 'https://placehold.co/48x48?text=IP' },
+      { id: 'u2', displayName: 'Alice', username: 'alice', avatarUrl: 'https://placehold.co/48x48?text=A' },
+      { id: 'u3', displayName: 'Bob', username: 'bob', avatarUrl: 'https://placehold.co/48x48?text=B' },
+    ],
     passcodeEnabled: false,
     cloudPasswordEnabled: false,
     activeSitesCount: 2,
@@ -183,7 +189,16 @@ class AppSettingsStore {
             keyboardMode: dto.keyboardMode ?? DEFAULTS.keyboardMode,
             notifications: dto.notifications ?? DEFAULTS.notifications,
             dataMemory: dto.dataMemory ?? DEFAULTS.dataMemory,
-            privacy: dto.privacy ?? DEFAULTS.privacy,
+            privacy: {
+              blacklistCount: (dto.privacy?.blacklist?.length ?? dto.privacy?.blacklistCount ?? DEFAULTS.privacy.blacklistCount) as number,
+              blacklist: dto.privacy?.blacklist ?? DEFAULTS.privacy.blacklist,
+              passcodeEnabled: dto.privacy?.passcodeEnabled ?? DEFAULTS.privacy.passcodeEnabled,
+              cloudPasswordEnabled: dto.privacy?.cloudPasswordEnabled ?? DEFAULTS.privacy.cloudPasswordEnabled,
+              activeSitesCount: dto.privacy?.activeSitesCount ?? DEFAULTS.privacy.activeSitesCount,
+              visibilities: dto.privacy?.visibilities ?? DEFAULTS.privacy.visibilities,
+              sensitive18plus: dto.privacy?.sensitive18plus ?? DEFAULTS.privacy.sensitive18plus,
+              showChatWindowTitle: dto.privacy?.showChatWindowTitle ?? DEFAULTS.privacy.showChatWindowTitle,
+            },
           }
         : { ...DEFAULTS };
       runInAction(() => {
@@ -239,7 +254,10 @@ class AppSettingsStore {
       keyboardMode: this.state.keyboardMode,
       notifications: this.state.notifications,
       dataMemory: this.state.dataMemory,
-      privacy: this.state.privacy,
+      privacy: {
+        ...this.state.privacy,
+        blacklistCount: this.state.privacy.blacklist?.length ?? this.state.privacy.blacklistCount,
+      },
     };
     await saveAppSettingsToDB(dto);
     // mock remote sync
