@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import * as Dialog from '@radix-ui/react-dialog';
 import StarBurst from './StarBurst';
 import PlanOption from './PlanOption';
 
@@ -78,21 +79,19 @@ export default function PremiumModal({ open, onClose, onSubmit, defaultPlan = 'a
   const ctaText = plan === 'annual' ? `ПОДКЛЮЧИТЬ ЗА ${formatRub(prices.annual.monthly)} В МЕСЯЦ` : `ПОДКЛЮЧИТЬ ЗА ${formatRub(prices.monthly.monthly)} В МЕСЯЦ`;
 
   const modal = (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="premium-title"
-      aria-describedby="premium-desc"
-      className="fixed inset-0 z-[9999]"
-    >
-      <div className="absolute inset-0 bg-black/50" />
-      <div className="absolute inset-0 grid place-items-center">
-        <div
-          ref={dialogRef}
-          className="w-[min(92vw,440px)] bg-white rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] outline-none"
+    <Dialog.Root open={open} onOpenChange={(o)=>{ /* блокируем закрытие по Esc/оверлею */ if (!o) return; }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-[9999] bg-black/50" />
+        <Dialog.Content
+          aria-labelledby="premium-title"
+          aria-describedby="premium-desc"
+          className="fixed inset-0 z-[10000] grid place-items-center outline-none"
+          onEscapeKeyDown={(e)=> e.preventDefault()}
+          onPointerDownOutside={(e)=> e.preventDefault()}
         >
-          {/* close */}
-          <button aria-label="Закрыть" className="w-8 h-8 ml-2 mt-2 rounded-full grid place-items-center text-black hover:bg-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-black" onClick={onClose}>×</button>
+          <div ref={dialogRef} className="w-[min(92vw,440px)] bg-white rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.15)]">
+            {/* close */}
+            <button aria-label="Закрыть" className="w-8 h-8 ml-2 mt-2 rounded-full grid place-items-center text-black hover:bg-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-black" onClick={onClose}>×</button>
 
           {/* animated header */}
           <div className="px-6 pt-2">
@@ -188,9 +187,10 @@ export default function PremiumModal({ open, onClose, onSubmit, defaultPlan = 'a
               </span>
             </button>
           </div>
-        </div>
-      </div>
-    </div>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 
   return createPortal(modal, document.body);

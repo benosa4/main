@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 
 type Particle = {
   id: string;
@@ -77,12 +78,14 @@ export default function StarBurst({ className, starSize = 84 }: StarBurstProps) 
   }, []);
 
   const star = useMemo(() => (
-    <svg
+    <motion.svg
       width={starSize}
       height={starSize}
       viewBox="0 0 100 100"
       aria-hidden
       className="select-none"
+      animate={{ scale: [1, 1.06, 1], rotate: [-2, 2, -2] }}
+      transition={{ duration: 2.8, ease: 'easeInOut', repeat: Infinity }}
     >
       <defs>
         <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -103,10 +106,9 @@ export default function StarBurst({ className, starSize = 84 }: StarBurstProps) 
           d="M50 5 L60 40 L95 50 L60 60 L50 95 L40 60 L5 50 L40 40 Z"
           fill="url(#grad)"
           opacity="0.9"
-          className="star-pulse"
         />
       </g>
-    </svg>
+    </motion.svg>
   ), [starSize]);
 
   return (
@@ -137,21 +139,15 @@ export default function StarBurst({ className, starSize = 84 }: StarBurstProps) 
             const dx = Math.cos((p.angle * Math.PI) / 180) * p.dist;
             const dy = Math.sin((p.angle * Math.PI) / 180) * p.dist;
             const to = `translate(${dx}px, ${-dy}px)`; // up is negative y
-            const style: React.CSSProperties = {
-              position: 'absolute',
-              left: 80 + p.x,
-              top: 60 + p.y,
-              width: p.size,
-              height: p.size,
-              opacity: p.opacity,
-              color: '#B06BF3',
-              animation: `sparkMove ${p.duration}ms ease-out ${p.delay}ms forwards`,
-              // CSS var for transform target
-              ['--to' as any]: to,
-              ['--rot' as any]: `${p.rotation}deg`,
-            };
+            const base: React.CSSProperties = { position: 'absolute', left: 80 + p.x, top: 60 + p.y, width: p.size, height: p.size };
             return (
-              <div key={p.id} style={style}>
+              <motion.div
+                key={p.id}
+                style={base}
+                initial={{ opacity: 0, scale: 1, x: 0, y: 0 }}
+                animate={{ opacity: [0, 1, 0], scale: [1, 1.05, 1], x: dx, y: -dy, rotate: p.rotation }}
+                transition={{ duration: p.duration / 1000, ease: 'easeOut', delay: p.delay / 1000 }}
+              >
                 {p.shape === 'dot' ? (
                   <div style={{ width: '100%', height: '100%', borderRadius: '9999px', background: '#FF7AC8' }} />
                 ) : p.shape === 'cross' ? (
@@ -163,7 +159,7 @@ export default function StarBurst({ className, starSize = 84 }: StarBurstProps) 
                     <path d="M5 0 L6 4 L10 5 L6 6 L5 10 L4 6 L0 5 L4 4 Z" fill="#B06BF3" />
                   </svg>
                 )}
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -171,4 +167,3 @@ export default function StarBurst({ className, starSize = 84 }: StarBurstProps) 
     </div>
   );
 }
-
