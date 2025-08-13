@@ -143,8 +143,8 @@ const RootScreen = observer(() => {
       <div>
         <PremiumEntry />
         <StarsEntry />
-        <MenuItem icon="TON" label="My TON" right="0" onClick={() => alert('My TON')} />
-        <MenuItem icon="🎁" label="Отправить подарок" onClick={() => alert('Отправить подарок')} />
+        <TonEntry />
+        <GiftEntry />
       </div>
       <div className="h-px bg-white/20 mx-3 my-2" />
       <div>
@@ -172,6 +172,8 @@ const MenuItem = ({ icon, label, right, onClick, highlight }: { icon: string; la
 
 import StarsModal from '../../../features/stars/ui/StarsModal';
 import PremiumModal from '../../../features/premium/ui/PremiumModal';
+import { TonModal } from '../../../features/wallets';
+import { GiftContactsDialog, Contact as GiftContact, Page as GiftPage } from '../../../features/gifting';
 
 const PremiumEntry = () => {
   const [open, setOpen] = useState(false);
@@ -225,6 +227,53 @@ const StarsEntry = () => {
     </>
   );
 };
+
+const TonEntry = () => {
+  const [open, setOpen] = useState(false);
+  // TODO: hook real balance; using mock now
+  const balanceTon = 0;
+  const usdRate: number | undefined = 5.1;
+  return (
+    <>
+      <MenuItem icon="TON" label="My TON" right={String(balanceTon)} onClick={() => setOpen(true)} />
+      <TonModal
+        open={open}
+        onClose={() => { setOpen(false) }}
+        onTopUp={() => { /* open Fragment or callback */ }}
+        balanceTon={balanceTon}
+        usdRate={usdRate}
+      />
+    </>
+  );
+}
+
+const GiftEntry = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <MenuItem icon="🎁" label="Отправить подарок" onClick={() => setOpen(true)} />
+      <GiftContactsDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        onContinue={() => setOpen(false)}
+        pageSize={30}
+        fetchContacts={async ({ query, cursor, limit }) => {
+          const pageNum = cursor ? parseInt(cursor, 10) : 1;
+          const all = Array.from({ length: 500 }, (_, i) => ({
+            id: `c${i+1}`,
+            name: `Контакт ${i+1}`,
+            lastSeenText: 'был(а) недавно',
+            avatarUrl: undefined,
+          })).filter(c => c.name.toLowerCase().includes((query||'').toLowerCase()));
+          const start = (pageNum - 1) * limit;
+          const items = all.slice(start, start + limit);
+          const nextCursor = start + limit < all.length ? String(pageNum + 1) : null;
+          return { items, nextCursor } as GiftPage<GiftContact>;
+        }}
+      />
+    </>
+  );
+}
 
 const ScreenPlaceholder = ({ title }: { title: string }) => (
   <div className="flex-1 overflow-y-auto scrollbar-custom p-3">{title}</div>

@@ -120,10 +120,15 @@ export function GiftContactsDialog(props: {
         >
           <div className="w-[min(92vw,420px)] rounded-3xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.15)] p-4 sm:p-5 max-h-[92vh] flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between">
-              <button aria-label="Закрыть" className="w-8 h-8 rounded-full grid place-items-center text-black hover:bg-black/10" onClick={onClose}>×</button>
-              <div id={headingId} className="text-center flex-1 text-base font-semibold -ml-8">Подарить Premium или звёзды</div>
-              <div className="w-8 h-8" />
+            <div className="relative flex items-center justify-center">
+              <button
+                aria-label="Закрыть"
+                className="absolute left-0 top-0 w-8 h-8 rounded-full grid place-items-center text-black hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                onClick={onClose}
+              >
+                ×
+              </button>
+              <div id={headingId} className="text-center text-base font-semibold pointer-events-none">Подарить Premium или звёзды</div>
             </div>
 
             {/* Search */}
@@ -211,4 +216,3 @@ export function GiftContactsDialog(props: {
 }
 
 export default GiftContactsDialog
-
