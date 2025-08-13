@@ -114,8 +114,6 @@ export function GiftContactsDialog(props: {
         <Dialog.Overlay className="fixed inset-0 z-[9999] bg-[rgba(0,0,0,0.5)]" onClick={onClose} />
         <Dialog.Content
           onKeyDown={handleKeyDown}
-          aria-labelledby={headingId}
-          aria-describedby={undefined}
           className="fixed inset-0 z-[10000] grid place-items-center p-4 outline-none"
         >
           <div className="w-[min(92vw,420px)] rounded-3xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.15)] p-4 sm:p-5 max-h-[92vh] flex flex-col">
@@ -128,8 +126,9 @@ export function GiftContactsDialog(props: {
               >
                 ×
               </button>
-              <div id={headingId} className="text-center text-base font-semibold pointer-events-none">Подарить Premium или звёзды</div>
+              <Dialog.Title id={headingId} className="text-center text-base font-semibold pointer-events-none">Подарить Premium или звёзды</Dialog.Title>
             </div>
+            <Dialog.Description className="sr-only">Выберите контакт для подарка, затем нажмите Продолжить.</Dialog.Description>
 
             {/* Search */}
             <div className="mt-3">

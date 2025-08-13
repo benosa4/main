@@ -83,8 +83,6 @@ export default function PremiumModal({ open, onClose, onSubmit, defaultPlan = 'a
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[9999] bg-black/50" />
         <Dialog.Content
-          aria-labelledby="premium-title"
-          aria-describedby="premium-desc"
           className="fixed inset-0 z-[10000] grid place-items-center outline-none"
           onEscapeKeyDown={(e)=> e.preventDefault()}
           onPointerDownOutside={(e)=> e.preventDefault()}
@@ -102,10 +100,10 @@ export default function PremiumModal({ open, onClose, onSubmit, defaultPlan = 'a
 
           {/* text block */}
           <div className="px-6">
-            <h2 id="premium-title" className="font-semibold text-[20px] leading-[1.2] md:text-[22px]" style={{ color: '#1F2937' }}>Telegram Premium</h2>
-            <p id="premium-desc" className="mt-1 text-[14px] leading-[1.5]" style={{ color: '#4A5568' }}>
+            <Dialog.Title id="premium-title" className="font-semibold text-[20px] leading-[1.2] md:text-[22px]" style={{ color: '#1F2937' }}>Telegram Premium</Dialog.Title>
+            <Dialog.Description id="premium-desc" className="mt-1 text-[14px] leading-[1.5]" style={{ color: '#4A5568' }}>
               Больше свобод и десятки эксклюзивных функций…
-            </p>
+            </Dialog.Description>
           </div>
 
           {/* plans */}

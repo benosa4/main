@@ -126,10 +126,10 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
             <div className="w-full" style={{ height: 120 }}>
               <OrangeStarBurst size={96} />
             </div>
-            <h2 className="mt-1 font-semibold text-[20px] leading-[1.2]" style={{ color: '#1F2937' }}>Звёзды Telegram</h2>
-            <p className="text-[14px] leading-[1.5]" style={{ color: '#4A5568' }}>
+            <Dialog.Title className="mt-1 font-semibold text-[20px] leading-[1.2]" style={{ color: '#1F2937' }}>Звёзды Telegram</Dialog.Title>
+            <Dialog.Description className="text-[14px] leading-[1.5]" style={{ color: '#4A5568' }}>
               Звёзды Telegram нужны для оплаты контента и услуг в мини‑приложениях.
-            </p>
+            </Dialog.Description>
           </div>
 
           {/* Views in scroll area */}

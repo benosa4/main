@@ -34,7 +34,7 @@ export function TonModal({ open, onClose, onTopUp, balanceTon, usdRate, formatte
     <Dialog.Root open={open} onOpenChange={(o)=>{ if(!o) onClose() }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[9999] bg-[rgba(0,0,0,0.5)]" onClick={onClose} />
-        <Dialog.Content className="fixed inset-0 z-[10000] grid place-items-center p-4 outline-none" aria-labelledby={titleId} aria-describedby={descId}>
+        <Dialog.Content className="fixed inset-0 z-[10000] grid place-items-center p-4 outline-none">
           <div className="w-[min(92vw,420px)] rounded-3xl bg-white shadow-[0_20px_60px_rgba(0,0,0,0.15)] p-6 max-h-[92vh] overflow-hidden">
             {/* Close */}
             <div className="relative">
@@ -51,10 +51,10 @@ export function TonModal({ open, onClose, onTopUp, balanceTon, usdRate, formatte
             </div>
 
             {/* Title + description */}
-            <h2 id={titleId} className="text-center text-[18px] font-semibold text-slate-900">TON</h2>
-            <p id={descId} className="mt-1 text-center text-[13px] text-slate-600 leading-5">
+            <Dialog.Title id={titleId} className="text-center text-[18px] font-semibold text-slate-900">TON</Dialog.Title>
+            <Dialog.Description id={descId} className="mt-1 text-center text-[13px] text-slate-600 leading-5">
               Offer TON to submit post suggestions to channels on Telegram.
-            </p>
+            </Dialog.Description>
 
             {/* Balance block */}
             <div className="mt-3 flex flex-col items-center gap-1">
@@ -96,4 +96,3 @@ export function TonModal({ open, onClose, onTopUp, balanceTon, usdRate, formatte
 }
 
 export default TonModal
-
