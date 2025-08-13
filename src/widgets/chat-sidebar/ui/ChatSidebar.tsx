@@ -9,6 +9,7 @@ import StoriesBar from './StoriesBar';
 import ChatsPanel from './ChatsPanel';
 import SettingsPanel from '../../settings-panel/ui/SettingsPanel';
 import appSettingsStore from '../../../shared/config/appSettings';
+import { Pencil, Megaphone, Users, Lock } from 'lucide-react';
 
 const ChatSidebar = observer(() => {
   useChats();
@@ -32,22 +33,23 @@ const ChatSidebar = observer(() => {
       <SettingsPanel />
       <button
         onClick={() => setFabOpen((v) => !v)}
-        className="absolute bottom-4 right-4 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-xl cursor-pointer"
+        className="absolute bottom-4 right-4 w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer"
+        aria-label="Создать"
       >
-        ✏️
+        <Pencil className="w-6 h-6 text-white" />
       </button>
       {fabOpen && (
         <div className="absolute bottom-16 right-4 w-48 bg-white text-black border border-gray-200 rounded-lg shadow-lg p-2 flex flex-col gap-2">
           {[
-            { id: 'newChannel', icon: '📢', label: 'Новый канал' },
-            { id: 'newGroup', icon: '👥', label: 'Новая группа' },
-            { id: 'newPrivate', icon: '🔒', label: 'Новый частный канал' }
+            { id: 'newChannel', icon: <Megaphone className="w-4 h-4" />, label: 'Новый канал' },
+            { id: 'newGroup', icon: <Users className="w-4 h-4" />, label: 'Новая группа' },
+            { id: 'newPrivate', icon: <Lock className="w-4 h-4" />, label: 'Новый частный канал' }
           ].map((opt) => (
             <div
               key={opt.id}
               className="flex items-center gap-2 px-2 py-1 hover:bg-gray-100 cursor-pointer"
             >
-              <span>{opt.icon}</span>
+              <span className="text-gray-600">{opt.icon}</span>
               <span>{opt.label}</span>
             </div>
           ))}
