@@ -162,13 +162,40 @@ const RootScreen = observer(() => {
   );
 });
 
-const MenuItem = ({ icon, label, right, onClick, highlight }: { icon: string; label: string; right?: string; onClick?: () => void; highlight?: boolean }) => (
-  <button onClick={onClick} className={`w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-white/10 ${highlight ? 'text-purple-300' : ''}`}>
-    <span>{icon}</span>
-    <span className="flex-1">{label}</span>
-    {right ? <span className="text-white/70">{right}</span> : null}
-  </button>
-);
+import React from 'react';
+import { TonIcon } from '../../../features/wallets';
+
+const MenuItem = ({ icon, label, right, onClick, highlight }: { icon: string | React.ReactNode; label: string; right?: string; onClick?: () => void; highlight?: boolean }) => {
+  const renderIcon = () => {
+    if (React.isValidElement(icon)) return icon;
+    if (typeof icon === 'string') {
+      if (icon === 'TON') return <TonIcon size={22} />;
+      // Render emoji as image to avoid missing glyph squares
+      try {
+        const src = emojiToSvgUrl(icon);
+        const fallback = emojiToPngUrl(icon as string);
+        return (
+          <img
+            src={src}
+            alt=""
+            className="w-8 h-8"
+            onError={(ev)=>{ (ev.currentTarget as HTMLImageElement).src = fallback; }}
+          />
+        );
+      } catch {
+        return <span>{icon}</span>;
+      }
+    }
+    return null;
+  };
+  return (
+    <button onClick={onClick} className={`w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-white/10 ${highlight ? 'text-purple-300' : ''}`}>
+      <span className="w-10 h-10 flex items-center justify-center">{renderIcon()}</span>
+      <span className="flex-1">{label}</span>
+      {right ? <span className="text-white/70">{right}</span> : null}
+    </button>
+  );
+};
 
 import StarsModal from '../../../features/stars/ui/StarsModal';
 import PremiumModal from '../../../features/premium/ui/PremiumModal';

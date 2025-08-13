@@ -123,7 +123,7 @@ export function GiftContactsDialog(props: {
             <div className="relative flex items-center justify-center">
               <button
                 aria-label="Закрыть"
-                className="absolute left-0 top-0 w-8 h-8 rounded-full grid place-items-center text-black hover:bg-black/10 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="absolute left-0 top-0 w-8 h-8 rounded-full grid place-items-center text-black hover:bg-black/10 focus:outline-none"
                 onClick={onClose}
               >
                 ×
