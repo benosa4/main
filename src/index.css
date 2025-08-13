@@ -9,9 +9,7 @@
 @tailwind utilities;
 
 /* Header icon button styling */
-.app-header {
-  background: var(--header-bg);
-}
+.app-header{ background: var(--header-bg, var(--surface)); }
 
 .icon-btn {
   width: 36px;
@@ -29,13 +27,13 @@
 .header-right .icon-btn { --accent: var(--accent-right); }
 
 .icon-btn {
-  background: color-mix(in srgb, var(--header-bg) calc(100% - var(--pill-pct-idle)), var(--accent) var(--pill-pct-idle));
+  background: color-mix(in srgb, var(--header-bg, var(--surface)) calc(100% - var(--pill-pct-idle)), var(--accent) var(--pill-pct-idle));
 }
 .icon-btn:hover {
-  background: color-mix(in srgb, var(--header-bg) calc(100% - var(--pill-pct-hover)), var(--accent) var(--pill-pct-hover));
+  background: color-mix(in srgb, var(--header-bg, var(--surface)) calc(100% - var(--pill-pct-hover)), var(--accent) var(--pill-pct-hover));
 }
 .icon-btn:active {
-  background: color-mix(in srgb, var(--header-bg) calc(100% - var(--pill-pct-active)), var(--accent) var(--pill-pct-active));
+  background: color-mix(in srgb, var(--header-bg, var(--surface)) calc(100% - var(--pill-pct-active)), var(--accent) var(--pill-pct-active));
 }
 .icon-btn:focus-visible {
   box-shadow: 0 0 0 2px var(--ring);
@@ -239,14 +237,13 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  --emoji-fonts: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","EmojiOne Color","Segoe UI Symbol";
 }
 
 .twemoji { width: 1.25em; height: 1.25em; vertical-align: -0.2em; }
 
 /* ВАЖНО: это правило должно идти ПОСЛЕ tailwind base/components/utilities */
 .emoji-text, textarea, input {
-  font-family: var(--emoji-fonts), system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
 }
 
 a {

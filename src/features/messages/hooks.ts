@@ -15,8 +15,8 @@ export const useMessages = (conversationId: number | null | undefined) => {
     messageStore.load(conversationId).catch(() => {});
     messageStore.startPolling(conversationId);
     // mock incoming typing + messages via timers
-    let typingTimer: any = null;
-    let msgTimer: any = null;
+    let typingTimer: ReturnType<typeof setTimeout> | null = null;
+    let msgTimer: ReturnType<typeof setTimeout> | null = null;
 
     const startTypingCycle = () => {
       typingTimer = setTimeout(() => {
