@@ -1,0 +1,26 @@
+:root[data-theme="dark"] {
+  --bg:           #0B1220;
+  --surface:      #0F172A;
+  --surface-2:    #111827;
+  --outline:      #2A3444;
+  --text-primary: #E6EDF7;
+  --text-muted:   #96A2B8;
+
+  --primary:      #4098FF;
+  --primary-600:  #2B7BE0;
+  --success:      #2BBB66;
+  --success-50:   #123B26;
+
+  --glass: rgba(20,28,44,.84);
+  --glass-border: #243348;
+  --shadow: 0 16px 50px rgba(0,0,0,.35);
+
+  --msg-select: color-mix(in srgb, var(--primary) 22%, var(--surface));
+
+  --accent-left:  #8B5CF6;
+  --accent-right: #38BDF8;
+  --ring: #60A5FA;
+  --pill-pct-idle: 18%;
+  --pill-pct-hover: 28%;
+  --pill-pct-active: 36%;
+}
