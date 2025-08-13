@@ -256,7 +256,7 @@ const ChatPage = observer(() => {
           {/* content overlay */}
           {selected ? (
             <>
-              <div className="p-4 bg-white/10 backdrop-blur-md border-b border-white/10 flex items-center gap-3">
+              <div className="p-4 app-header border-b border-white/10 flex items-center gap-3">
                 <img src={selected.avatar} className="w-14 h-14 rounded-full object-cover" />
                 <div className="flex flex-col">
                   <span className="font-semibold">{selected.name}</span>
@@ -285,11 +285,12 @@ const ChatPage = observer(() => {
                     />
                   </div>
                 )}
-                <div className="ml-auto flex gap-2 items-center">
+                <div className="ml-auto flex gap-2 items-center header-right">
                   {selected.actions.map((act, idx) => (
                     <button
                       key={idx}
-                      className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+                      className="icon-btn"
+                      aria-label={`action-${idx}`}
                     >
                       {act}
                     </button>

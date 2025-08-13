@@ -12,13 +12,13 @@ export function KebabButton({ onOpenChange, ariaLabel = 'Больше' }: KebabB
       type="button"
       aria-haspopup="menu"
       aria-label={ariaLabel}
-      className="w-8 h-8 rounded-full grid place-items-center hover:bg-[#EEF6FF] active:bg-[#dbeafe] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+      className="icon-btn"
       onClick={() => onOpenChange?.(true)}
     >
       <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden>
-        <circle cx="12" cy="5" r="2" fill="#0F172A" />
-        <circle cx="12" cy="12" r="2" fill="#0F172A" />
-        <circle cx="12" cy="19" r="2" fill="#0F172A" />
+        <circle cx="12" cy="5" r="2" fill="currentColor" />
+        <circle cx="12" cy="12" r="2" fill="currentColor" />
+        <circle cx="12" cy="19" r="2" fill="currentColor" />
       </svg>
     </button>
   )

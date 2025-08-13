@@ -1,0 +1,23 @@
+:root {
+  --accent-left:  #8B5CF6;
+  --accent-right: #38BDF8;
+  --ring: #60A5FA;
+}
+
+:root[data-theme="light"] {
+  --header-bg: #F8FAFC;
+  --text: #0B1220;
+  --icon-on-surface: #0B1220;
+  --pill-pct-idle: 12%;
+  --pill-pct-hover: 20%;
+  --pill-pct-active: 28%;
+}
+
+:root[data-theme="dark"] {
+  --header-bg: #0B1220;
+  --text: #E5E7EB;
+  --icon-on-surface: #FFFFFF;
+  --pill-pct-idle: 18%;
+  --pill-pct-hover: 28%;
+  --pill-pct-active: 36%;
+}
