@@ -142,7 +142,7 @@ const RootScreen = observer(() => {
       <div className="h-px bg-white/20 mx-3 my-2" />
       <div>
         <PremiumEntry />
-        <MenuItem icon="🌟" label="Мои звезды" right="0" onClick={() => alert('Мои звезды')} />
+        <StarsEntry />
         <MenuItem icon="TON" label="My TON" right="0" onClick={() => alert('My TON')} />
         <MenuItem icon="🎁" label="Отправить подарок" onClick={() => alert('Отправить подарок')} />
       </div>
@@ -171,17 +171,34 @@ const MenuItem = ({ icon, label, right, onClick, highlight }: { icon: string; la
 );
 
 import StarsModal from '../../../features/stars/ui/StarsModal';
+import PremiumModal from '../../../features/premium/ui/PremiumModal';
+
 const PremiumEntry = () => {
   const [open, setOpen] = useState(false);
   return (
     <>
       <MenuItem icon="⭐" label="Telegram Premium" onClick={() => setOpen(true)} highlight />
+      <PremiumModal
+        open={open}
+        onClose={() => setOpen(false)}
+        onSubmit={async () => { await new Promise(r=>setTimeout(r,600)); setOpen(false); }}
+        defaultPlan="annual"
+        prices={{ annual: { total: 1990, monthly: 165.83, discountLabel: '-45%' }, monthly: { total: 299, monthly: 299 } }}
+      />
+    </>
+  );
+};
+
+const StarsEntry = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <MenuItem icon="🌟" label="Мои звезды" right="0" onClick={() => setOpen(true)} />
       <StarsModal
         open={open}
         onClose={() => setOpen(false)}
         balance={{ amount: 849 }}
         historyApi={{ fetch: async (filter, page) => {
-          // simple filter mock
           const base = Array.from({ length: 20 }, (_, i) => ({ id: `op-${page}-${i}`, title: i%3===0?'Покупка в Mini App':'Зачисление бонусов', subtitle: i%3===0?'Оплата контента':'Подарок от друга', date: 'сегодня', sign: i%3===0?'-':'+', amount: (i%3===0?75:100)+i, avatarUrl: 'https://placehold.co/36x36' }));
           const items = filter==='income'? base.filter(b=>b.sign==='+') : filter==='outcome'? base.filter(b=>b.sign==='-') : base;
           return { items, nextPage: page+1 };
@@ -202,8 +219,8 @@ const PremiumEntry = () => {
           { id: 'p50000b', qty: 50000, price: 45990 },
           { id: 'p100000b', qty: 100000, price: 89990 },
           { id: 'p150000b', qty: 150000, price: 134990 },
-        ], buy: async (id) => { console.log('buy', id); } }}
-        giftApi={{ searchContacts: async (q, page) => ({ items: Array.from({ length: 20 }, (_, i)=>({ id: `${page}-${i}`, name: `Контакт ${i+1}`, subtitle: 'был(а) недавно', avatarUrl: 'https://placehold.co/36x36' })) }), startGift: async (id) => { console.log('gift', id); } }}
+        ], buy: async () => {} }}
+        giftApi={{ searchContacts: async (q, page) => ({ items: Array.from({ length: 20 }, (_, i)=>({ id: `${page}-${i}`, name: `Контакт ${i+1}`, subtitle: 'был(а) недавно', avatarUrl: 'https://placehold.co/36x36' })) }), startGift: async () => {} }}
       />
     </>
   );
