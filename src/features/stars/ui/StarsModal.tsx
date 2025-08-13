@@ -5,7 +5,7 @@ import * as Tabs from '@radix-ui/react-tabs';
 import OrangeStarBurst from './OrangeStarBurst';
 import PurchaseGrid, { StarPackage } from './PurchaseGrid';
 import HistoryList, { Operation } from './HistoryList';
-import GiftDialog from './GiftDialog';
+import { GiftContactsDialog, Contact as GiftContact, Page as GiftPage } from '../../gifting';
 
 export interface OperationPage { items: Operation[]; nextPage?: number }
 export interface ContactPage { items: { id: string; name: string; subtitle?: string; avatarUrl?: string }[]; nextPage?: number }
@@ -187,14 +187,27 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
           )}
 
           {/* Gift overlay */}
-          <GiftDialog
+          <GiftContactsDialog
             open={giftOpen}
             onClose={() => setGiftOpen(false)}
-            onSubmit={async () => { setGiftOpen(false); }}
-            search={async (query: string) => {
-              const items = Array.from({ length: 15 }, (_, i) => ({ id: `c${i}`, name: `Контакт ${i+1}`, subtitle: 'был(а) недавно', avatarUrl: 'https://placehold.co/36x36' }))
-                .filter(c => c.name.toLowerCase().includes((query||'').toLowerCase()));
-              return { items }; 
+            onContinue={async () => { setGiftOpen(false) }}
+            initialQuery={''}
+            pageSize={30}
+            fetchContacts={async ({ query, cursor, limit }) => {
+              // Adapter: mock paged contacts -> cursor pagination
+              const pageNum = cursor ? parseInt(cursor, 10) : 1
+              const all = Array.from({ length: 500 }, (_, i) => ({
+                id: `c${i+1}`,
+                name: `Контакт ${i+1}`,
+                lastSeenText: 'был(а) недавно',
+                avatarUrl: 'https://placehold.co/40x40',
+              }))
+                .filter((c) => c.name.toLowerCase().includes((query || '').toLowerCase()))
+              const start = (pageNum - 1) * limit
+              const slice = all.slice(start, start + limit)
+              const nextCursor = start + limit < all.length ? String(pageNum + 1) : null
+              const page: GiftPage<GiftContact> = { items: slice, nextCursor }
+              return page
             }}
           />
           </div>
