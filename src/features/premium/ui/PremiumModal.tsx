@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import StarBurst from './StarBurst';
 import PlanOption from './PlanOption';
 
@@ -42,20 +43,22 @@ export default function PremiumModal({ open, onClose, onSubmit, defaultPlan = 'a
     lastActive.current = (document.activeElement as HTMLElement) || null;
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const focusable = dialog.querySelectorAll<HTMLElement>(
+    const getFocusable = () => dialog.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
+    const focusable = getFocusable();
     const first = focusable[0];
     (first || dialog).focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { e.preventDefault(); onClose(); }
+      // Block ESC close to enforce explicit actions (close or buy)
       if (e.key === 'Tab') {
-        if (focusable.length === 0) return;
-        const idx = Array.prototype.indexOf.call(focusable, document.activeElement);
+        const f = getFocusable();
+        if (f.length === 0) return;
+        const idx = Array.prototype.indexOf.call(f, document.activeElement);
         if (e.shiftKey) {
-          if (idx <= 0) { e.preventDefault(); (focusable[focusable.length - 1] as HTMLElement).focus(); }
+          if (idx <= 0) { e.preventDefault(); (f[f.length - 1] as HTMLElement).focus(); }
         } else {
-          if (idx === focusable.length - 1) { e.preventDefault(); (focusable[0] as HTMLElement).focus(); }
+          if (idx === f.length - 1) { e.preventDefault(); (f[0] as HTMLElement).focus(); }
         }
       }
       // Radiogroup arrows
@@ -64,7 +67,7 @@ export default function PremiumModal({ open, onClose, onSubmit, defaultPlan = 'a
     };
     document.addEventListener('keydown', onKey);
     return () => { document.removeEventListener('keydown', onKey); lastActive.current?.focus(); };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
@@ -74,22 +77,22 @@ export default function PremiumModal({ open, onClose, onSubmit, defaultPlan = 'a
   const priceMonthlySub = `${formatRub(prices.monthly.monthly)} в месяц`;
   const ctaText = plan === 'annual' ? `ПОДКЛЮЧИТЬ ЗА ${formatRub(prices.annual.monthly)} В МЕСЯЦ` : `ПОДКЛЮЧИТЬ ЗА ${formatRub(prices.monthly.monthly)} В МЕСЯЦ`;
 
-  return (
+  const modal = (
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="premium-title"
       aria-describedby="premium-desc"
-      className="fixed inset-0 z-50"
+      className="fixed inset-0 z-[9999]"
     >
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50" />
       <div className="absolute inset-0 grid place-items-center">
         <div
           ref={dialogRef}
           className="w-[min(92vw,440px)] bg-white rounded-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] outline-none"
         >
           {/* close */}
-          <button aria-label="Закрыть" className="w-8 h-8 ml-2 mt-2 rounded-full grid place-items-center hover:bg-black/5" onClick={onClose}>×</button>
+          <button aria-label="Закрыть" className="w-8 h-8 ml-2 mt-2 rounded-full grid place-items-center text-black hover:bg-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-black" onClick={onClose}>×</button>
 
           {/* animated header */}
           <div className="px-6 pt-2">
@@ -189,5 +192,6 @@ export default function PremiumModal({ open, onClose, onSubmit, defaultPlan = 'a
       </div>
     </div>
   );
-}
 
+  return createPortal(modal, document.body);
+}
