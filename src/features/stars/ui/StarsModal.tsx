@@ -54,6 +54,7 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
   const [ops, setOps] = useState<Operation[]>([]);
   const [packs, setPacks] = useState<StarPackage[]>([]);
   const [giftOpen, setGiftOpen] = useState(false);
+  const giftBtnRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const lastActive = useRef<HTMLElement | null>(null);
 
@@ -136,7 +137,7 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
             <div className="flex-1 overflow-y-auto px-6 pt-3 pb-4">
               <button className="w-full h-12 rounded-xl text-white font-semibold" style={{ background: '#1887F2' }} onClick={() => setView('purchase')}>КУПИТЬ ЗВЁЗДЫ</button>
               <div className="mt-2">
-                <button className="text-[#1C7BEF] hover:underline" onClick={() => setGiftOpen(true)}>Подарить звёзды друзьям</button>
+                <button ref={giftBtnRef} className="text-[#1C7BEF] hover:underline" onClick={() => setGiftOpen(true)}>Подарить звёзды друзьям</button>
               </div>
               <div className="h-px my-3" style={{ background: '#E5E7EB' }} />
               <Tabs.Root value={tab} onValueChange={(v)=>setTab(v as any)}>
@@ -189,7 +190,7 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
           {/* Gift overlay */}
           <GiftContactsDialog
             open={giftOpen}
-            onClose={() => setGiftOpen(false)}
+            onClose={() => { setGiftOpen(false); setTimeout(()=>giftBtnRef.current?.focus(), 0) }}
             onContinue={async () => { setGiftOpen(false) }}
             initialQuery={''}
             pageSize={30}
