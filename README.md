@@ -2,6 +2,10 @@
 
 This project uses React + TypeScript + Vite with a feature-sliced structure. Below is a concise map of the chat data model, UI composition, scroll behavior, and how IndexedDB is populated in the background.
 
+## Theming
+
+Light and dark theme tokens live in `src/assets/theme.light.css` and `src/assets/theme.dark.css`. They are imported via `src/assets/tokens.css` and applied by toggling the `data-theme` attribute on `:root`.
+
 ## Structure Overview
 
 - app entry: `src/main.tsx`; routes: `src/app/routes.tsx`; global styles: `src/index.css`.

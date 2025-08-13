@@ -1,0 +1,31 @@
+:root[data-theme="light"] {
+  /* Нейтрали */
+  --bg:           #F6F9FE;
+  --surface:      #FFFFFF;
+  --surface-2:    #F1F5FB;
+  --outline:      #E1E8F5;
+  --text-primary: #0B1220;
+  --text-muted:   #637087;
+
+  /* Акценты */
+  --primary:      #1C7BEF;
+  --primary-600:  #1769CE;
+  --success:      #2BBB66;
+  --success-50:   #EAFBF2;
+
+  /* Стеклянные панели */
+  --glass: rgba(255,255,255,.88);
+  --glass-border: var(--outline);
+  --shadow: 0 10px 40px rgba(16,24,40,.12);
+
+  /* Подсветка строки сообщения при R-click */
+  --msg-select: color-mix(in srgb, var(--primary) 10%, #FFFFFF);
+
+  /* Кнопки шапки */
+  --accent-left:  #8B5CF6;
+  --accent-right: #38BDF8;
+  --ring: #60A5FA;
+  --pill-pct-idle: 12%;
+  --pill-pct-hover: 20%;
+  --pill-pct-active: 28%;
+}
