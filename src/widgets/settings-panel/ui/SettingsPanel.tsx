@@ -85,6 +85,26 @@ const MenuDots = () => (
   <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center" title="Выход">⋮</div>
 );
 
+const EmojiIcon = ({ char, size = 28 }: { char: string; size?: number }) => {
+  const src = emojiToSvgUrl(char);
+  const fallback = emojiToPngUrl(char);
+  return (
+    <img
+      src={src}
+      alt=""
+      width={size}
+      height={size}
+      className="inline-block"
+      onError={(ev) => {
+        const img = ev.currentTarget as HTMLImageElement;
+        if ((img as any)._fallbackApplied) return;
+        (img as any)._fallbackApplied = true;
+        img.src = fallback;
+      }}
+    />
+  );
+};
+
 const ProfileTop = observer(() => {
   const p = profileStore.profile;
   return (
@@ -108,7 +128,7 @@ const ProfileTop = observer(() => {
 
 const Row = ({ left, title, subtitle }: { left: React.ReactNode; title: string; subtitle: string }) => (
   <div className="flex items-start gap-3 px-3 py-3">
-    <div className="w-8 h-8 flex items-center justify-center">{left}</div>
+    <div className="w-11 h-11 flex items-center justify-center">{left}</div>
     <div className="flex-1 min-w-0">
       <div className="font-semibold truncate">{title}</div>
       <div className="text-sm text-white/70 truncate">{subtitle}</div>
@@ -122,10 +142,10 @@ const RootScreen = observer(() => {
     <div className="flex-1 overflow-y-auto scrollbar-custom pb-4">
       <ProfileTop />
       <div className="mt-3">
-        <Row left={<span>📞</span>} title={p?.phone || ''} subtitle="Телефон" />
-        <Row left={<span>🐶</span>} title={p?.username || ''} subtitle="Имя пользователя" />
-        <Row left={<span>❗</span>} title={p?.about || ''} subtitle="О себе" />
-        <Row left={<span>📅</span>} title={p?.birthdayLabel || ''} subtitle="Дата рождения" />
+        <Row left={<EmojiIcon char="📞" />} title={p?.phone || ''} subtitle="Телефон" />
+        <Row left={<EmojiIcon char="🐶" />} title={p?.username || ''} subtitle="Имя пользователя" />
+        <Row left={<EmojiIcon char="❗" />} title={p?.about || ''} subtitle="О себе" />
+        <Row left={<EmojiIcon char="📅" />} title={p?.birthdayLabel || ''} subtitle="Дата рождения" />
       </div>
       <div className="h-px bg-white/20 mx-3 my-2" />
       <div>
@@ -171,26 +191,13 @@ const MenuItem = ({ icon, label, right, onClick, highlight }: { icon: string | R
     if (typeof icon === 'string') {
       if (icon === 'TON') return <TonIcon size={22} />;
       // Render emoji as image to avoid missing glyph squares
-      try {
-        const src = emojiToSvgUrl(icon);
-        const fallback = emojiToPngUrl(icon as string);
-        return (
-          <img
-            src={src}
-            alt=""
-            className="w-8 h-8"
-            onError={(ev)=>{ (ev.currentTarget as HTMLImageElement).src = fallback; }}
-          />
-        );
-      } catch {
-        return <span>{icon}</span>;
-      }
+      return <EmojiIcon char={icon} />;
     }
     return null;
   };
   return (
     <button onClick={onClick} className={`w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-white/10 ${highlight ? 'text-purple-300' : ''}`}>
-      <span className="w-10 h-10 flex items-center justify-center">{renderIcon()}</span>
+      <span className="w-11 h-11 flex items-center justify-center">{renderIcon()}</span>
       <span className="flex-1">{label}</span>
       {right ? <span className="text-white/70">{right}</span> : null}
     </button>
