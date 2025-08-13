@@ -13,6 +13,7 @@ import TwemojiInput, { TwemojiInputHandle } from '../../shared/emoji/TwemojiInpu
 import MessagesContainer from '../../features/messages/ui/MessagesContainer';
 import { messageStore } from '../../features/messages/model';
 import ChatSidebar from '../../widgets/chat-sidebar/ui/ChatSidebar';
+import { KebabMenu } from '../../shared/ui/kebab/KebabMenu';
 
 const ChatPage = observer(() => {
   // Sidebar moved to ChatSidebar widget
@@ -284,7 +285,7 @@ const ChatPage = observer(() => {
                     />
                   </div>
                 )}
-                <div className="ml-auto flex gap-2">
+                <div className="ml-auto flex gap-2 items-center">
                   {selected.actions.map((act, idx) => (
                     <button
                       key={idx}
@@ -293,6 +294,10 @@ const ChatPage = observer(() => {
                       {act}
                     </button>
                   ))}
+                  <KebabMenu onAction={(a)=>{
+                    // Hook actions as needed; for now, log
+                    console.log('kebab action', a)
+                  }} />
                 </div>
               </div>
               <div
