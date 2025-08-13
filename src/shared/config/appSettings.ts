@@ -88,6 +88,19 @@ export interface AppSettingsState {
     sensitive18plus: boolean;
     showChatWindowTitle: boolean;
   };
+  // Stickers & Emoji group
+  stickersEmoji: {
+    emojiHints: boolean;
+    emojiSets: {
+      showInsteadOfStickers: boolean;
+      sets: { id: string; name: string; cover: string }[];
+    };
+    quickReaction: {
+      selected: string;
+      options: { id: string; name: string; native: string }[];
+    };
+    recentFirst: boolean;
+  };
 }
 
 const DEFAULTS: AppSettingsState = {
@@ -183,6 +196,31 @@ const DEFAULTS: AppSettingsState = {
     sensitive18plus: false,
     showChatWindowTitle: true,
   },
+  stickersEmoji: {
+    emojiHints: true,
+    emojiSets: {
+      showInsteadOfStickers: false,
+      sets: [
+        { id: 'e-basic', name: 'Basic Emoji', cover: '😊' },
+        { id: 'e-fun', name: 'Fun Pack', cover: '😜' },
+        { id: 'e-love', name: 'Love Pack', cover: '❤️' },
+      ],
+    },
+    quickReaction: {
+      selected: '👍',
+      options: [
+        { id: 'thumbs_up', name: 'Палец вверх', native: '👍' },
+        { id: 'heart', name: 'Сердце', native: '❤️' },
+        { id: 'fire', name: 'Огонь', native: '🔥' },
+        { id: 'clap', name: 'Аплодисменты', native: '👏' },
+        { id: 'laugh', name: 'Смех', native: '😂' },
+        { id: 'shock', name: 'Удивление', native: '😮' },
+        { id: 'sad', name: 'Грусть', native: '😢' },
+        { id: 'party', name: 'Праздник', native: '🥳' },
+      ],
+    },
+    recentFirst: true,
+  },
 };
 
 class AppSettingsStore {
@@ -200,6 +238,42 @@ class AppSettingsStore {
       if (!dto) {
         // fallback to mock remote when local missing
         dto = await loadAppSettingsFromRemote();
+      }
+      // If both local and remote are empty – bootstrap mock remote with baseline settings
+      if (!dto) {
+        const mock: AppSettingsDTO = {
+          id: 'app',
+          theme: DEFAULTS.theme,
+          animations: DEFAULTS.animations,
+          version: DEFAULTS.version,
+          stickersEmoji: {
+            emojiHints: true,
+            emojiSets: {
+              showInsteadOfStickers: false,
+              sets: [
+                { id: 'e-basic', name: 'Basic Emoji', cover: '😊' },
+                { id: 'e-fun', name: 'Fun Pack', cover: '😜' },
+                { id: 'e-love', name: 'Love Pack', cover: '❤️' },
+              ],
+            },
+            quickReaction: {
+              selected: '👍',
+              options: [
+                { id: 'thumbs_up', name: 'Палец вверх', native: '👍' },
+                { id: 'heart', name: 'Сердце', native: '❤️' },
+                { id: 'fire', name: 'Огонь', native: '🔥' },
+                { id: 'clap', name: 'Аплодисменты', native: '👏' },
+                { id: 'laugh', name: 'Смех', native: '😂' },
+                { id: 'shock', name: 'Удивление', native: '😮' },
+                { id: 'sad', name: 'Грусть', native: '😢' },
+                { id: 'party', name: 'Праздник', native: '🥳' },
+              ],
+            },
+            recentFirst: true,
+          },
+        };
+        try { await saveAppSettingsToRemote(mock); } catch {}
+        dto = mock;
       }
       const merged: AppSettingsState = dto
         ? {
@@ -233,6 +307,7 @@ class AppSettingsStore {
               sensitive18plus: dto.privacy?.sensitive18plus ?? DEFAULTS.privacy.sensitive18plus,
               showChatWindowTitle: dto.privacy?.showChatWindowTitle ?? DEFAULTS.privacy.showChatWindowTitle,
             },
+            stickersEmoji: dto.stickersEmoji ?? DEFAULTS.stickersEmoji,
           }
         : { ...DEFAULTS };
       runInAction(() => {
@@ -297,6 +372,7 @@ class AppSettingsStore {
         ...this.state.privacy,
         blacklistCount: this.state.privacy.blacklist?.length ?? this.state.privacy.blacklistCount,
       },
+      stickersEmoji: this.state.stickersEmoji,
     };
     await saveAppSettingsToDB(dto);
     // mock remote sync
@@ -305,6 +381,24 @@ class AppSettingsStore {
     } catch {
       // ignore remote errors in mock
     }
+  }
+
+  // Stickers & Emoji setters
+  setEmojiHints(on: boolean) {
+    this.state.stickersEmoji.emojiHints = on;
+    void this.persist();
+  }
+  setEmojiSetsShowInsteadOfStickers(on: boolean) {
+    this.state.stickersEmoji.emojiSets.showInsteadOfStickers = on;
+    void this.persist();
+  }
+  setQuickReaction(native: string) {
+    this.state.stickersEmoji.quickReaction.selected = native;
+    void this.persist();
+  }
+  setRecentFirst(on: boolean) {
+    this.state.stickersEmoji.recentFirst = on;
+    void this.persist();
   }
 
   setSessionsAutoEnd(val: '1w'|'1m'|'3m'|'6m') {

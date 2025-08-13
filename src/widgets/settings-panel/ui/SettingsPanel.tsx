@@ -9,6 +9,7 @@ import ColorPicker from '../../../shared/ui/ColorPicker';
 import { chatTabsStore } from '../../../features/chat-tabs/model';
 import { chatStore } from '../../../features/chats/model';
 import { loadSessionsFromDB, loadSessionsFromRemote, saveSessionsToDB, saveSessionsToRemote, type SessionDTO } from '../../../shared/db';
+import { emojiToSvgUrl, emojiToPngUrl } from '../../../shared/emoji/twemojify';
 
 const NavBar = observer(() => {
   const current = settingsPanelStore.stack[settingsPanelStore.stack.length - 1] || 'root';
@@ -38,7 +39,9 @@ const NavBar = observer(() => {
     current === 'folders' ? 'Папки с чатами' :
     current === 'sessions' ? 'Активные сеансы' :
     current === 'language' ? 'Язык' :
-    current === 'stickers' ? 'Стикеры и эмодзи' : 'Настройки';
+    current === 'stickers' ? 'Стикеры и эмодзи' :
+    current === 'stickers_emoji' ? 'Эмодзи' :
+    current === 'stickers_quick' ? 'Эмодзи' : 'Настройки';
   return (
     <div className="flex items-center gap-3 px-3 py-2 bg-white/20 border-b border-white/20">
       <button className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center" onClick={() => settingsPanelStore.back()} aria-label="Back">←</button>
@@ -171,6 +174,110 @@ const ScreenPlaceholder = ({ title }: { title: string }) => (
   <div className="flex-1 overflow-y-auto scrollbar-custom p-3">{title}</div>
 );
 
+// STICKERS & EMOJI SCREEN
+const StickersEmojiScreen = observer(() => {
+  const s = appSettingsStore.state.stickersEmoji;
+  const setsCount = s.emojiSets.sets.length;
+  const quick = s.quickReaction.selected;
+  const quickSrc = emojiToSvgUrl(quick);
+
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-3">
+      {/* Emoji hint */}
+      <div className="bg-white/10 rounded-lg p-3">
+        <label className="flex items-center gap-3">
+          <input type="checkbox" checked={s.emojiHints} onChange={(e)=>appSettingsStore.setEmojiHints(e.target.checked)} />
+          <div className="flex-1">
+            <div className="font-semibold">Подсказка по эмодзи</div>
+          </div>
+        </label>
+      </div>
+
+      {/* Emoji sets link */}
+      <button className="w-full flex items-center gap-3 px-3 py-3 bg-white/10 rounded-lg hover:bg-white/15" onClick={() => settingsPanelStore.push('stickers_emoji')}>
+        <img src={emojiToSvgUrl('😊')} alt="emoji" className="w-8 h-8" onError={(ev)=>{(ev.currentTarget as HTMLImageElement).src = emojiToPngUrl('😊')}} />
+        <div className="flex-1 text-left">
+          <div className="font-semibold">Наборы эмодзи</div>
+        </div>
+        <div className="text-white/70">{setsCount}</div>
+      </button>
+
+      {/* Quick reaction link */}
+      <button className="w-full flex items-center gap-3 px-3 py-3 bg-white/10 rounded-lg hover:bg-white/15" onClick={() => settingsPanelStore.push('stickers_quick')}>
+        <img src={quickSrc} alt={quick} className="w-8 h-8" onError={(ev)=>{(ev.currentTarget as HTMLImageElement).src = emojiToPngUrl(quick)}} />
+        <div className="flex-1 text-left">
+          <div className="font-semibold">Быстрая реакция</div>
+        </div>
+      </button>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* Recent first group */}
+      <div className="bg-white/10 rounded-lg p-3 space-y-1">
+        <div className="font-semibold">Сначала недавние</div>
+        <label className="flex items-center gap-3">
+          <input type="checkbox" checked={s.recentFirst} onChange={(e)=>appSettingsStore.setRecentFirst(e.target.checked)} />
+          <div className="flex-1">
+            <div>Сначала недавние</div>
+          </div>
+        </label>
+        <div className="text-sm text-white/70">В начале списка будут отображаться недавно использованные наборы.</div>
+      </div>
+
+      <div className="h-px bg-white/20 mx-1" />
+
+      {/* My sticker sets info */}
+      <div className="bg-white/10 rounded-lg p-3">
+        <div className="font-semibold mb-1">Мои наборы стикеров</div>
+        <div className="text-sm text-white/80">Художники могут создавать собственные наборы с помощью бота @stickers</div>
+      </div>
+    </div>
+  );
+});
+
+const EmojiSetsScreen = observer(() => {
+  const s = appSettingsStore.state.stickersEmoji;
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-3">
+      <div className="bg-white/10 rounded-lg p-3 space-y-2">
+        <label className="flex items-center gap-3">
+          <input type="checkbox" checked={s.emojiSets.showInsteadOfStickers} onChange={(e)=>appSettingsStore.setEmojiSetsShowInsteadOfStickers(e.target.checked)} />
+          <div className="flex-1">
+            <div className="font-semibold">Показывать вместо стикеров</div>
+          </div>
+        </label>
+        <div className="text-sm text-white/70">Художники могут создавать собственные наборы с помощью бота @stickers</div>
+      </div>
+    </div>
+  );
+});
+
+const QuickReactionScreen = observer(() => {
+  const s = appSettingsStore.state.stickersEmoji;
+  const selected = s.quickReaction.selected;
+  return (
+    <div className="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-2">
+      {s.quickReaction.options.map((opt) => (
+        <label key={opt.id} className="flex items-center gap-3 px-3 py-2 bg-white/10 rounded-lg hover:bg-white/15">
+          <img
+            src={emojiToSvgUrl(opt.native)}
+            alt={opt.name}
+            className="w-7 h-7"
+            onError={(ev)=>{(ev.currentTarget as HTMLImageElement).src = emojiToPngUrl(opt.native)}}
+          />
+          <div className="flex-1">{opt.name}</div>
+          <input
+            type="radio"
+            name="quick-reaction"
+            checked={selected === opt.native}
+            onChange={() => appSettingsStore.setQuickReaction(opt.native)}
+          />
+        </label>
+      ))}
+    </div>
+  );
+});
+
 const Screens = observer(() => {
   const current = settingsPanelStore.stack[settingsPanelStore.stack.length - 1] || 'root';
   return (
@@ -195,7 +302,9 @@ const Screens = observer(() => {
         {current === 'folders' && <FoldersScreen />}
         {current === 'sessions' && <SessionsScreen />}
         {current === 'language' && <LanguageScreen />}
-        {current === 'stickers' && <ScreenPlaceholder title="Экран: Стикеры и эмодзи" />}
+        {current === 'stickers' && <StickersEmojiScreen />}
+        {current === 'stickers_emoji' && <EmojiSetsScreen />}
+        {current === 'stickers_quick' && <QuickReactionScreen />}
       </div>
     </div>
   );

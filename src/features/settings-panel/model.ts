@@ -27,7 +27,9 @@ export type SettingsScreen =
   | 'folders'
   | 'sessions'
   | 'language'
-  | 'stickers';
+  | 'stickers'
+  | 'stickers_emoji'
+  | 'stickers_quick';
 
 class SettingsPanelStore {
   open = false;

@@ -279,6 +279,23 @@ export interface AppSettingsDTO {
     sensitive18plus: boolean;
     showChatWindowTitle: boolean;
   } | null;
+  // Stickers & Emoji settings group
+  stickersEmoji?: {
+    // Main switch: show emoji hints in input/suggestions
+    emojiHints: boolean;
+    // Emoji sets behavior and count/list
+    emojiSets: {
+      showInsteadOfStickers: boolean;
+      sets: { id: string; name: string; cover: string }[];
+    };
+    // Quick reaction selected emoji and available options
+    quickReaction: {
+      selected: string; // native emoji
+      options: { id: string; name: string; native: string }[];
+    };
+    // Sorting preference for sets
+    recentFirst: boolean;
+  } | null;
 }
 
 // Sessions
