@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
+import * as Dropdown from '@radix-ui/react-dropdown-menu';
 import appSettingsStore from '../../../shared/config/appSettings';
 import { menuStore } from '../../../features/menu/model';
 import { storyStore } from '../../../features/stories/model';
@@ -8,6 +9,7 @@ import { profileStore } from '../../../features/profile/model';
 import { settingsPanelStore } from '../../../features/settings-panel/model';
 import Avatar from '../../../shared/ui/Avatar';
 import type { MenuItem } from '../../../features/menu/api';
+import { KebabButton } from '../../../shared/ui/kebab/KebabButton';
 
 interface Props {
   search: string;
@@ -17,38 +19,57 @@ interface Props {
 
 const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
-  const burgerRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (
-        menuOpen &&
-        menuRef.current &&
-        burgerRef.current &&
-        !menuRef.current.contains(e.target as Node) &&
-        !burgerRef.current.contains(e.target as Node)
-      ) {
-        setMenuOpen(false);
-        setMoreOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [menuOpen]);
 
   return (
     <div className="p-2 flex items-center gap-2 border-b border-white/20 relative">
-      <button
-        ref={burgerRef}
-        onClick={() => setMenuOpen((v) => !v)}
-        className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center cursor-pointer"
-        aria-label="Open menu"
-      >
-        ☰
-      </button>
+      <Dropdown.Root open={menuOpen} onOpenChange={setMenuOpen}>
+        <Dropdown.Trigger asChild>
+          <div>
+            <KebabButton ariaLabel="Открыть меню" onOpenChange={setMenuOpen} />
+          </div>
+        </Dropdown.Trigger>
+        <Dropdown.Portal>
+          <Dropdown.Content
+            align="start"
+            side="bottom"
+            sideOffset={8}
+            className="z-[60] min-w-[240px] w-[min(300px,92vw)] p-[6px] rounded-2xl bg-white/90 backdrop-blur-[2px] border border-[#CFE3F3] shadow-[0_8px_30px_rgba(0,0,0,0.12)] data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out"
+            style={{ backgroundImage: 'linear-gradient(180deg,#EAF6FF 0%, #E3F0FB 100%)' }}
+          >
+            <div className="max-h-[60vh] overflow-y-auto rounded-2xl text-[#0F172A]">
+              {(
+                (appSettingsStore.state.version === 'A'
+                  ? menuStore.flattenedItems
+                  : menuStore.renderedItems)
+                .concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as MenuItem])
+              ).map((item) => (
+                <DropdownMenuItem
+                  key={item.id}
+                  item={item}
+                  onSelect={async (id) => {
+                    if (id === 'version') {
+                      const next = appSettingsStore.state.version === 'K' ? 'A' : 'K';
+                      appSettingsStore.setVersion(next);
+                      menuStore.version = next;
+                    } else if (id === 'dark') {
+                      appSettingsStore.toggleTheme();
+                    } else if (id === 'anim') {
+                      appSettingsStore.toggleAnimations();
+                    } else if (id === 'chatbg') {
+                      fileRef.current?.click();
+                      return;
+                    } else if (id === 'user') {
+                      settingsPanelStore.show('root');
+                    }
+                    setMenuOpen(false);
+                  }}
+                />
+              ))}
+            </div>
+          </Dropdown.Content>
+        </Dropdown.Portal>
+      </Dropdown.Root>
       <div className="relative flex-1">
         <input
           value={search}
@@ -69,192 +90,6 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
         </div>
       </div>
 
-      {menuOpen && (
-        <div
-          ref={menuRef}
-          onMouseLeave={() => {
-            setMenuOpen(false);
-            setMoreOpen(false);
-          }}
-          className={`absolute top-12 left-2 w-56 bg-white border border-gray-200 rounded-lg z-20 text-sm text-black ${appSettingsStore.state.animationPrefs.interface.contextBlur && appSettingsStore.state.animations ? 'backdrop-blur-sm' : ''} ${appSettingsStore.state.animationPrefs.interface.contextMenus && appSettingsStore.state.animations ? 'transition transform origin-top-left duration-200' : ''}`}
-          style={appSettingsStore.state.animationPrefs.interface.contextMenus && appSettingsStore.state.animations ? { animation: 'none' } : undefined}
-        >
-            {appSettingsStore.state.version === 'A'
-              ? menuStore.flattenedItems.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as MenuItem]).map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (item.id === 'version') {
-                      const next = appSettingsStore.state.version === 'K' ? 'A' : 'K';
-                      appSettingsStore.setVersion(next);
-                      menuStore.version = next;
-                    } else if (item.id === 'dark') {
-                      appSettingsStore.toggleTheme();
-                    } else if (item.id === 'anim') {
-                      appSettingsStore.toggleAnimations();
-                    } else if (item.id === 'chatbg') {
-                      fileRef.current?.click();
-                      return;
-                    } else if (item.id === 'user') {
-                      settingsPanelStore.show('root');
-                      setMenuOpen(false);
-                      setMoreOpen(false);
-                      return;
-                    }
-                    setMenuOpen(false);
-                    setMoreOpen(false);
-                  }}
-                >
-                  {item.id === 'user' ? (
-                    <>
-                      {profileStore.profile?.avatarCacheDataUrl ? (
-                        <img src={profileStore.profile.avatarCacheDataUrl} className="w-8 h-8 rounded-full object-cover" />
-                      ) : profileStore.profile?.avatarUrl ? (
-                        <img src={profileStore.profile.avatarUrl} className="w-8 h-8 rounded-full object-cover" />
-                      ) : (
-                        <Avatar name={profileStore.profile?.displayName || 'U'} size={32} />
-                      )}
-                      <span className="ml-2">{profileStore.profile?.displayName || 'Имя пользователя'}</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>{item.icon}</span>
-                      <span>
-                        {item.id === 'version'
-                          ? appSettingsStore.state.version === 'K'
-                            ? 'Переключить в А версию'
-                            : 'Переключить в К версию'
-                          : item.id === 'dark'
-                            ? appSettingsStore.state.theme === 'dark'
-                              ? 'Включить светлый режим'
-                              : 'Включить темный режим'
-                            : item.id === 'anim'
-                              ? appSettingsStore.state.animations
-                                ? 'Выключить анимацию'
-                                : 'Включить анимацию'
-                          : item.label}
-                      </span>
-                    </>
-                  )}
-                </div>
-              ))
-            : menuStore.renderedItems.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as MenuItem]).map((item) => (
-                <div
-                  key={item.id}
-                  className="relative group"
-                  onMouseEnter={() => item.id === 'more' && setMoreOpen(true)}
-                  onMouseLeave={() => item.id === 'more' && setMoreOpen(false)}
-                >
-                  <div
-                    className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (item.id === 'more') return;
-                      if (item.id === 'version') {
-                        const next = appSettingsStore.state.version === 'K' ? 'A' : 'K';
-                        appSettingsStore.setVersion(next);
-                        menuStore.version = next;
-                      } else if (item.id === 'dark') {
-                        appSettingsStore.toggleTheme();
-                      } else if (item.id === 'anim') {
-                        appSettingsStore.toggleAnimations();
-                      } else if (item.id === 'chatbg') {
-                        fileRef.current?.click();
-                        return;
-                      } else if (item.id === 'user') {
-                        settingsPanelStore.show('root');
-                        setMenuOpen(false);
-                        setMoreOpen(false);
-                        return;
-                      }
-                      setMenuOpen(false);
-                      setMoreOpen(false);
-                    }}
-                  >
-                    {item.id === 'user' ? (
-                      <>
-                        {profileStore.profile?.avatarCacheDataUrl ? (
-                          <img src={profileStore.profile.avatarCacheDataUrl} className="w-8 h-8 rounded-full object-cover" />
-                        ) : profileStore.profile?.avatarUrl ? (
-                          <img src={profileStore.profile.avatarUrl} className="w-8 h-8 rounded-full object-cover" />
-                        ) : (
-                          <Avatar name={profileStore.profile?.displayName || 'U'} size={32} />
-                        )}
-                        <span className="ml-2">{profileStore.profile?.displayName || 'Имя пользователя'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>{item.icon}</span>
-                        <span>{item.label}</span>
-                      </>
-                    )}
-                  </div>
-                  {item.id === 'more' && moreOpen && (
-                    <div className={`absolute top-0 left-full -ml-2 w-full bg-white border border-gray-200 rounded-lg text-sm text-black ${appSettingsStore.state.animationPrefs.interface.contextBlur && appSettingsStore.state.animations ? 'backdrop-blur-sm' : ''} ${appSettingsStore.state.animationPrefs.interface.contextMenus && appSettingsStore.state.animations ? 'transition transform origin-top-left duration-200' : ''}`}>
-                      {item.children?.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as MenuItem]).map((child) => (
-                        <div
-                          key={child.id}
-                          className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                          onClick={() => {
-                            if (child.id === 'version') {
-                              const next = appSettingsStore.state.version === 'K' ? 'A' : 'K';
-                              appSettingsStore.setVersion(next);
-                              menuStore.version = next;
-                            } else if (child.id === 'dark') {
-                              appSettingsStore.toggleTheme();
-                            } else if (child.id === 'anim') {
-                              appSettingsStore.toggleAnimations();
-                            } else if (child.id === 'chatbg') {
-                              fileRef.current?.click();
-                              return;
-                            }
-                            setMenuOpen(false);
-                            setMoreOpen(false);
-                          }}
-                        >
-                          {child.id === 'user' ? (
-                            <>
-                              {profileStore.profile?.avatarCacheDataUrl ? (
-                                <img src={profileStore.profile.avatarCacheDataUrl} className="w-8 h-8 rounded-full object-cover" />
-                              ) : profileStore.profile?.avatarUrl ? (
-                                <img src={profileStore.profile.avatarUrl} className="w-8 h-8 rounded-full object-cover" />
-                              ) : (
-                                <Avatar name={profileStore.profile?.displayName || 'U'} size={32} />
-                              )}
-                              <span className="ml-2">{profileStore.profile?.displayName || 'Имя пользователя'}</span>
-                            </>
-                          ) : (
-                            <>
-                              <span>{child.icon}</span>
-                              <span>
-                                {child.id === 'version'
-                                  ? appSettingsStore.state.version === 'K'
-                                    ? 'Переключить в А версию'
-                                    : 'Переключить в К версию'
-                                  : child.id === 'dark'
-                                    ? appSettingsStore.state.theme === 'dark'
-                                      ? 'Включить светлый режим'
-                                      : 'Включить темный режим'
-                                    : child.id === 'anim'
-                                      ? appSettingsStore.state.animations
-                                        ? 'Выключить анимацию'
-                                        : 'Включить анимацию'
-                                  : child.label}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-        </div>
-      )}
 
       <input
         ref={fileRef}
@@ -282,3 +117,95 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
 });
 
 export default SearchBar;
+
+function DropdownMenuItem({ item, onSelect }: { item: MenuItem; onSelect: (id: string) => void }) {
+  const isUser = item.id === 'user';
+  const isMore = item.id === 'more' && item.children && item.children.length > 0 && appSettingsStore.state.version !== 'A';
+  if (isMore) {
+    return (
+      <Dropdown.Sub>
+        <Dropdown.SubTrigger className="flex items-center justify-between gap-2 h-10 px-3 py-2 rounded-xl cursor-pointer outline-none select-none text-[#0F172A] hover:bg-[#EAF2FE] active:bg-[#dbeafe] focus-visible:ring-2 focus-visible:ring-sky-500">
+          <div className="flex items-center gap-2">
+            <span className="text-[#5B7088]">{item.icon}</span>
+            <span className="text-[14px] truncate">{item.label}</span>
+          </div>
+          <span aria-hidden>›</span>
+        </Dropdown.SubTrigger>
+        <Dropdown.Portal>
+          <Dropdown.SubContent alignOffset={-4} className="min-w-[220px] p-[6px] rounded-2xl bg-white/90 backdrop-blur-[2px] border border-[#CFE3F3] shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+            <div className="max-h-[60vh] overflow-y-auto rounded-2xl">
+              {item.children!.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as MenuItem]).map((child) => (
+                <Dropdown.Item
+                  key={child.id}
+                  className="group flex items-center gap-[10px] h-10 px-3 py-2 rounded-xl cursor-pointer outline-none select-none text-[#0F172A] hover:bg-[#EAF2FE] active:bg-[#dbeafe] focus-visible:ring-2 focus-visible:ring-sky-500"
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    onSelect(child.id);
+                  }}
+                >
+                  <span className="text-[#5B7088]">{child.icon}</span>
+                  <span className="text-[14px] truncate">
+                    {child.id === 'version'
+                      ? appSettingsStore.state.version === 'K'
+                        ? 'Переключить в А версию'
+                        : 'Переключить в К версию'
+                      : child.id === 'dark'
+                        ? appSettingsStore.state.theme === 'dark'
+                          ? 'Включить светлый режим'
+                          : 'Включить темный режим'
+                        : child.id === 'anim'
+                          ? appSettingsStore.state.animations
+                            ? 'Выключить анимацию'
+                            : 'Включить анимацию'
+                      : child.label}
+                  </span>
+                </Dropdown.Item>
+              ))}
+            </div>
+          </Dropdown.SubContent>
+        </Dropdown.Portal>
+      </Dropdown.Sub>
+    );
+  }
+  return (
+    <Dropdown.Item
+      className="group flex items-center gap-[10px] h-10 px-3 py-2 rounded-xl cursor-pointer outline-none select-none text-[#0F172A] hover:bg-[#EAF2FE] active:bg-[#dbeafe] focus-visible:ring-2 focus-visible:ring-sky-500"
+      onSelect={(e) => {
+        e.preventDefault();
+        onSelect(item.id);
+      }}
+    >
+      {isUser ? (
+        <>
+          {profileStore.profile?.avatarCacheDataUrl ? (
+            <img src={profileStore.profile.avatarCacheDataUrl} className="w-8 h-8 rounded-full object-cover" />
+          ) : profileStore.profile?.avatarUrl ? (
+            <img src={profileStore.profile.avatarUrl} className="w-8 h-8 rounded-full object-cover" />
+          ) : (
+            <Avatar name={profileStore.profile?.displayName || 'U'} size={32} />
+          )}
+          <span className="ml-2">{profileStore.profile?.displayName || 'Имя пользователя'}</span>
+        </>
+      ) : (
+        <>
+          <span className="text-[#5B7088]">{item.icon}</span>
+          <span className="text-[14px] truncate">
+            {item.id === 'version'
+              ? appSettingsStore.state.version === 'K'
+                ? 'Переключить в А версию'
+                : 'Переключить в К версию'
+              : item.id === 'dark'
+                ? appSettingsStore.state.theme === 'dark'
+                  ? 'Включить светлый режим'
+                  : 'Включить темный режим'
+                : item.id === 'anim'
+                  ? appSettingsStore.state.animations
+                    ? 'Выключить анимацию'
+                    : 'Включить анимацию'
+              : item.label}
+          </span>
+        </>
+      )}
+    </Dropdown.Item>
+  );
+}
