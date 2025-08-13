@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import * as Dropdown from '@radix-ui/react-dropdown-menu';
 import appSettingsStore from '../../../shared/config/appSettings';
@@ -10,6 +10,7 @@ import { settingsPanelStore } from '../../../features/settings-panel/model';
 import Avatar from '../../../shared/ui/Avatar';
 import type { MenuItem } from '../../../features/menu/api';
 import { KebabButton } from '../../../shared/ui/kebab/KebabButton';
+import { Image } from 'lucide-react';
 
 interface Props {
   search: string;
@@ -37,35 +38,40 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
             className="z-[60] min-w-[240px] w-[min(300px,92vw)] p-[6px] rounded-2xl bg-white/90 backdrop-blur-[2px] border border-[#CFE3F3] shadow-[0_8px_30px_rgba(0,0,0,0.12)] data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out"
             style={{ backgroundImage: 'linear-gradient(180deg,#EAF6FF 0%, #E3F0FB 100%)' }}
           >
-            <div className="max-h-[60vh] overflow-y-auto rounded-2xl text-[#0F172A]">
+            <div className="rounded-2xl text-[#0F172A]">
               {(
-                (appSettingsStore.state.version === 'A'
+                appSettingsStore.state.version === 'A'
                   ? menuStore.flattenedItems
-                  : menuStore.renderedItems)
-                .concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as MenuItem])
-              ).map((item) => (
-                <DropdownMenuItem
-                  key={item.id}
-                  item={item}
-                  onSelect={async (id) => {
-                    if (id === 'version') {
-                      const next = appSettingsStore.state.version === 'K' ? 'A' : 'K';
-                      appSettingsStore.setVersion(next);
-                      menuStore.version = next;
-                    } else if (id === 'dark') {
-                      appSettingsStore.toggleTheme();
-                    } else if (id === 'anim') {
-                      appSettingsStore.toggleAnimations();
-                    } else if (id === 'chatbg') {
-                      fileRef.current?.click();
-                      return;
-                    } else if (id === 'user') {
-                      settingsPanelStore.show('root');
-                    }
-                    setMenuOpen(false);
-                  }}
-                />
-              ))}
+                  : menuStore.renderedItems
+              )
+                .concat([{ id: 'chatbg', icon: <Image className="w-4 h-4" />, label: 'Выбрать фон чата' } as MenuItem])
+                .map((item, idx, arr) => (
+                  <Fragment key={item.id}>
+                    <DropdownMenuItem
+                      item={item}
+                      onSelect={async (id) => {
+                        if (id === 'version') {
+                          const next = appSettingsStore.state.version === 'K' ? 'A' : 'K';
+                          appSettingsStore.setVersion(next);
+                          menuStore.version = next;
+                        } else if (id === 'dark') {
+                          appSettingsStore.toggleTheme();
+                        } else if (id === 'anim') {
+                          appSettingsStore.toggleAnimations();
+                        } else if (id === 'chatbg') {
+                          fileRef.current?.click();
+                          return;
+                        } else if (id === 'user') {
+                          settingsPanelStore.show('root');
+                        }
+                        setMenuOpen(false);
+                      }}
+                    />
+                    {idx === 1 && idx < arr.length - 1 && (
+                      <Dropdown.Separator className="my-1 h-px bg-[#CFE3F3]" />
+                    )}
+                  </Fragment>
+                ))}
             </div>
           </Dropdown.Content>
         </Dropdown.Portal>
@@ -84,6 +90,7 @@ const SearchBar = observer(({ search, onSearch, storiesCollapsed }: Props) => {
             <img
               key={s.id}
               src={s.avatar}
+              alt=""
               className="w-6 h-6 rounded-full border border-white/20 object-cover shrink-0"
             />
           ))}
@@ -133,8 +140,8 @@ function DropdownMenuItem({ item, onSelect }: { item: MenuItem; onSelect: (id: s
         </Dropdown.SubTrigger>
         <Dropdown.Portal>
           <Dropdown.SubContent alignOffset={-4} className="min-w-[220px] p-[6px] rounded-2xl bg-white/90 backdrop-blur-[2px] border border-[#CFE3F3] shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
-            <div className="max-h-[60vh] overflow-y-auto rounded-2xl">
-              {item.children!.concat([{ id: 'chatbg', icon: '🖼️', label: 'Выбрать фон чата' } as MenuItem]).map((child) => (
+            <div className="rounded-2xl">
+              {item.children!.concat([{ id: 'chatbg', icon: <Image className="w-4 h-4" />, label: 'Выбрать фон чата' } as MenuItem]).map((child) => (
                 <Dropdown.Item
                   key={child.id}
                   className="group flex items-center gap-[10px] h-10 px-3 py-2 rounded-xl cursor-pointer outline-none select-none text-[#0F172A] hover:bg-[#EAF2FE] active:bg-[#dbeafe] focus-visible:ring-2 focus-visible:ring-sky-500"
