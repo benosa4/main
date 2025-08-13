@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import * as Dialog from '@radix-ui/react-dialog';
+import * as Tabs from '@radix-ui/react-tabs';
 import OrangeStarBurst from './OrangeStarBurst';
 import PurchaseGrid, { StarPackage } from './PurchaseGrid';
 import HistoryList, { Operation } from './HistoryList';
@@ -100,13 +102,16 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
   const fmt = (n: number) => new Intl.NumberFormat('ru-RU').format(n);
 
   const content = (
-    <div role="dialog" aria-modal className="fixed inset-0 z-[9999]">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="absolute inset-0 grid place-items-center p-3">
-        <div ref={dialogRef} className="w-[min(92vw,420px)] bg-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] outline-none overflow-hidden">
+    <Dialog.Root open={open} onOpenChange={(o)=>{ if(!o) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm" />
+        <Dialog.Content className="fixed inset-0 z-[10000] grid place-items-center p-3 outline-none">
+          <div ref={dialogRef} className="w-[min(92vw,420px)] bg-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3">
-            <button aria-label="Закрыть" className="w-8 h-8 rounded-full grid place-items-center text-black hover:bg-black/10" onClick={onClose}>×</button>
+            <Dialog.Close asChild>
+              <button aria-label="Закрыть" className="w-8 h-8 rounded-full grid place-items-center text-black hover:bg-black/10">×</button>
+            </Dialog.Close>
             <div className="text-sm font-semibold flex items-center gap-1" title="Баланс">
               Баланс <span aria-hidden>⭐</span> {fmt(balance.amount)}
             </div>
@@ -130,25 +135,34 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
                 <button className="text-[#1C7BEF] hover:underline" onClick={() => setGiftOpen(true)}>Подарить звёзды друзьям</button>
               </div>
               <div className="h-px my-3" style={{ background: '#E5E7EB' }} />
-              {/* Tabs */}
-              <div className="flex items-center gap-4 border-b" style={{ borderColor: '#E5E7EB' }}>
-                {([
-                  { id: 'all', label: 'Все операции' },
-                  { id: 'income', label: 'Зачисления' },
-                  { id: 'outcome', label: 'Списания' },
-                ] as const).map(t => (
-                  <button key={t.id} className="relative py-2 text-sm" onClick={async () => {
-                    setTab(t.id as any);
-                    try { const { items } = await (historyApi?.fetch?.(t.id as any, 1) || Promise.resolve({ items: mockHistory })); setOps(items); } catch {}
-                  }} style={{ color: tab===t.id? '#1C7BEF' : '#374151' }}>
-                    {t.label}
-                    {tab === t.id && <span className="absolute left-0 right-0 -bottom-[1px] h-0.5" style={{ background: '#1C7BEF' }} />}
-                  </button>
-                ))}
-              </div>
-              <div className="max-h-[300px] overflow-y-auto py-2">
-                <HistoryList items={ops} />
-              </div>
+              <Tabs.Root value={tab} onValueChange={(v)=>setTab(v as any)}>
+                <Tabs.List className="flex items-center gap-4 border-b" style={{ borderColor: '#E5E7EB' }}>
+                  <Tabs.Trigger value="all" className="relative py-2 text-sm data-[state=active]:text-[#1C7BEF]">Все операции
+                    {tab==='all' && <span className="absolute left-0 right-0 -bottom-[1px] h-0.5" style={{ background: '#1C7BEF' }} />}
+                  </Tabs.Trigger>
+                  <Tabs.Trigger value="income" className="relative py-2 text-sm data-[state=active]:text-[#1C7BEF]">Зачисления
+                    {tab==='income' && <span className="absolute left-0 right-0 -bottom-[1px] h-0.5" style={{ background: '#1C7BEF' }} />}
+                  </Tabs.Trigger>
+                  <Tabs.Trigger value="outcome" className="relative py-2 text-sm data-[state=active]:text-[#1C7BEF]">Списания
+                    {tab==='outcome' && <span className="absolute left-0 right-0 -bottom-[1px] h-0.5" style={{ background: '#1C7BEF' }} />}
+                  </Tabs.Trigger>
+                </Tabs.List>
+                <Tabs.Content value="all" asChild>
+                  <div className="max-h-[300px] overflow-y-auto py-2">
+                    <HistoryList items={ops} />
+                  </div>
+                </Tabs.Content>
+                <Tabs.Content value="income" asChild>
+                  <div className="max-h-[300px] overflow-y-auto py-2">
+                    <HistoryList items={ops.filter(o=>o.sign==='+')} />
+                  </div>
+                </Tabs.Content>
+                <Tabs.Content value="outcome" asChild>
+                  <div className="max-h-[300px] overflow-y-auto py-2">
+                    <HistoryList items={ops.filter(o=>o.sign==='-')} />
+                  </div>
+                </Tabs.Content>
+              </Tabs.Root>
             </div>
           )}
 
@@ -179,11 +193,11 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
               return { items }; 
             }}
           />
-        </div>
-      </div>
-    </div>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 
   return createPortal(content, document.body);
 }
-

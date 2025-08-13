@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 
 type Particle = {
   id: string;
@@ -63,7 +64,14 @@ export default function OrangeStarBurst({ size = 96, intensity = 1, sparkles = t
   }, [intensity, sparkles]);
 
   const star = useMemo(() => (
-    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden>
+    <motion.svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      aria-hidden
+      animate={{ scale: [1, 1.06, 1], rotate: [-2, 2, -2] }}
+      transition={{ duration: 2.8, ease: 'easeInOut', repeat: Infinity }}
+    >
       <defs>
         <filter id="oglow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="3.5" result="blur" />
@@ -80,10 +88,10 @@ export default function OrangeStarBurst({ size = 96, intensity = 1, sparkles = t
         </linearGradient>
       </defs>
       <g filter="url(#oglow)">
-        <path d="M50 6 L61 40 L95 50 L61 60 L50 94 L39 60 L5 50 L39 40 Z" fill="url(#ograd)" className="o-star" />
+        <path d="M50 6 L61 40 L95 50 L61 60 L50 94 L39 60 L5 50 L39 40 Z" fill="url(#ograd)" />
         <circle cx="55" cy="35" r="10" fill="#FFE1A6" opacity="0.35" />
       </g>
-    </svg>
+    </motion.svg>
   ), [size]);
 
   return (
@@ -110,14 +118,15 @@ export default function OrangeStarBurst({ size = 96, intensity = 1, sparkles = t
               const dx = Math.cos((p.angle * Math.PI) / 180) * p.dist;
               const dy = Math.sin((p.angle * Math.PI) / 180) * p.dist;
               const to = `translate(${dx}px, ${-dy}px)`;
-              const style: React.CSSProperties = {
-                position: 'absolute', left: 80 + p.x, top: 60 + p.y,
-                width: p.size, height: p.size, opacity: p.opacity, color: p.color,
-                animation: `oSpark ${p.duration}ms ease-out ${p.delay}ms forwards`,
-                ['--to' as any]: to, ['--s' as any]: p.scaleTo,
-              };
+              const baseStyle: React.CSSProperties = { position: 'absolute', left: 80 + p.x, top: 60 + p.y, width: p.size, height: p.size, color: p.color };
               return (
-                <div key={p.id} style={style}>
+                <motion.div
+                  key={p.id}
+                  style={baseStyle}
+                  initial={{ opacity: 0, scale: 1, x: 0, y: 0 }}
+                  animate={{ opacity: [0, 1, 0], scale: p.scaleTo, x: dx, y: -dy, rotate: p.rotation }}
+                  transition={{ duration: p.duration / 1000, ease: 'easeOut', delay: p.delay / 1000 }}
+                >
                   {p.shape === 'dot' ? (
                     <div style={{ width: '100%', height: '100%', borderRadius: 9999, background: p.color }} />
                   ) : p.shape === 'cross' ? (
@@ -129,7 +138,7 @@ export default function OrangeStarBurst({ size = 96, intensity = 1, sparkles = t
                       <path d="M5 0 L6 4 L10 5 L6 6 L5 10 L4 6 L0 5 L4 4 Z" fill={p.color} />
                     </svg>
                   )}
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -138,4 +147,3 @@ export default function OrangeStarBurst({ size = 96, intensity = 1, sparkles = t
     </div>
   );
 }
-
