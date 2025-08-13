@@ -141,7 +141,7 @@ const RootScreen = observer(() => {
       </div>
       <div className="h-px bg-white/20 mx-3 my-2" />
       <div>
-        <MenuItem icon="⭐" label="Telegram Premium" onClick={() => alert('Telegram Premium')} highlight />
+        <PremiumEntry />
         <MenuItem icon="🌟" label="Мои звезды" right="0" onClick={() => alert('Мои звезды')} />
         <MenuItem icon="TON" label="My TON" right="0" onClick={() => alert('My TON')} />
         <MenuItem icon="🎁" label="Отправить подарок" onClick={() => alert('Отправить подарок')} />
@@ -169,6 +169,27 @@ const MenuItem = ({ icon, label, right, onClick, highlight }: { icon: string; la
     {right ? <span className="text-white/70">{right}</span> : null}
   </button>
 );
+
+import PremiumModal from '../../../features/premium/ui/PremiumModal';
+const PremiumEntry = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <MenuItem icon="⭐" label="Telegram Premium" onClick={() => setOpen(true)} highlight />
+      <PremiumModal
+        open={open}
+        onClose={() => setOpen(false)}
+        onSubmit={async () => {
+          // mock submit delay
+          await new Promise((r) => setTimeout(r, 600));
+          setOpen(false);
+        }}
+        defaultPlan="annual"
+        prices={{ annual: { total: 1990, monthly: 165.83, discountLabel: '-45%' }, monthly: { total: 299, monthly: 299 } }}
+      />
+    </>
+  );
+};
 
 const ScreenPlaceholder = ({ title }: { title: string }) => (
   <div className="flex-1 overflow-y-auto scrollbar-custom p-3">{title}</div>
