@@ -170,22 +170,40 @@ const MenuItem = ({ icon, label, right, onClick, highlight }: { icon: string; la
   </button>
 );
 
-import PremiumModal from '../../../features/premium/ui/PremiumModal';
+import StarsModal from '../../../features/stars/ui/StarsModal';
 const PremiumEntry = () => {
   const [open, setOpen] = useState(false);
   return (
     <>
       <MenuItem icon="⭐" label="Telegram Premium" onClick={() => setOpen(true)} highlight />
-      <PremiumModal
+      <StarsModal
         open={open}
         onClose={() => setOpen(false)}
-        onSubmit={async () => {
-          // mock submit delay
-          await new Promise((r) => setTimeout(r, 600));
-          setOpen(false);
-        }}
-        defaultPlan="annual"
-        prices={{ annual: { total: 1990, monthly: 165.83, discountLabel: '-45%' }, monthly: { total: 299, monthly: 299 } }}
+        balance={{ amount: 849 }}
+        historyApi={{ fetch: async (filter, page) => {
+          // simple filter mock
+          const base = Array.from({ length: 20 }, (_, i) => ({ id: `op-${page}-${i}`, title: i%3===0?'Покупка в Mini App':'Зачисление бонусов', subtitle: i%3===0?'Оплата контента':'Подарок от друга', date: 'сегодня', sign: i%3===0?'-':'+', amount: (i%3===0?75:100)+i, avatarUrl: 'https://placehold.co/36x36' }));
+          const items = filter==='income'? base.filter(b=>b.sign==='+') : filter==='outcome'? base.filter(b=>b.sign==='-') : base;
+          return { items, nextPage: page+1 };
+        }}}
+        purchaseApi={{ list: async () => [
+          { id: 'p100', qty: 100, price: 99 },
+          { id: 'p250', qty: 250, price: 249 },
+          { id: 'p500', qty: 500, price: 499 },
+          { id: 'p1000', qty: 1000, price: 999 },
+          { id: 'p2500', qty: 2500, price: 2390 },
+          { id: 'p10000', qty: 10000, price: 9290 },
+          { id: 'p50000', qty: 50000, price: 43900 },
+          { id: 'p150000', qty: 150000, price: 129900 },
+          { id: 'p2500b', qty: 2500, price: 2490 },
+          { id: 'p5000b', qty: 5000, price: 4790 },
+          { id: 'p10000b', qty: 10000, price: 9490 },
+          { id: 'p25000b', qty: 25000, price: 23490 },
+          { id: 'p50000b', qty: 50000, price: 45990 },
+          { id: 'p100000b', qty: 100000, price: 89990 },
+          { id: 'p150000b', qty: 150000, price: 134990 },
+        ], buy: async (id) => { console.log('buy', id); } }}
+        giftApi={{ searchContacts: async (q, page) => ({ items: Array.from({ length: 20 }, (_, i)=>({ id: `${page}-${i}`, name: `Контакт ${i+1}`, subtitle: 'был(а) недавно', avatarUrl: 'https://placehold.co/36x36' })) }), startGift: async (id) => { console.log('gift', id); } }}
       />
     </>
   );
