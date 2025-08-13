@@ -106,7 +106,10 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm" />
         <Dialog.Content className="fixed inset-0 z-[10000] grid place-items-center p-3 outline-none">
-          <div ref={dialogRef} className="w-[min(92vw,420px)] bg-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden">
+          <div
+            ref={dialogRef}
+            className="w-[min(92vw,420px)] h-[560px] sm:h-[600px] max-h-[92vh] bg-white rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col"
+          >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3">
             <Dialog.Close asChild>
@@ -117,7 +120,8 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
             </div>
           </div>
 
-          <div className="px-6">
+          {/* Hero (non-scrollable) */}
+          <div className="px-6 shrink-0">
             <div className="w-full" style={{ height: 120 }}>
               <OrangeStarBurst size={96} />
             </div>
@@ -127,9 +131,9 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
             </p>
           </div>
 
-          {/* Views */}
+          {/* Views in scroll area */}
           {view === 'home' && (
-            <div className="px-6 mt-3">
+            <div className="flex-1 overflow-y-auto px-6 pt-3 pb-4">
               <button className="w-full h-12 rounded-xl text-white font-semibold" style={{ background: '#1887F2' }} onClick={() => setView('purchase')}>КУПИТЬ ЗВЁЗДЫ</button>
               <div className="mt-2">
                 <button className="text-[#1C7BEF] hover:underline" onClick={() => setGiftOpen(true)}>Подарить звёзды друзьям</button>
@@ -167,7 +171,7 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
           )}
 
           {view === 'purchase' && (
-            <div className="px-6 mt-3">
+            <div className="flex-1 overflow-y-auto px-6 pt-3 pb-4">
               <PurchaseGrid packs={packs} onShowMore={() => { /* no-op */ }} />
               <div className="mt-3 text-[12px] text-[#6B7280]">
                 Приобретая звёзды, Вы принимаете <a href="#" className="text-[#1C7BEF] underline">условия Telegram</a>.
