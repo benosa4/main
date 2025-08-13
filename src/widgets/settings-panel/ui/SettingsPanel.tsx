@@ -184,12 +184,17 @@ const RootScreen = observer(() => {
 
 import React from 'react';
 import { TonIcon } from '../../../features/wallets';
+import { Settings as SettingsIcon, GaugeCircle, Monitor } from 'lucide-react';
 
 const MenuItem = ({ icon, label, right, onClick, highlight }: { icon: string | React.ReactNode; label: string; right?: string; onClick?: () => void; highlight?: boolean }) => {
   const renderIcon = () => {
     if (React.isValidElement(icon)) return icon;
     if (typeof icon === 'string') {
       if (icon === 'TON') return <TonIcon size={22} />;
+      // Stable replacements for problem icons
+      if (icon === '⚙️') return <SettingsIcon className="w-7 h-7 text-white" strokeWidth={2} />;
+      if (icon === '🛰️') return <GaugeCircle className="w-7 h-7 text-white" strokeWidth={2} />;
+      if (icon === '🖥️') return <Monitor className="w-7 h-7 text-white" strokeWidth={2} />;
       // Render emoji as image to avoid missing glyph squares
       return <EmojiIcon char={icon} />;
     }
