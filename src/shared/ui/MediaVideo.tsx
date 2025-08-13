@@ -63,7 +63,14 @@ export default function MediaVideo({ url, className, mime, autoDownload = true }
       vid.addEventListener('loadeddata', handleLoaded, { once: true });
       // Trigger load
       vid.load();
-      return () => { cancelled = true; try { vid.remove(); } catch {} };
+      return () => {
+        cancelled = true;
+        try {
+          vid.remove();
+        } catch {
+          // ignore cleanup errors
+        }
+      };
     } catch {
       setPoster(null);
     }

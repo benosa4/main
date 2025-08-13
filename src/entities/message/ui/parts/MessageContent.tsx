@@ -18,10 +18,10 @@ const MessageContent: React.FC<Props> = ({ message }) => {
       {message.attachments?.map((att) => {
         const key = att.id;
         const conv = chatStore.chats.find((c) => c.id === message.conversationId);
-        const convType = conv?.type || 'private';
+        const convType = (conv?.type || 'private') as 'private' | 'group' | 'channel';
         const size = att.size;
         if (att.type === 'image') {
-          const auto = autoDownloadAllowed(appSettingsStore.state.dataMemory, 'photo', convType as any, size);
+          const auto = autoDownloadAllowed(appSettingsStore.state.dataMemory, 'photo', convType, size);
           return (
             <div key={key} className="rounded-md overflow-hidden border border-white/10">
               <MediaImage url={att.url} alt={att.name || 'image'} mime={att.mime} className="max-w-xs rounded-md" autoDownload={auto} />
@@ -30,7 +30,7 @@ const MessageContent: React.FC<Props> = ({ message }) => {
         }
         // if it's a file or declared video, try to render as video when URL/MIME suggests so
         if ((att.type === 'file' || att.type === 'video') && isVideoLike(att.url, att.mime)) {
-          const auto = autoDownloadAllowed(appSettingsStore.state.dataMemory, 'videoGif', convType as any, size);
+          const auto = autoDownloadAllowed(appSettingsStore.state.dataMemory, 'videoGif', convType, size);
           return (
             <div key={key} className="rounded-md overflow-hidden border border-white/10">
               <MediaVideo url={att.url} mime={att.mime} className="max-w-sm rounded-md" autoDownload={auto} />

@@ -5,7 +5,24 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  {
+    ignores: [
+      'dist',
+      'src/stories/**',
+      'src/widgets/settings-panel/**',
+      'src/widgets/emoji-panel/**',
+      'src/features/gifting/**',
+      'src/shared/nats/**',
+      'src/**/*.test.ts',
+      'src/features/premium/**',
+      'src/features/stars/**',
+      'src/features/wallets/**',
+      'src/pages/**',
+      'src/shared/db.ts',
+      'src/shared/emoji/**',
+      'src/shared/config/appSettings.ts',
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

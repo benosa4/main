@@ -101,9 +101,7 @@ export async function ensureMockSeeded() {
       while (idx < all.length) {
         const chunk = all.slice(idx, idx + 5);
         // small jitter
-        // eslint-disable-next-line no-await-in-loop
         await new Promise((r) => setTimeout(r, randomInt(200, 1000)));
-        // eslint-disable-next-line no-await-in-loop
         await putMessagesToDB(chunk);
         idx += 5;
       }

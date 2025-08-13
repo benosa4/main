@@ -15,7 +15,7 @@ class MessageStore {
   messagesByConversation = new Map<number, MessageModel[]>();
   groupsByConversation = new Map<number, MessageGroup[]>();
   loading = false;
-  _pollTimer: any = null;
+  _pollTimer: ReturnType<typeof setInterval> | null = null;
   // number of visible messages per conversation (tail window from the end)
   visibleCountByConversation = new Map<number, number>();
   defaultPageSize = 30;
@@ -61,7 +61,7 @@ class MessageStore {
     const all = this.messagesByConversation.get(conversationId) || [];
     const vis = this.visibleCountByConversation.get(conversationId) ?? this.defaultPageSize;
     const slice = vis >= all.length ? all : all.slice(all.length - vis);
-    this.groupsByConversation.set(conversationId, groupByDate(slice) as any);
+    this.groupsByConversation.set(conversationId, groupByDate<MessageModel>(slice));
   }
 
   getGroups(conversationId: number) {

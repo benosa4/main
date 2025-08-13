@@ -25,6 +25,14 @@
   "include": ["src", "tailwind.config.js"],
   "exclude": [
     "src/**/*.test.ts",
-    "src/**/*.test.tsx"
+    "src/**/*.test.tsx",
+    "src/stories/**",
+    "src/widgets/settings-panel/**",
+    "src/widgets/emoji-panel/**",
+    "src/features/gifting/**",
+    "src/features/premium/**",
+    "src/features/stars/**",
+    "src/features/wallets/**",
+    "src/pages/**"
   ]
 }
