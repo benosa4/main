@@ -1,11 +1,46 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
 
 @import "tailwindcss";
+@import "./assets/tokens.css";
 
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Header icon button styling */
+.app-header {
+  background: var(--header-bg);
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  display: grid;
+  place-items: center;
+  color: var(--icon-on-surface, rgba(255,255,255,.90));
+  border: 1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(2px);
+  transition: background .12s ease, border-color .12s ease;
+}
+
+.header-left .icon-btn { --accent: var(--accent-left); }
+.header-right .icon-btn { --accent: var(--accent-right); }
+
+.icon-btn {
+  background: color-mix(in srgb, var(--header-bg) calc(100% - var(--pill-pct-idle)), var(--accent) var(--pill-pct-idle));
+}
+.icon-btn:hover {
+  background: color-mix(in srgb, var(--header-bg) calc(100% - var(--pill-pct-hover)), var(--accent) var(--pill-pct-hover));
+}
+.icon-btn:active {
+  background: color-mix(in srgb, var(--header-bg) calc(100% - var(--pill-pct-active)), var(--accent) var(--pill-pct-active));
+}
+.icon-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+  outline: none;
+}
 
 /* Dropdown menu animations */
 @keyframes dropdown-in {

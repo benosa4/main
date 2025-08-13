@@ -1,6 +1,8 @@
 import * as React from 'react'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
-import { Pencil, Video, BellOff, CheckSquare, Gift, ShieldBan, Trash2 } from 'lucide-react'
+import { Pencil, Video, BellOff, CheckSquare, Gift, ShieldBan, Trash2, Check } from 'lucide-react'
+import appSettingsStore from '../../config/appSettings'
+import { applyTheme, ThemeChoice } from '../../theme/ThemeManager'
 
 export type KebabAction =
   | 'edit'
@@ -27,12 +29,12 @@ export function KebabMenu({ onAction, disabledActions, ariaLabel = 'Больше
           aria-haspopup="menu"
           aria-expanded={open}
           aria-label={ariaLabel}
-          className="w-8 h-8 rounded-full grid place-items-center hover:bg-[#EEF6FF] active:bg-[#dbeafe] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+          className="icon-btn"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden>
-            <circle cx="12" cy="5" r="2" fill="#0F172A" />
-            <circle cx="12" cy="12" r="2" fill="#0F172A" />
-            <circle cx="12" cy="19" r="2" fill="#0F172A" />
+            <circle cx="12" cy="5" r="2" fill="currentColor" />
+            <circle cx="12" cy="12" r="2" fill="currentColor" />
+            <circle cx="12" cy="19" r="2" fill="currentColor" />
           </svg>
         </button>
       </Dropdown.Trigger>
@@ -58,6 +60,30 @@ export function KebabMenu({ onAction, disabledActions, ariaLabel = 'Больше
               onSelect={() => onAction?.('delete-chat')}
               disabled={!!disabledActions?.['delete-chat']}
             />
+            <Separator />
+            <Dropdown.Sub>
+              <Dropdown.SubTrigger
+                className="group flex items-center gap-[10px] h-10 px-3 py-2 rounded-xl cursor-pointer outline-none select-none text-[#0F172A] hover:bg-[#EAF2FE] active:bg-[#dbeafe] focus-visible:ring-2 focus-visible:ring-sky-500"
+              >
+                Тема
+              </Dropdown.SubTrigger>
+              <Dropdown.Portal>
+                <Dropdown.SubContent
+                  alignOffset={-4}
+                  sideOffset={8}
+                  className="min-w-[160px] p-[6px] rounded-2xl bg-white/90 backdrop-blur-[2px] border border-[#CFE3F3] shadow-[0_8px_30px_rgba(0,0,0,0.12)]"
+                >
+                  <Dropdown.RadioGroup
+                    value={appSettingsStore.state.theme === 'auto' ? 'system' : appSettingsStore.state.theme}
+                    onValueChange={(v) => applyTheme(v as ThemeChoice)}
+                  >
+                    <ThemeOption value="light" label="Light" />
+                    <ThemeOption value="dark" label="Dark" />
+                    <ThemeOption value="system" label="System" />
+                  </Dropdown.RadioGroup>
+                </Dropdown.SubContent>
+              </Dropdown.Portal>
+            </Dropdown.Sub>
           </div>
         </Dropdown.Content>
       </Dropdown.Portal>
@@ -90,6 +116,20 @@ function MenuItem({ icon, label, onSelect, disabled, danger }: { icon: React.Rea
       <span className={danger ? 'text-[#EF4444]' : 'text-[#5B7088]'}>{icon}</span>
       <span className="text-[14px] truncate">{label}</span>
     </Dropdown.Item>
+  )
+}
+
+function ThemeOption({ value, label }: { value: ThemeChoice; label: string }) {
+  return (
+    <Dropdown.RadioItem
+      value={value}
+      className="group flex items-center gap-2 h-8 px-3 rounded-lg cursor-pointer outline-none select-none text-[#0F172A] data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed hover:bg-[#EAF2FE] active:bg-[#dbeafe] focus-visible:ring-2 focus-visible:ring-sky-500"
+    >
+      <Dropdown.ItemIndicator>
+        <Check size={16} />
+      </Dropdown.ItemIndicator>
+      <span className="text-[14px] truncate">{label}</span>
+    </Dropdown.RadioItem>
   )
 }
 
