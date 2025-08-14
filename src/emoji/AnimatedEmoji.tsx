@@ -7,8 +7,6 @@ export interface AnimatedEmojiProps {
   skinTone?: Tone;
   size?: number;
   animate?: boolean;
-  loop?: boolean;
-  autoplay?: boolean;
   reducedMotion?: boolean;
   className?: string;
   onClick?: () => void;
@@ -26,8 +24,6 @@ export function AnimatedEmoji({
   skinTone = 'default',
   size = 28,
   animate = true,
-  loop = true,
-  autoplay = true,
   reducedMotion = false,
   className,
   onClick,
@@ -50,12 +46,12 @@ export function AnimatedEmoji({
     const anim = lottie.loadAnimation({
       container: divRef.current,
       path: src,
-      loop,
-      autoplay: shouldAnimate && autoplay,
+      loop: true,
+      autoplay: shouldAnimate,
     });
     if (!shouldAnimate) anim.goToAndStop(0, true);
     return () => anim.destroy();
-  }, [src, kind, loop, autoplay, shouldAnimate]);
+  }, [src, kind, shouldAnimate]);
 
   if (!resolved) return null;
 
@@ -71,7 +67,7 @@ export function AnimatedEmoji({
       backgroundSize: `${frames * 100}% 100%`,
     };
     if (shouldAnimate) {
-      style.animation = `emoji-sprite ${frames * 80}ms steps(${frames}) ${loop ? 'infinite' : '1'}`;
+      style.animation = `emoji-sprite ${frames * 80}ms steps(${frames}) infinite`;
     } else {
       style.backgroundPosition = '0 0';
     }

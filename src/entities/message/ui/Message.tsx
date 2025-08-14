@@ -8,7 +8,8 @@ import { messageStore } from '../../../features/messages/model';
 import SvgAppendix from './parts/SvgAppendix';
 import Reactions from './parts/Reactions';
 import appSettingsStore from '../../../shared/config/appSettings';
-import { EmojiPicker, nameToNative, Tone } from '../../../emoji';
+import { EmojiPicker, Tone } from '../../../emoji';
+import { nameToNative } from '../../../emoji/nameToNative';
 
 export interface MessageProps {
   message: MessageModel;
