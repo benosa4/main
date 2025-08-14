@@ -359,7 +359,6 @@ const ChatPage = observer(() => {
                         >
                           <EmojiPicker
                             open={showEmoji}
-                            anchorEl={emojiBtnRef.current || undefined}
                             onClose={() => setShowEmoji(false)}
                             onPick={handleEmojiPick}
                             defaultTone="default"
