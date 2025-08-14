@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState, forwardRef, useLayoutEffect, useMemo } from 'react';
-import type { MutableRefObject } from 'react';
 import { GroupedVirtuoso, GroupedVirtuosoHandle } from 'react-virtuoso';
 import { AnimatedEmoji } from './AnimatedEmoji';
 import { CATEGORY_INDEX, Tone } from './emojiMap';
 import { TonePalette } from './TonePalette';
 import { useEmojiUsage } from './useEmojiUsage';
-import { toRows, useGridColumns } from './virtualization';
+import { toRows } from './virtualization';
 import { categoryIconShortcodes } from './categoryIcons';
 
 const SECTION_LABELS: Record<string, string> = {
@@ -20,6 +19,9 @@ const SECTION_LABELS: Record<string, string> = {
   symbols: 'Символы',
   flags: 'Флаги',
 };
+
+// утилита: уникализация с сохранением первого вхождения
+const uniq = <T,>(arr: T[]) => Array.from(new Set(arr));
 
 export interface EmojiPickerProps {
   open: boolean;
@@ -38,7 +40,7 @@ export interface EmojiPickerProps {
 }
 
 /**
- * Virtualized emoji picker with recent section and tone palette.
+ * Виртуализованный emoji-picker с «Недавними», табами и скинтонами.
  */
 export function EmojiPicker({
   open,
@@ -50,25 +52,56 @@ export function EmojiPicker({
   persistToneKey,
   categoryOrder,
   gridCellSize = 40,
-  animateInsidePicker = false,
+  animateInsidePicker = true,
   maxRecents = 36,
   overscan = 300,
 }: EmojiPickerProps) {
+  const virtuosoRef = useRef<GroupedVirtuosoHandle>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
   const { recents, bump } = useEmojiUsage(maxRecents);
+
   const categories = categoryOrder ?? Object.keys(CATEGORY_INDEX);
+
+  // «Недавние» → только уникальные имена, в уже отсортированном порядке
+  const recentNames = useMemo(() => uniq(recents.map((r) => r.name)), [recents]);
+
   const groups = useMemo(
-    () => (recents.length > 0 ? ['recent', ...categories] : categories),
-    [recents, categories]
+    () => (recentNames.length > 0 ? ['recent', ...categories] : categories),
+    [recentNames.length, categories]
   );
 
   const [tone, setTone] = useState<Tone>(defaultTone);
   const [toneTarget, setToneTarget] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
-  const virtuosoRef = useRef<GroupedVirtuosoHandle>(null);
-  const { ref: containerRef, cols } = useGridColumns(gridCellSize);
-  const popoverRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const [cols, setCols] = useState(1);
 
+  // Колонки считаем от ширины поповера
+  useLayoutEffect(() => {
+    if (!popoverRef.current) return;
+
+    const GAP = 8;
+    const compute = () => {
+      const el = popoverRef.current!;
+      const cs = getComputedStyle(el);
+      const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+      const innerWidth = el.clientWidth - padX;
+      const next = Math.max(1, Math.floor((innerWidth + GAP) / (gridCellSize + GAP)));
+      setCols(next);
+    };
+
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(popoverRef.current);
+    window.addEventListener('resize', compute);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', compute);
+    };
+  }, [gridCellSize, open]);
+
+  // Позиционирование относительно кнопки в композере
+  const [position, setPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   useLayoutEffect(() => {
     if (open && anchorEl && popoverRef.current) {
       const anchorRect = anchorEl.getBoundingClientRect();
@@ -79,22 +112,21 @@ export function EmojiPicker({
         left: alignRect ? alignRect.left : anchorRect.left,
       });
     }
-  }, [open, anchorEl, alignEl, popoverRef, cols]);
+  }, [open, anchorEl, alignEl, cols]);
 
+  // Esc для закрытия
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
+  // Восстановление выбранного тона
   useEffect(() => {
-    if (persistToneKey) {
-      const saved = localStorage.getItem(persistToneKey) as Tone | null;
-      if (saved) setTone(saved);
-    }
+    if (!persistToneKey) return;
+    const saved = localStorage.getItem(persistToneKey) as Tone | null;
+    if (saved) setTone(saved);
   }, [persistToneKey]);
 
   const handlePick = (name: string) => {
@@ -103,16 +135,20 @@ export function EmojiPicker({
     bump(name, usedTone);
   };
 
+  // Подготовка виртуализованных рядов
   const groupRows = useMemo(
     () =>
       groups.map((g) =>
         toRows(
-          g === 'recent' ? recents.map((r) => r.name) : CATEGORY_INDEX[g] || [],
+          g === 'recent'
+            ? recentNames
+            : uniq([...(CATEGORY_INDEX[g] || [])]),
           cols
         )
       ),
-    [groups, cols, recents]
+    [groups, cols, recentNames]
   );
+
   const groupCounts = useMemo(() => groupRows.map((r) => r.length), [groupRows]);
   const flatRows = useMemo(() => groupRows.flat(), [groupRows]);
 
@@ -133,65 +169,63 @@ export function EmojiPicker({
       aria-modal="true"
       className="emoji-picker emoji-picker--open"
       ref={popoverRef}
-      style={{ top: position.top, left: position.left }}
+      style={{
+        top: position.top,
+        left: position.left,
+        ['--emoji-gap' as any]: '8px',
+      }}
     >
+      {/* Tabs */}
       <div role="tablist" className="emoji-picker__tabs">
         {groups.map((g, i) => (
           <button
             key={g}
             role="tab"
             aria-selected={activeTab === i}
-            className={activeTab === i ? 'emoji-picker__tab--active' : ''}
+            className={`emoji-picker__tab ${activeTab === i ? 'is-active' : ''}`}
             onClick={() => {
               setActiveTab(i);
               virtuosoRef.current?.scrollToIndex({ groupIndex: i });
             }}
             title={SECTION_LABELS[g]}
           >
-            <AnimatedEmoji
-              name={categoryIconShortcodes[g] ?? ':smile:'}
-              size={20}
-              animate={false}
-            />
+            <AnimatedEmoji name={categoryIconShortcodes[g] ?? ':smile:'} size={18} animate={false} />
           </button>
         ))}
       </div>
+
+      {/* Grid */}
       <GroupedVirtuoso
         key={cols}
         ref={virtuosoRef}
-        style={{ height: 300 }}
         overscan={overscan}
         groupCounts={groupCounts}
         rangeChanged={({ startIndex }) =>
           setActiveTab(groupIndexFromItem(startIndex, groupCounts))
         }
-        components={{
-          List: forwardRef<HTMLDivElement>((props, listRef) => (
-            <div
-              {...props}
-              ref={(node) => {
-                if (typeof listRef === 'function') listRef(node);
-                else if (listRef)
-                  (listRef as MutableRefObject<HTMLDivElement | null>).current = node;
-                (containerRef as MutableRefObject<HTMLDivElement | null>).current = node;
-              }}
-              role="grid"
-              className="emoji-picker__list"
-            />
-          )),
-        }}
+        style={{ height: 300 }}
         groupContent={(index) => (
-          <div role="group" id={`group-${groups[index]}`} aria-label={SECTION_LABELS[groups[index]]}>
+          <div
+            role="group"
+            id={`group-${groups[index]}`}
+            aria-label={SECTION_LABELS[groups[index]]}
+            className="emoji-picker__section"
+          >
             {SECTION_LABELS[groups[index]]}
           </div>
         )}
+        components={{
+          List: forwardRef<HTMLDivElement>((props, ref) => (
+            <div {...props} ref={ref} role="grid" className="emoji-picker__list" />
+          )),
+        }}
         itemContent={(rowIndex) => {
           const row = flatRows[rowIndex];
           return (
             <div role="row" className="emoji-picker__row">
-              {row.map((name) => (
+              {row.map((name, i) => (
                 <button
-                  key={name}
+                  key={`${name}-${rowIndex}-${i}`} // гарантированно уникально
                   role="gridcell"
                   className="emoji-picker__cell"
                   style={{ width: gridCellSize, height: gridCellSize }}
@@ -213,6 +247,7 @@ export function EmojiPicker({
           );
         }}
       />
+
       {toneTarget && (
         <TonePalette
           name={toneTarget}
@@ -223,6 +258,7 @@ export function EmojiPicker({
           }}
         />
       )}
+
       <div className="emoji-picker__footer">
         <button onClick={() => setToneTarget(':thumbs-up:')}>🙂</button>
         <button disabled>🧠</button>
