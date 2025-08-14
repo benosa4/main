@@ -1,4 +1,5 @@
-import { CSSProperties, useRef } from 'react';
+import { CSSProperties, useEffect, useRef } from 'react';
+import lottie from 'lottie-web';
 import { resolveEmojiSrc, Tone } from './emojiMap';
 
 export interface AnimatedEmojiProps {
@@ -10,6 +11,7 @@ export interface AnimatedEmojiProps {
   autoplay?: boolean;
   reducedMotion?: boolean;
   className?: string;
+  onClick?: () => void;
 }
 
 /**
@@ -24,30 +26,59 @@ export function AnimatedEmoji({
   skinTone = 'default',
   size = 28,
   animate = true,
+  loop = true,
+  autoplay = true,
+  reducedMotion = false,
   className,
+  onClick,
 }: AnimatedEmojiProps) {
-  const ref = useRef<HTMLImageElement>(null);
+  const divRef = useRef<HTMLDivElement>(null);
   const resolved = resolveEmojiSrc(name, skinTone);
+  const kind = resolved?.kind;
+  const src = resolved?.src || '';
+  const meta = resolved?.meta;
 
-  if (!resolved) return null;
-
-  const style: CSSProperties = {
+  const baseStyle: CSSProperties = {
     width: size,
     height: size,
     display: 'inline-block',
   };
+  const shouldAnimate = animate && !reducedMotion;
 
-  const { kind, src } = resolved;
+  useEffect(() => {
+    if (!divRef.current || kind !== 'lottie') return;
+    const anim = lottie.loadAnimation({
+      container: divRef.current,
+      path: src,
+      loop,
+      autoplay: shouldAnimate && autoplay,
+    });
+    if (!shouldAnimate) anim.goToAndStop(0, true);
+    return () => anim.destroy();
+  }, [src, kind, loop, autoplay, shouldAnimate]);
 
-  // If animation is disabled or the emoji is static, simply render an <img>.
-  if (!animate || kind === 'svg') {
-    return <img ref={ref} src={src} style={style} className={className} aria-label={name} />;
+  if (!resolved) return null;
+
+  if (kind === 'lottie') {
+    return <div ref={divRef} style={baseStyle} className={className} aria-label={name} onClick={onClick} />;
   }
 
-  // Placeholder for animated formats. In this simplified implementation we
-  // still render the static image but keep the branch to respect the `animate`
-  // flag and avoid linter warnings about the unused variable.
-  return <img ref={ref} src={src} style={style} className={className} aria-label={name} />;
+  if (kind === 'sprite') {
+    const frames = parseInt(meta || '1', 10);
+    const style: CSSProperties = {
+      ...baseStyle,
+      backgroundImage: `url(${src})`,
+      backgroundSize: `${frames * 100}% 100%`,
+    };
+    if (shouldAnimate) {
+      style.animation = `emoji-sprite ${frames * 80}ms steps(${frames}) ${loop ? 'infinite' : '1'}`;
+    } else {
+      style.backgroundPosition = '0 0';
+    }
+    return <div ref={divRef} style={style} className={className} aria-label={name} onClick={onClick} />;
+  }
+
+  return <img src={src} style={baseStyle} className={className} aria-label={name} onClick={onClick} />;
 }
 
 export type { Tone } from './emojiMap';
