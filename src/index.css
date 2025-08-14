@@ -8,6 +8,55 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes emoji-sprite {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 100% 0;
+  }
+}
+
+.emoji-picker {
+  position: absolute;
+  width: 360px;
+  max-width: 380px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px;
+}
+
+.emoji-picker__tabs {
+  position: sticky;
+  top: 0;
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  background: #fff;
+  padding-bottom: 4px;
+}
+
+.emoji-picker__tab--active {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+}
+
+.emoji-picker__footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.tone-palette {
+  position: absolute;
+  display: flex;
+  gap: 4px;
+  background: #fff;
+  padding: 4px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
 /* Header icon button styling */
 .app-header{ background: var(--header-bg, var(--surface)); }
 

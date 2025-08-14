@@ -2,7 +2,6 @@ export { AnimatedEmoji } from './AnimatedEmoji';
 export { EmojiPicker } from './EmojiPicker';
 export { insertEmojiAtCaret } from './insertEmojiAtCaret';
 export { EMOJI, CATEGORY_INDEX, resolveEmojiSrc } from './emojiMap';
-export { nameToNative } from './nameToNative';
 export { useEmojiUsage } from './useEmojiUsage';
 export { emojiConfig } from './config';
 export { categoryIcons } from './categoryIcons';
