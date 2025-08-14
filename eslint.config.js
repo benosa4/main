@@ -20,6 +20,8 @@ export default tseslint.config(
       'src/pages/**',
       'src/shared/db.ts',
       'src/shared/emoji/**',
+      'src/emoji/emojiMap.ts',
+      'scripts/**',
       'src/shared/config/appSettings.ts',
     ],
   },
