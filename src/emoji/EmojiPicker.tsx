@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, forwardRef, useLayoutEffect, useMemo } from 'react';
+import { useEffect, useRef, useState, forwardRef, useLayoutEffect, useMemo, CSSProperties } from 'react';
 import { GroupedVirtuoso, GroupedVirtuosoHandle } from 'react-virtuoso';
 import { AnimatedEmoji } from './AnimatedEmoji';
 import { CATEGORY_INDEX, Tone } from './emojiMap';
@@ -172,8 +172,8 @@ export function EmojiPicker({
       style={{
         top: position.top,
         left: position.left,
-        ['--emoji-gap' as any]: '8px',
-      }}
+        '--emoji-gap': '8px',
+      } as CSSProperties}
     >
       {/* Tabs */}
       <div role="tablist" className="emoji-picker__tabs">
