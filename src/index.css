@@ -31,7 +31,7 @@
 }
 
 .emoji-picker {
-  position: absolute;
+  position: fixed;
   width: 360px;
   max-width: 380px;
   background: #fff;

@@ -20,7 +20,6 @@ const ChatPage = observer(() => {
   const [message, setMessage] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
   const emojiBtnRef = useRef<HTMLButtonElement>(null);
-  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   // 👉 ВАЖНО: реф для TwemojiInput внутри компонента
   const inputRef = useRef<TwemojiInputHandle>(null);
@@ -195,20 +194,6 @@ const ChatPage = observer(() => {
     }
   };
 
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (
-        showEmoji &&
-        emojiPickerRef.current &&
-        !emojiPickerRef.current.contains(e.target as Node) &&
-        !emojiBtnRef.current?.contains(e.target as Node)
-      ) {
-        setShowEmoji(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [showEmoji]);
 
   // Sidebar menu click-outside handled inside ChatSidebar
 
@@ -352,29 +337,27 @@ const ChatPage = observer(() => {
                         ))}
                       </div>
                     )}
-                    <div className="relative">
+                    <div
+                      className="relative"
+                      onMouseEnter={() => setShowEmoji(true)}
+                      onMouseLeave={() => setShowEmoji(false)}
+                    >
                       <button
                         ref={emojiBtnRef}
                         type="button"
-                        onClick={() => setShowEmoji((v) => !v)}
                         className="text-2xl mr-2 cursor-pointer"
                       >
                         😊
                       </button>
-                      <div
-                        ref={emojiPickerRef}
-                        className={`absolute bottom-full left-full ml-2 mb-2 z-10 origin-bottom-left transition-transform transition-opacity duration-200 ${
-                          showEmoji ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'
-                        }`}
-                      >
-                        <EmojiPicker
-                          open={showEmoji}
-                          onClose={() => setShowEmoji(false)}
-                          onPick={handleEmojiPick}
-                          defaultTone="default"
-                          persistToneKey="emoji_last_tone"
-                        />
-                      </div>
+                      <EmojiPicker
+                        open={showEmoji}
+                        anchorEl={emojiBtnRef.current}
+                        alignEl={inputRef.current?.getElement() || undefined}
+                        onClose={() => setShowEmoji(false)}
+                        onPick={handleEmojiPick}
+                        defaultTone="default"
+                        persistToneKey="emoji_last_tone"
+                      />
                     </div>
                     <TwemojiInput
                       ref={inputRef}
