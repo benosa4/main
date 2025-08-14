@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, forwardRef } from 'react';
+import { useEffect, useRef, useState, forwardRef, useLayoutEffect } from 'react';
 import { GroupedVirtuoso, GroupedVirtuosoHandle } from 'react-virtuoso';
 import { AnimatedEmoji } from './AnimatedEmoji';
 import { CATEGORY_INDEX, Tone } from './emojiMap';
@@ -23,6 +23,7 @@ const SECTION_LABELS: Record<string, string> = {
 export interface EmojiPickerProps {
   open: boolean;
   anchorEl?: HTMLElement | null;
+  alignEl?: HTMLElement | null;
   onClose: () => void;
   onPick: (p: { name: string; tone: Tone }) => void;
 
@@ -41,6 +42,7 @@ export interface EmojiPickerProps {
 export function EmojiPicker({
   open,
   anchorEl,
+  alignEl,
   onClose,
   onPick,
   defaultTone = 'default',
@@ -62,12 +64,17 @@ export function EmojiPicker({
   const { ref: containerRef, cols } = useGridColumns(gridCellSize);
   const [position, setPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
-  useEffect(() => {
-    if (anchorEl) {
-      const rect = anchorEl.getBoundingClientRect();
-      setPosition({ top: rect.bottom, left: rect.left });
+  useLayoutEffect(() => {
+    if (open && anchorEl && containerRef.current) {
+      const anchorRect = anchorEl.getBoundingClientRect();
+      const alignRect = alignEl?.getBoundingClientRect();
+      const height = containerRef.current.offsetHeight;
+      setPosition({
+        top: anchorRect.top - height,
+        left: alignRect ? alignRect.left : anchorRect.left,
+      });
     }
-  }, [anchorEl, open]);
+  }, [open, anchorEl, alignEl, containerRef]);
 
   useEffect(() => {
     if (!open) return;
@@ -114,7 +121,7 @@ export function EmojiPicker({
     <div
       role="dialog"
       aria-modal="true"
-      className="emoji-picker"
+      className="emoji-picker emoji-picker--open"
       ref={containerRef}
       style={{ top: position.top, left: position.left }}
     >

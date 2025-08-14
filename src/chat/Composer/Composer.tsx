@@ -25,6 +25,7 @@ export function Composer() {
       <EmojiPicker
         open={open}
         anchorEl={anchorRef.current}
+        alignEl={editorRef.current}
         onClose={() => setOpen(false)}
         onPick={({ name, tone }) => {
           if (editorRef.current) {
