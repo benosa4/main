@@ -162,11 +162,8 @@ export function EmojiPicker({
           return (
             <div
               role="row"
-              style={{
-                display: 'grid',
-                gridTemplateColumns: `repeat(${cols}, ${gridCellSize}px)`,
-                width: '100%',
-              }}
+              className="emoji-picker__row"
+              style={{ '--cell-size': `${gridCellSize}px` } as React.CSSProperties}
             >
               {row.map((token) => {
                 const [name, toneToken] = token.split('|') as [string, Tone?];
@@ -176,6 +173,7 @@ export function EmojiPicker({
                     type="button"
                     role="gridcell"
                     aria-label={name}
+                    className="emoji-picker__emoji"
                     style={{ width: gridCellSize, height: gridCellSize }}
                     onClick={() => handlePick(name, toneToken as Tone)}
                     onContextMenu={(e) => {
