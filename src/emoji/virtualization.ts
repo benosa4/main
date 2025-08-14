@@ -13,9 +13,16 @@ export function useGridColumns(cellSize: number) {
   const [cols, setCols] = useState(1);
   useEffect(() => {
     if (!ref.current) return;
-    const ro = new ResizeObserver((entries) => {
-      const width = entries[0].contentRect.width;
+
+    const update = (width: number) => {
       setCols(Math.max(1, Math.floor(width / cellSize)));
+    };
+
+    // Set initial columns based on current width to avoid a blank grid
+    update(ref.current.getBoundingClientRect().width);
+
+    const ro = new ResizeObserver((entries) => {
+      update(entries[0].contentRect.width);
     });
     ro.observe(ref.current);
     return () => ro.disconnect();

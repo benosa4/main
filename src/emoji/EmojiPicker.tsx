@@ -74,7 +74,7 @@ export function EmojiPicker({
         left: alignRect ? alignRect.left : anchorRect.left,
       });
     }
-  }, [open, anchorEl, alignEl, containerRef]);
+  }, [open, anchorEl, alignEl, containerRef, cols]);
 
   useEffect(() => {
     if (!open) return;
@@ -142,6 +142,7 @@ export function EmojiPicker({
         ))}
       </div>
       <GroupedVirtuoso
+        key={cols}
         ref={virtuosoRef}
         style={{ height: 300 }}
         overscan={overscan}
