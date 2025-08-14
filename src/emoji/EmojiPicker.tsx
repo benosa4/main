@@ -160,7 +160,14 @@ export function EmojiPicker({
         itemContent={(index) => {
           const row = flatRows[index];
           return (
-            <div role="row" style={{ display: 'flex' }}>
+            <div
+              role="row"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(${cols}, ${gridCellSize}px)`,
+                width: '100%',
+              }}
+            >
               {row.map((token) => {
                 const [name, toneToken] = token.split('|') as [string, Tone?];
                 return (
