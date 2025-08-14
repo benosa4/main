@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import appSettingsStore from '../config/appSettings';
 
 const VIDEO_EXTS = ['.mp4', '.webm', '.ogg', '.mov'];

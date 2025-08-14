@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 export interface StarPackage { id: string; qty: number; price: number }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { motion, useAnimation } from 'framer-motion'
 
 export function TonGemBurst({ size = 96, intensity = 1, sparkles = true }: { size?: number; intensity?: number; sparkles?: boolean }) {

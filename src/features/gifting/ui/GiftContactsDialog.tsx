@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { createPortal } from 'react-dom'
 import * as Dialog from '@radix-ui/react-dialog'
 import { FixedSizeList as List, ListOnItemsRenderedProps } from 'react-window'
@@ -6,6 +6,8 @@ import { Contact, FetchContacts, Page } from '../model/useInfiniteContacts'
 import useInfiniteContacts from '../model/useInfiniteContacts'
 
 export type { Contact, Page, FetchContacts }
+
+const ListComponent = List as any
 
 export function GiftContactsDialog(props: {
   open: boolean
@@ -39,7 +41,7 @@ export function GiftContactsDialog(props: {
     setSelectedId(null)
   }, [open, items.length])
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (!open) return
     if (e.key === 'Escape') { e.preventDefault(); onClose(); return }
     if (!items.length) return
@@ -170,7 +172,7 @@ export function GiftContactsDialog(props: {
                 )}
 
                 {!isLoading && !isError && items.length > 0 && (
-                  <List
+                  <ListComponent
                     ref={listRef as any}
                     height={Math.min(420, Math.round(window.innerHeight * 0.5))}
                     itemCount={items.length}
@@ -181,7 +183,7 @@ export function GiftContactsDialog(props: {
                     role="listbox"
                   >
                     {renderRow as any}
-                  </List>
+                  </ListComponent>
                 )}
 
                 {isFetchingNextPage && (
