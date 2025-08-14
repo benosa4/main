@@ -43,14 +43,25 @@ export function AnimatedEmoji({
 
   useEffect(() => {
     if (!divRef.current || kind !== 'lottie') return;
-    const anim = lottie.loadAnimation({
-      container: divRef.current,
-      path: src,
-      loop: true,
-      autoplay: shouldAnimate,
-    });
-    if (!shouldAnimate) anim.goToAndStop(0, true);
-    return () => anim.destroy();
+    let anim: ReturnType<typeof lottie.loadAnimation> | null = null;
+    let cancelled = false;
+    fetch(src)
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled || !divRef.current) return;
+        anim = lottie.loadAnimation({
+          container: divRef.current,
+          animationData: data,
+          loop: true,
+          autoplay: shouldAnimate,
+        });
+        if (!shouldAnimate) anim.goToAndStop(0, true);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+      anim?.destroy();
+    };
   }, [src, kind, shouldAnimate]);
 
   if (!resolved) return null;
