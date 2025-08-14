@@ -42,7 +42,7 @@
 }
 
 .emoji-picker--open {
-  animation: emoji-picker-in 0.2s ease-out;
+  animation: emoji-picker-in 0.4s ease-out;
 }
 
 .emoji-picker__tabs {

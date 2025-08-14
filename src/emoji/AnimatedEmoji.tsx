@@ -78,7 +78,7 @@ export function AnimatedEmoji({
       backgroundSize: `${frames * 100}% 100%`,
     };
     if (shouldAnimate) {
-      style.animation = `emoji-sprite ${frames * 80}ms steps(${frames}) infinite`;
+      style.animation = `emoji-sprite ${frames * 160}ms steps(${frames}) infinite`;
     } else {
       style.backgroundPosition = '0 0';
     }
