@@ -1,4 +1,4 @@
-import { CSSProperties, useEffect, useRef } from 'react';
+import { CSSProperties, useEffect, useRef, useState } from 'react';
 import lottie from 'lottie-web';
 import { resolveEmojiSrc, Tone } from './emojiMap';
 
@@ -26,6 +26,7 @@ export function AnimatedEmoji({
   onClick,
 }: AnimatedEmojiProps) {
   const divRef = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState(false);
 
   const resolved = resolveEmojiSrc(name, skinTone);
   const kind = resolved?.kind;
@@ -45,39 +46,53 @@ export function AnimatedEmoji({
     if (!divRef.current || kind !== 'lottie' || !src) return;
 
     let anim: ReturnType<typeof lottie.loadAnimation> | null = null;
-    let cancelled = false;
-
-    fetch(src)
-      .then((r) => r.json())
-      .then((data) => {
-        if (cancelled || !divRef.current) return;
-        anim = lottie.loadAnimation({
-          container: divRef.current,
-          animationData: data,
-          loop: true,
-          autoplay: shouldAnimate,
-          renderer: 'svg',
-          rendererSettings: {
-            preserveAspectRatio: 'xMidYMid meet',
-            progressiveLoad: true,
-            hideOnTransparent: true,
-          },
-        });
-        if (!shouldAnimate) anim.goToAndStop(0, true);
-      })
-      .catch(() => {});
+    setFailed(false);
+    try {
+      anim = lottie.loadAnimation({
+        container: divRef.current,
+        path: src,
+        loop: true,
+        autoplay: shouldAnimate,
+        renderer: 'svg',
+        rendererSettings: {
+          preserveAspectRatio: 'xMidYMid meet',
+          progressiveLoad: true,
+          hideOnTransparent: true,
+        },
+      });
+      if (!shouldAnimate) {
+        const handle = () => anim?.goToAndStop(0, true);
+        anim.addEventListener('DOMLoaded', handle);
+      }
+    } catch {
+      setFailed(true);
+    }
     return () => {
-      cancelled = true;
       anim?.destroy();
     };
   }, [src, kind, shouldAnimate]);
 
   if (!resolved) return null;
 
-  if (kind === 'lottie') {
+  if (kind === 'lottie' && !failed) {
     return (
       <div
         ref={divRef}
+        style={baseStyle}
+        className={className}
+        aria-label={name}
+        onClick={onClick}
+      />
+    );
+  }
+
+  if (kind === 'lottie' && failed) {
+    const fallback = src
+      ?.replace('/lottie/', '/svg/')
+      .replace(/\.json$/, '.webp');
+    return (
+      <img
+        src={fallback}
         style={baseStyle}
         className={className}
         aria-label={name}
