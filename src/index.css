@@ -60,6 +60,24 @@
   border-radius: 6px;
 }
 
+.emoji-picker__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--cell-size));
+  width: 100%;
+}
+
+.emoji-picker__emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background-color 0.12s ease;
+}
+
+.emoji-picker__emoji:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 .emoji-picker__footer {
   display: flex;
   justify-content: space-between;
