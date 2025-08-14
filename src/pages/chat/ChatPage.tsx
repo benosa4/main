@@ -20,6 +20,7 @@ const ChatPage = observer(() => {
   const [message, setMessage] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
   const emojiBtnRef = useRef<HTMLButtonElement>(null);
+  const composerRef = useRef<HTMLDivElement>(null);
 
   // 👉 ВАЖНО: реф для TwemojiInput внутри компонента
   const inputRef = useRef<TwemojiInputHandle>(null);
@@ -316,7 +317,7 @@ const ChatPage = observer(() => {
                 </div>
               )}
               <div className="p-4 pb-5 flex justify-center">
-                <div className="flex items-end w-full max-w-2xl gap-2 relative">
+                <div ref={composerRef} className="flex items-end w-full max-w-2xl gap-2 relative">
                   <div className="flex items-end flex-1 bg-white/5 rounded-lg px-4 py-2 relative">
                     {attachments.length > 0 && (
                       <div className="absolute -top-20 left-0 right-0 px-2 py-1 flex gap-2 overflow-x-auto hide-scrollbar">
@@ -340,7 +341,12 @@ const ChatPage = observer(() => {
                     <div
                       className="relative"
                       onMouseEnter={() => setShowEmoji(true)}
-                      onMouseLeave={() => setShowEmoji(false)}
+                      onMouseLeave={(e) => {
+                        const related = e.relatedTarget as Node | null;
+                        if (!related || !e.currentTarget.contains(related)) {
+                          setShowEmoji(false);
+                        }
+                      }}
                     >
                       <button
                         ref={emojiBtnRef}
@@ -352,7 +358,7 @@ const ChatPage = observer(() => {
                       <EmojiPicker
                         open={showEmoji}
                         anchorEl={emojiBtnRef.current}
-                        alignEl={inputRef.current?.getElement() || undefined}
+                        alignEl={composerRef.current || undefined}
                         onClose={() => setShowEmoji(false)}
                         onPick={handleEmojiPick}
                         defaultTone="default"
