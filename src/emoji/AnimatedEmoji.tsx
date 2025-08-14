@@ -28,9 +28,9 @@ export function AnimatedEmoji({
   const divRef = useRef<HTMLDivElement>(null);
 
   const resolved = resolveEmojiSrc(name, skinTone);
-  if (!resolved) return null;
-
-  const { kind, src, meta } = resolved;
+  const kind = resolved?.kind;
+  const src = resolved?.src;
+  const meta = resolved?.meta;
   const shouldAnimate = animate && !reducedMotion;
 
   const baseStyle: CSSProperties = {
@@ -42,7 +42,7 @@ export function AnimatedEmoji({
 
   // Lottie
   useEffect(() => {
-    if (!divRef.current || kind !== 'lottie') return;
+    if (!divRef.current || kind !== 'lottie' || !src) return;
 
     let anim: ReturnType<typeof lottie.loadAnimation> | null = null;
     let cancelled = false;
@@ -71,6 +71,8 @@ export function AnimatedEmoji({
       anim?.destroy();
     };
   }, [src, kind, shouldAnimate]);
+
+  if (!resolved) return null;
 
   if (kind === 'lottie') {
     return (
