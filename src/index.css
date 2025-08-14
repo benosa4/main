@@ -33,11 +33,10 @@
 .emoji-picker {
   position: fixed;
   width: 360px;
-  max-width: 380px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   padding: 8px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   transform-origin: bottom left;
 }
 
@@ -48,33 +47,37 @@
 .emoji-picker__tabs {
   position: sticky;
   top: 0;
+  z-index: 1;
   display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  background: #fff;
-  padding-bottom: 4px;
+  gap: 6px;
+  padding: 4px 0 8px;
+  background: inherit;
 }
 
 .emoji-picker__tab--active {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
 }
 
-.emoji-picker__row {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, var(--cell-size));
+.emoji-picker__list {
   width: 100%;
 }
 
-.emoji-picker__emoji {
+.emoji-picker__row {
   display: flex;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.emoji-picker__cell {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: background-color 0.12s ease;
 }
 
-.emoji-picker__emoji:hover {
+.emoji-picker__cell:hover {
   background: rgba(0, 0, 0, 0.1);
 }
 

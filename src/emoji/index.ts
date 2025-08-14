@@ -4,6 +4,6 @@ export { insertEmojiAtCaret } from './insertEmojiAtCaret';
 export { EMOJI, CATEGORY_INDEX, resolveEmojiSrc } from './emojiMap';
 export { useEmojiUsage } from './useEmojiUsage';
 export { emojiConfig } from './config';
-export { categoryIcons } from './categoryIcons';
+export { categoryIconShortcodes } from './categoryIcons';
 export type { UsageRow } from './useEmojiUsage';
 export type { Tone, EmojiKind, EmojiEntry } from './emojiMap';
