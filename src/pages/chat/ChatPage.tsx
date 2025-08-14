@@ -1,9 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { LayoutWithFloatingBg } from '../../shared/ui/LayoutWithFloatingBg';
-import type { Emoji } from '@emoji-mart/data';
 import TwemojiText from '../../shared/emoji/TwemojiText';
-import EmojiPanel from '../../widgets/emoji-panel/ui/EmojiPanel';
+import { EmojiPicker, nameToNative, Tone } from '../../emoji';
 import { chatStore } from '../../features/chats/model';
 import appSettingsStore from '../../shared/config/appSettings';
 import { natsStore } from '../../shared/nats/model';
@@ -84,15 +83,15 @@ const ChatPage = observer(() => {
     return () => clearTimeout(t);
   }, [message, chatStore.selectedChatId]);
 
-  // 👉 новый handleEmojiSelect: вставка в TwemojiInput, плюс обновление стейта
+  // 👉 новый handleEmojiPick: вставка в TwemojiInput, плюс обновление стейта
   const ZWSP = '\u200B';
 
-  const handleEmojiSelect = (emoji: Emoji & { native?: string }) => {
-    const native = emoji.native || '';
+  const handleEmojiPick = ({ name, tone }: { name: string; tone: Tone }) => {
+    const native = nameToNative(name, tone);
     if (!native) return;
-    // вставляем эмодзи с разделителями: [ZWSP][EMOJI][ZWSP]
     inputRef.current?.insert(`${ZWSP}${native}${ZWSP}`);
     inputRef.current?.focus();
+    setShowEmoji(false);
   };
 
   // Sidebar scroll state handled inside ChatSidebar
@@ -356,12 +355,14 @@ const ChatPage = observer(() => {
                         <div
                           ref={emojiPickerRef}
                           className="absolute bottom-full left-0 mb-2 z-10"
-                          onMouseLeave={() => setShowEmoji(false)}
                         >
-                          <EmojiPanel
-                            onEmojiSelect={(native) =>
-                              handleEmojiSelect({ native } as any)
-                            }
+                          <EmojiPicker
+                            open={showEmoji}
+                            anchorEl={emojiBtnRef.current || undefined}
+                            onClose={() => setShowEmoji(false)}
+                            onPick={handleEmojiPick}
+                            defaultTone="default"
+                            persistToneKey="emoji_last_tone"
                           />
                         </div>
                       )}
