@@ -10,6 +10,7 @@ import { chatTabsStore } from '../../../features/chat-tabs/model';
 import { chatStore } from '../../../features/chats/model';
 import { loadSessionsFromDB, loadSessionsFromRemote, saveSessionsToDB, saveSessionsToRemote, type SessionDTO } from '../../../shared/db';
 import { emojiToSvgUrl, emojiToPngUrl } from '../../../shared/emoji/twemojify';
+import { Operation } from '../../../features/stars/ui/HistoryList';
 
 const NavBar = observer(() => {
   const current = settingsPanelStore.stack[settingsPanelStore.stack.length - 1] || 'root';
@@ -240,9 +241,22 @@ const StarsEntry = () => {
         onClose={() => setOpen(false)}
         balance={{ amount: 849 }}
         historyApi={{ fetch: async (filter, page) => {
-          const base = Array.from({ length: 20 }, (_, i) => ({ id: `op-${page}-${i}`, title: i%3===0?'Покупка в Mini App':'Зачисление бонусов', subtitle: i%3===0?'Оплата контента':'Подарок от друга', date: 'сегодня', sign: i%3===0?'-':'+', amount: (i%3===0?75:100)+i, avatarUrl: 'https://placehold.co/36x36' }));
-          const items = filter==='income'? base.filter(b=>b.sign==='+') : filter==='outcome'? base.filter(b=>b.sign==='-') : base;
-          return { items, nextPage: page+1 };
+          const base: Operation[] = Array.from({ length: 20 }, (_, i) => ({
+            id: `op-${page}-${i}`,
+            title: i % 3 === 0 ? 'Покупка в Mini App' : 'Зачисление бонусов',
+            subtitle: i % 3 === 0 ? 'Оплата контента' : 'Подарок от друга',
+            date: 'сегодня',
+            sign: i % 3 === 0 ? '-' : '+',
+            amount: (i % 3 === 0 ? 75 : 100) + i,
+            avatarUrl: 'https://placehold.co/36x36',
+          }));
+          const items =
+            filter === 'income'
+              ? base.filter((b) => b.sign === '+')
+              : filter === 'outcome'
+              ? base.filter((b) => b.sign === '-')
+              : base;
+          return { items, nextPage: page + 1 };
         }}}
         purchaseApi={{ list: async () => [
           { id: 'p100', qty: 100, price: 99 },
@@ -261,7 +275,7 @@ const StarsEntry = () => {
           { id: 'p100000b', qty: 100000, price: 89990 },
           { id: 'p150000b', qty: 150000, price: 134990 },
         ], buy: async () => {} }}
-        giftApi={{ searchContacts: async (q, page) => ({ items: Array.from({ length: 20 }, (_, i)=>({ id: `${page}-${i}`, name: `Контакт ${i+1}`, subtitle: 'был(а) недавно', avatarUrl: 'https://placehold.co/36x36' })) }), startGift: async () => {} }}
+        giftApi={{ searchContacts: async (_q, page) => ({ items: Array.from({ length: 20 }, (_, i)=>({ id: `${page}-${i}`, name: `Контакт ${i+1}`, subtitle: 'был(а) недавно', avatarUrl: 'https://placehold.co/36x36' })) }), startGift: async () => {} }}
       />
     </>
   );
@@ -1045,7 +1059,6 @@ const SessionsScreen = observer(() => {
 // PRIVACY SCREEN
 const PrivacyScreen = observer(() => {
   const p = appSettingsStore.state.privacy;
-  const sub = (v: string) => v;
   const vis = p.visibilities;
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   return (

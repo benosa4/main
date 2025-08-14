@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Tabs from '@radix-ui/react-tabs';
 import OrangeStarBurst from './OrangeStarBurst';
 import PurchaseGrid, { StarPackage } from './PurchaseGrid';
 import HistoryList, { Operation } from './HistoryList';
-import { GiftContactsDialog, Contact as GiftContact, Page as GiftPage } from '../../gifting';
+import { GiftContactsDialog, Contact as GiftContact } from '../../gifting';
 
 export interface OperationPage { items: Operation[]; nextPage?: number }
 export interface ContactPage { items: { id: string; name: string; subtitle?: string; avatarUrl?: string }[]; nextPage?: number }
@@ -191,24 +191,13 @@ export default function StarsModal({ open, onClose, balance, historyApi, purchas
           <GiftContactsDialog
             open={giftOpen}
             onClose={() => { setGiftOpen(false); setTimeout(()=>giftBtnRef.current?.focus(), 0) }}
-            onContinue={async () => { setGiftOpen(false) }}
+            onContinue={async (contact) => { setGiftOpen(false); await giftApi.startGift(contact.id); }}
             initialQuery={''}
             pageSize={30}
-            fetchContacts={async ({ query, cursor, limit }) => {
-              // Adapter: mock paged contacts -> cursor pagination
+            fetchContacts={async ({ query, cursor, limit: _limit }) => {
               const pageNum = cursor ? parseInt(cursor, 10) : 1
-              const all = Array.from({ length: 500 }, (_, i) => ({
-                id: `c${i+1}`,
-                name: `Контакт ${i+1}`,
-                lastSeenText: 'был(а) недавно',
-                avatarUrl: 'https://placehold.co/40x40',
-              }))
-                .filter((c) => c.name.toLowerCase().includes((query || '').toLowerCase()))
-              const start = (pageNum - 1) * limit
-              const slice = all.slice(start, start + limit)
-              const nextCursor = start + limit < all.length ? String(pageNum + 1) : null
-              const page: GiftPage<GiftContact> = { items: slice, nextCursor }
-              return page
+              const res = await giftApi.searchContacts(query || '', pageNum)
+              return { items: res.items as GiftContact[], nextCursor: res.nextPage ? String(res.nextPage) : null }
             }}
           />
           </div>

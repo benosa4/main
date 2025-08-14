@@ -1,4 +1,3 @@
-import React from 'react';
 
 export interface Operation { id: string; title: string; subtitle: string; date: string; sign: '+' | '-'; amount: number; avatarUrl?: string }
 

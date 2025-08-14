@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { motion } from 'framer-motion';
 
 type Particle = {
@@ -57,7 +57,6 @@ export default function StarBurst({ className, starSize = 84 }: StarBurstProps) 
     const tick = () => {
       setParts((prev) => {
         const aliveIds = new Set<string>();
-        const now = performance.now();
         // Keep last 36 items max
         const next = prev.filter((p) => {
           // We don't track lifecycle timestamps; rely on CSS animations completing and remove by cap
@@ -138,8 +137,7 @@ export default function StarBurst({ className, starSize = 84 }: StarBurstProps) 
           {parts.map((p) => {
             const dx = Math.cos((p.angle * Math.PI) / 180) * p.dist;
             const dy = Math.sin((p.angle * Math.PI) / 180) * p.dist;
-            const to = `translate(${dx}px, ${-dy}px)`; // up is negative y
-            const base: React.CSSProperties = { position: 'absolute', left: 80 + p.x, top: 60 + p.y, width: p.size, height: p.size };
+            const base: CSSProperties = { position: 'absolute', left: 80 + p.x, top: 60 + p.y, width: p.size, height: p.size };
             return (
               <motion.div
                 key={p.id}

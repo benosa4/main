@@ -51,7 +51,7 @@ export async function bumpUsage(name: string, tone: Tone): Promise<void> {
   }
   await withStore('readwrite', async (store) => {
     const req = store.get(key);
-    const row: UsageRow = await new Promise((resolve, reject) => {
+    const row: UsageRow | undefined = await new Promise<UsageRow | undefined>((resolve, reject) => {
       req.onerror = () => reject(req.error);
       req.onsuccess = () => resolve(req.result as UsageRow | undefined);
     });

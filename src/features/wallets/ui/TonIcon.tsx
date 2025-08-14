@@ -1,4 +1,3 @@
-import React from 'react'
 
 export function TonIcon({ size = 18, className = '' }: { size?: number; className?: string }) {
   // Minimal TON diamond SVG

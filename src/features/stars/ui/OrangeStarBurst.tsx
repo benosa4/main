@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { motion } from 'framer-motion';
 
 type Particle = {
@@ -117,8 +117,7 @@ export default function OrangeStarBurst({ size = 96, intensity = 1, sparkles = t
             {parts.map((p) => {
               const dx = Math.cos((p.angle * Math.PI) / 180) * p.dist;
               const dy = Math.sin((p.angle * Math.PI) / 180) * p.dist;
-              const to = `translate(${dx}px, ${-dy}px)`;
-              const baseStyle: React.CSSProperties = { position: 'absolute', left: 80 + p.x, top: 60 + p.y, width: p.size, height: p.size, color: p.color };
+              const baseStyle: CSSProperties = { position: 'absolute', left: 80 + p.x, top: 60 + p.y, width: p.size, height: p.size, color: p.color };
               return (
                 <motion.div
                   key={p.id}

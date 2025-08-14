@@ -30,7 +30,14 @@ const ChatPage = observer(() => {
   const pendingPrependAdjust = useRef<{ prevHeight: number; prevTop: number } | null>(null);
   const [inputMaxPx, setInputMaxPx] = useState<number | null>(null);
   const [inputScrollable, setInputScrollable] = useState(false);
-  const [attachments, setAttachments] = useState<{ id: string; url: string; type: 'image'|'file'; name?: string }[]>([]);
+  const [attachments, setAttachments] = useState<{
+    id: string;
+    url: string;
+    type: 'image' | 'file' | 'video';
+    name?: string;
+    mime?: string;
+    size?: number;
+  }[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Sidebar scrollers handled inside ChatSidebar
@@ -332,6 +339,8 @@ const ChatPage = observer(() => {
                           <div key={a.id} className="relative">
                             {a.type === 'image' ? (
                               <img src={a.url} className="h-16 w-auto rounded-md border border-white/10" />
+                            ) : a.type === 'video' ? (
+                              <video src={a.url} className="h-16 w-auto rounded-md border border-white/10" muted />
                             ) : (
                               <a href={a.url} target="_blank" className="underline text-xs" rel="noreferrer">{a.name || 'file'}</a>
                             )}
@@ -352,20 +361,20 @@ const ChatPage = observer(() => {
                       >
                         😊
                       </button>
-                      {showEmoji && (
-                        <div
-                          ref={emojiPickerRef}
-                          className="absolute bottom-full left-0 mb-2 z-10"
-                        >
-                          <EmojiPicker
-                            open={showEmoji}
-                            onClose={() => setShowEmoji(false)}
-                            onPick={handleEmojiPick}
-                            defaultTone="default"
-                            persistToneKey="emoji_last_tone"
-                          />
-                        </div>
-                      )}
+                      <div
+                        ref={emojiPickerRef}
+                        className={`absolute bottom-full left-full ml-2 mb-2 z-10 origin-bottom-left transition-transform transition-opacity duration-200 ${
+                          showEmoji ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'
+                        }`}
+                      >
+                        <EmojiPicker
+                          open={showEmoji}
+                          onClose={() => setShowEmoji(false)}
+                          onPick={handleEmojiPick}
+                          defaultTone="default"
+                          persistToneKey="emoji_last_tone"
+                        />
+                      </div>
                     </div>
                     <TwemojiInput
                       ref={inputRef}
