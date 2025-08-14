@@ -13,11 +13,16 @@ export interface MessageRendererProps {
 }
 
 /**
- * Very small message renderer that understands emoji shortcodes. If a message
- * consists of a single shortcode it renders a large animated emoji via
- * `SingleEmoji`. Otherwise shortcodes are replaced with inline static emojis.
+ * Small message renderer that understands emoji shortcodes. If the message is a
+ * single shortcode it renders a large animated emoji via `SingleEmoji`.
+ * Otherwise shortcodes are replaced with inline static emojis.
  */
 export function MessageRenderer({ message }: MessageRendererProps) {
+  const normalized = message.replace(/[\s\u200A\uFEFF]/g, '');
+  if (isEmoji(normalized)) {
+    return <SingleEmoji name={normalized} />;
+  }
+
   const parts: string[] = [];
   let last = 0;
   message.replace(EMOJI_RE, (m, offset) => {
@@ -27,11 +32,6 @@ export function MessageRenderer({ message }: MessageRendererProps) {
     return m;
   });
   parts.push(message.slice(last));
-
-  const emojis = parts.filter(isEmoji);
-  if (emojis.length === 1 && parts.length === 1) {
-    return <SingleEmoji name={emojis[0]} />;
-  }
 
   return (
     <span>

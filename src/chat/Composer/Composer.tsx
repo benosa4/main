@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { EmojiPicker, insertEmojiAtCaret } from '../../emoji';
+import { EmojiPicker, insertEmojiAtCaret, emojiConfig } from '../../emoji';
 
 /**
  * Chat message composer with emoji picker integration. The editor itself is a
@@ -34,6 +34,7 @@ export function Composer() {
         }}
         defaultTone="default"
         persistToneKey="emoji_last_tone"
+        animateInsidePicker={emojiConfig.pickerAnimations}
       />
     </div>
   );
