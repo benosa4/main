@@ -6,7 +6,7 @@ import { CATEGORY_INDEX, Tone } from './emojiMap';
 import { TonePalette } from './TonePalette';
 import { useEmojiUsage } from './useEmojiUsage';
 import { toRows, useGridColumns } from './virtualization';
-import { categoryIcons } from './categoryIcons';
+import { categoryIconShortcodes } from './categoryIcons';
 
 const SECTION_LABELS: Record<string, string> = {
   recent: 'Недавние',
@@ -148,7 +148,11 @@ export function EmojiPicker({
             }}
             title={SECTION_LABELS[g]}
           >
-            {categoryIcons[g] ?? '❓'}
+            <AnimatedEmoji
+              name={categoryIconShortcodes[g] ?? ':smile:'}
+              size={20}
+              animate={false}
+            />
           </button>
         ))}
       </div>
