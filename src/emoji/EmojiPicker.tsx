@@ -139,7 +139,7 @@ export function EmojiPicker({
         style={{ height: 300 }}
         overscan={overscan}
         groupCounts={groupCounts}
-        onRangeChanged={({ startIndex }) => setActiveTab(groupIndexFromItem(startIndex))}
+        rangeChanged={({ startIndex }) => setActiveTab(groupIndexFromItem(startIndex))}
         components={{
           List: forwardRef<HTMLDivElement>((props, ref) => (
             <div {...props} ref={ref} role="grid" />
