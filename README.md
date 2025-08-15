@@ -14,6 +14,7 @@ Light and dark theme tokens live in `src/assets/theme.light.css` and `src/assets
 - messages UI: `src/features/messages/ui/MessagesContainer.tsx` -> `src/entities/message-date-group/ui/MessageDateGroup.tsx` -> `src/entities/message/ui/Message.tsx`.
 - IndexedDB access: `src/shared/db.ts`.
 - Mock API and seeding: `src/features/messages/api.ts`.
+- **EmojiPicker**: `src/emoji/` - расширенный пикер эмодзи с Lottie анимациями, OffscreenCanvas и Web Workers.
 
 ## Data Model
 
@@ -236,3 +237,33 @@ Create a `.env` with:
 - `npm run build` — Type-check and production build to `dist/`
 - `npm run preview` — Serve the production build
 - `npm run lint` — ESLint
+
+## EmojiPicker Features
+
+### 🎨 Lottie Animations
+- **Нативные декодеры**: rlottie и skottie для максимальной производительности
+- **OffscreenCanvas**: Рендеринг в отдельном потоке без блокировки UI
+- **Web Workers**: Парсинг и обработка Lottie в фоновом режиме
+- **WASM поддержка**: WebAssembly декодеры для быстрого парсинга
+
+### 🚀 Performance Optimizations
+- Анимации автоматически приостанавливаются при прокрутке
+- Виртуализация списков для больших коллекций эмодзи
+- Автоматическая предзагрузка популярных эмодзи
+- Fallback на статичные изображения при ошибках
+
+### 📱 Accessibility
+- Автоматическое определение `prefers-reduced-motion`
+- Поддержка клавиатурной навигации
+- Адаптация к темной и светлой темам
+
+### 🔧 Setup
+```bash
+# Автоматическая установка декодеров
+./scripts/install-decoders.sh
+
+# Запуск приложения
+npm run dev
+```
+
+Подробная документация: [EMOJI_SETUP.md](EMOJI_SETUP.md) и [src/emoji/README.md](src/emoji/README.md)

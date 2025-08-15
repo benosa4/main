@@ -118,6 +118,19 @@
   to   { background-position: 100% 0; }
 }
 
+/* Плавные переходы для анимаций эмодзи */
+.emoji-picker__cell canvas,
+.emoji-picker__cell img,
+.emoji-picker__tab canvas,
+.emoji-picker__tab img {
+  transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.emoji-picker__cell:hover canvas,
+.emoji-picker__cell:hover img {
+  transform: scale(1.1);
+}
+
 .tone-palette {
   position: absolute;
   display: flex;

@@ -12,4 +12,16 @@ export default defineConfig({
         icon: true,
       },
     }),],
+  assetsInclude: ['*.wasm'], // Включаем поддержку WASM файлов
+  server: {
+    fs: {
+      // Разрешаем доступ к файлам вне корня проекта
+      allow: ['..']
+    }
+  },
+  build: {
+    rollupOptions: {
+      external: ['*.wasm'] // Исключаем WASM из сборки
+    }
+  }
 })

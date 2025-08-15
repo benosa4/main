@@ -363,6 +363,7 @@ const ChatPage = observer(() => {
                         onPick={handleEmojiPick}
                         defaultTone="default"
                         persistToneKey="emoji_last_tone"
+                        animateInsidePicker={true}
                       />
                     </div>
                     <TwemojiInput

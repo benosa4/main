@@ -77,6 +77,7 @@ const Message: React.FC<MessageProps> = ({ message }) => {
             onPick={handlePick}
             defaultTone="default"
             persistToneKey="emoji_last_tone"
+            animateInsidePicker={true}
           />
         </div>
       )}

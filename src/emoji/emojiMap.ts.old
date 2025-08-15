@@ -10,2257 +10,2257 @@ export type EmojiEntry = {
 
 export const EMOJI: Record<string, EmojiEntry> = {
   ":smile:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f600.json"
+        "src": "/emoji/svg/1f600.webp"
       }
     }
   },
   ":smile-with-big-eyes:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f603.json"
+        "src": "/emoji/svg/1f603.webp"
       }
     }
   },
   ":grin:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f604.json"
+        "src": "/emoji/svg/1f604.webp"
       }
     }
   },
   ":grinning:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f601.json"
+        "src": "/emoji/svg/1f601.webp"
       }
     }
   },
   ":laughing:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f606.json"
+        "src": "/emoji/svg/1f606.webp"
       }
     }
   },
   ":grin-sweat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f605.json"
+        "src": "/emoji/svg/1f605.webp"
       }
     }
   },
   ":joy:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f602.json"
+        "src": "/emoji/svg/1f602.webp"
       }
     }
   },
   ":rofl:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f923.json"
+        "src": "/emoji/svg/1f923.webp"
       }
     }
   },
   ":loudly-crying:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f62d.json"
+        "src": "/emoji/svg/1f62d.webp"
       }
     }
   },
   ":wink:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f609.json"
+        "src": "/emoji/svg/1f609.webp"
       }
     }
   },
   ":kissing:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f617.json"
+        "src": "/emoji/svg/1f617.webp"
       }
     }
   },
   ":kissing-smiling-eyes:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f619.json"
+        "src": "/emoji/svg/1f619.webp"
       }
     }
   },
   ":kissing-closed-eyes:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f61a.json"
+        "src": "/emoji/svg/1f61a.webp"
       }
     }
   },
   ":kissing-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f618.json"
+        "src": "/emoji/svg/1f618.webp"
       }
     }
   },
   ":heart-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f970.json"
+        "src": "/emoji/svg/1f970.webp"
       }
     }
   },
   ":heart-eyes:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f60d.json"
+        "src": "/emoji/svg/1f60d.webp"
       }
     }
   },
   ":star-struck:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f929.json"
+        "src": "/emoji/svg/1f929.webp"
       }
     }
   },
   ":partying-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f973.json"
+        "src": "/emoji/svg/1f973.webp"
       }
     }
   },
   ":melting:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fae0.json"
+        "src": "/emoji/svg/1fae0.webp"
       }
     }
   },
   ":upside-down-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f643.json"
+        "src": "/emoji/svg/1f643.webp"
       }
     }
   },
   ":slightly-happy:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f642.json"
+        "src": "/emoji/svg/1f642.webp"
       }
     }
   },
   ":happy-cry:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f972.json"
+        "src": "/emoji/svg/1f972.webp"
       }
     }
   },
   ":holding-back-tears:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f979.json"
+        "src": "/emoji/svg/1f979.webp"
       }
     }
   },
   ":blush:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f60a.json"
+        "src": "/emoji/svg/1f60a.webp"
       }
     }
   },
   ":warm-smile:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/263a_fe0f.json"
+        "src": "/emoji/svg/263a_fe0f.webp"
       }
     }
   },
   ":relieved:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f60c.json"
+        "src": "/emoji/svg/1f60c.webp"
       }
     }
   },
   ":head-nod:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f642_200d_2195_fe0f.json"
+        "src": "/emoji/svg/1f642_200d_2195_fe0f.webp"
       }
     }
   },
   ":head-shake:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f642_200d_2194_fe0f.json"
+        "src": "/emoji/svg/1f642_200d_2194_fe0f.webp"
       }
     }
   },
   ":smirk:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f60f.json"
+        "src": "/emoji/svg/1f60f.webp"
       }
     }
   },
   ":drool:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f924.json"
+        "src": "/emoji/svg/1f924.webp"
       }
     }
   },
   ":yum:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f60b.json"
+        "src": "/emoji/svg/1f60b.webp"
       }
     }
   },
   ":stuck-out-tongue:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f61b.json"
+        "src": "/emoji/svg/1f61b.webp"
       }
     }
   },
   ":squinting-tongue:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f61d.json"
+        "src": "/emoji/svg/1f61d.webp"
       }
     }
   },
   ":winky-tongue:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f61c.json"
+        "src": "/emoji/svg/1f61c.webp"
       }
     }
   },
   ":zany-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f92a.json"
+        "src": "/emoji/svg/1f92a.webp"
       }
     }
   },
   ":woozy:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f974.json"
+        "src": "/emoji/svg/1f974.webp"
       }
     }
   },
   ":pensive:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f614.json"
+        "src": "/emoji/svg/1f614.webp"
       }
     }
   },
   ":pleading:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f97a.json"
+        "src": "/emoji/svg/1f97a.webp"
       }
     }
   },
   ":grimacing:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f62c.json"
+        "src": "/emoji/svg/1f62c.webp"
       }
     }
   },
   ":expressionless:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f611.json"
+        "src": "/emoji/svg/1f611.webp"
       }
     }
   },
   ":neutral-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f610.json"
+        "src": "/emoji/svg/1f610.webp"
       }
     }
   },
   ":mouth-none:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f636.json"
+        "src": "/emoji/svg/1f636.webp"
       }
     }
   },
   ":face-in-clouds:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f636_200d_1f32b_fe0f.json"
+        "src": "/emoji/svg/1f636_200d_1f32b_fe0f.webp"
       }
     }
   },
   ":dotted-line-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fae5.json"
+        "src": "/emoji/svg/1fae5.webp"
       }
     }
   },
   ":zipper-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f910.json"
+        "src": "/emoji/svg/1f910.webp"
       }
     }
   },
   ":salute:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fae1.json"
+        "src": "/emoji/svg/1fae1.webp"
       }
     }
   },
   ":thinking-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f914.json"
+        "src": "/emoji/svg/1f914.webp"
       }
     }
   },
   ":shushing-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f92b.json"
+        "src": "/emoji/svg/1f92b.webp"
       }
     }
   },
   ":hand-over-mouth:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fae2.json"
+        "src": "/emoji/svg/1fae2.webp"
       }
     }
   },
   ":smiling-eyes-with-hand-over-mouth:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f92d.json"
+        "src": "/emoji/svg/1f92d.webp"
       }
     }
   },
   ":yawn:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f971.json"
+        "src": "/emoji/svg/1f971.webp"
       }
     }
   },
   ":hug-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f917.json"
+        "src": "/emoji/svg/1f917.webp"
       }
     }
   },
   ":peeking:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fae3.json"
+        "src": "/emoji/svg/1fae3.webp"
       }
     }
   },
   ":screaming:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f631.json"
+        "src": "/emoji/svg/1f631.webp"
       }
     }
   },
   ":raised-eyebrow:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f928.json"
+        "src": "/emoji/svg/1f928.webp"
       }
     }
   },
   ":monocle:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f9d0.json"
+        "src": "/emoji/svg/1f9d0.webp"
       }
     }
   },
   ":unamused:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f612.json"
+        "src": "/emoji/svg/1f612.webp"
       }
     }
   },
   ":rolling-eyes:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f644.json"
+        "src": "/emoji/svg/1f644.webp"
       }
     }
   },
   ":exhale:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f62e_200d_1f4a8.json"
+        "src": "/emoji/svg/1f62e_200d_1f4a8.webp"
       }
     }
   },
   ":triumph:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f624.json"
+        "src": "/emoji/svg/1f624.webp"
       }
     }
   },
   ":angry:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f620.json"
+        "src": "/emoji/svg/1f620.webp"
       }
     }
   },
   ":rage:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f621.json"
+        "src": "/emoji/svg/1f621.webp"
       }
     }
   },
   ":cursing:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f92c.json"
+        "src": "/emoji/svg/1f92c.webp"
       }
     }
   },
   ":sad:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f61e.json"
+        "src": "/emoji/svg/1f61e.webp"
       }
     }
   },
   ":sweat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f613.json"
+        "src": "/emoji/svg/1f613.webp"
       }
     }
   },
   ":worried:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f61f.json"
+        "src": "/emoji/svg/1f61f.webp"
       }
     }
   },
   ":concerned:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f625.json"
+        "src": "/emoji/svg/1f625.webp"
       }
     }
   },
   ":cry:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f622.json"
+        "src": "/emoji/svg/1f622.webp"
       }
     }
   },
   ":big-frown:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2639_fe0f.json"
+        "src": "/emoji/svg/2639_fe0f.webp"
       }
     }
   },
   ":frown:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f641.json"
+        "src": "/emoji/svg/1f641.webp"
       }
     }
   },
   ":diagonal-mouth:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fae4.json"
+        "src": "/emoji/svg/1fae4.webp"
       }
     }
   },
   ":slightly-frowning:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f615.json"
+        "src": "/emoji/svg/1f615.webp"
       }
     }
   },
   ":anxious-with-sweat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f630.json"
+        "src": "/emoji/svg/1f630.webp"
       }
     }
   },
   ":scared:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f628.json"
+        "src": "/emoji/svg/1f628.webp"
       }
     }
   },
   ":anguished:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f627.json"
+        "src": "/emoji/svg/1f627.webp"
       }
     }
   },
   ":gasp:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f626.json"
+        "src": "/emoji/svg/1f626.webp"
       }
     }
   },
   ":mouth-open:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f62e.json"
+        "src": "/emoji/svg/1f62e.webp"
       }
     }
   },
   ":surprised:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f62f.json"
+        "src": "/emoji/svg/1f62f.webp"
       }
     }
   },
   ":astonished:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f632.json"
+        "src": "/emoji/svg/1f632.webp"
       }
     }
   },
   ":flushed:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f633.json"
+        "src": "/emoji/svg/1f633.webp"
       }
     }
   },
   ":mind-blown:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f92f.json"
+        "src": "/emoji/svg/1f92f.webp"
       }
     }
   },
   ":scrunched-mouth:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f616.json"
+        "src": "/emoji/svg/1f616.webp"
       }
     }
   },
   ":scrunched-eyes:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f623.json"
+        "src": "/emoji/svg/1f623.webp"
       }
     }
   },
   ":weary:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f629.json"
+        "src": "/emoji/svg/1f629.webp"
       }
     }
   },
   ":distraught:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f62b.json"
+        "src": "/emoji/svg/1f62b.webp"
       }
     }
   },
   ":x-eyes:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f635.json"
+        "src": "/emoji/svg/1f635.webp"
       }
     }
   },
   ":dizzy-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f635_200d_1f4ab.json"
+        "src": "/emoji/svg/1f635_200d_1f4ab.webp"
       }
     }
   },
   ":shaking-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fae8.json"
+        "src": "/emoji/svg/1fae8.webp"
       }
     }
   },
   ":cold-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f976.json"
+        "src": "/emoji/svg/1f976.webp"
       }
     }
   },
   ":hot-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f975.json"
+        "src": "/emoji/svg/1f975.webp"
       }
     }
   },
   ":sick:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f922.json"
+        "src": "/emoji/svg/1f922.webp"
       }
     }
   },
   ":vomit:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f92e.json"
+        "src": "/emoji/svg/1f92e.webp"
       }
     }
   },
   ":tired:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fae9.json"
+        "src": "/emoji/svg/1fae9.webp"
       }
     }
   },
   ":sleep:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f634.json"
+        "src": "/emoji/svg/1f634.webp"
       }
     }
   },
   ":sleepy:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f62a.json"
+        "src": "/emoji/svg/1f62a.webp"
       }
     }
   },
   ":sneeze:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f927.json"
+        "src": "/emoji/svg/1f927.webp"
       }
     }
   },
   ":thermometer-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f912.json"
+        "src": "/emoji/svg/1f912.webp"
       }
     }
   },
   ":bandage-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f915.json"
+        "src": "/emoji/svg/1f915.webp"
       }
     }
   },
   ":mask:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f637.json"
+        "src": "/emoji/svg/1f637.webp"
       }
     }
   },
   ":liar:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f925.json"
+        "src": "/emoji/svg/1f925.webp"
       }
     }
   },
   ":halo:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f607.json"
+        "src": "/emoji/svg/1f607.webp"
       }
     }
   },
   ":cowboy:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f920.json"
+        "src": "/emoji/svg/1f920.webp"
       }
     }
   },
   ":money-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f911.json"
+        "src": "/emoji/svg/1f911.webp"
       }
     }
   },
   ":nerd-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f913.json"
+        "src": "/emoji/svg/1f913.webp"
       }
     }
   },
   ":sunglasses-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f60e.json"
+        "src": "/emoji/svg/1f60e.webp"
       }
     }
   },
   ":disguise:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f978.json"
+        "src": "/emoji/svg/1f978.webp"
       }
     }
   },
   ":clown:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f921.json"
+        "src": "/emoji/svg/1f921.webp"
       }
     }
   },
   ":poop:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f4a9.json"
+        "src": "/emoji/svg/1f4a9.webp"
       }
     }
   },
   ":imp-smile:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f608.json"
+        "src": "/emoji/svg/1f608.webp"
       }
     }
   },
   ":imp-frown:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f47f.json"
+        "src": "/emoji/svg/1f47f.webp"
       }
     }
   },
   ":ghost:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f47b.json"
+        "src": "/emoji/svg/1f47b.webp"
       }
     }
   },
   ":skull:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f480.json"
+        "src": "/emoji/svg/1f480.webp"
       }
     }
   },
   ":snowman-with-snow:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2603_fe0f.json"
+        "src": "/emoji/svg/2603_fe0f.webp"
       }
     }
   },
   ":snowman:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/26c4.json"
+        "src": "/emoji/svg/26c4.webp"
       }
     }
   },
   ":jack-o-lantern:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f383.json"
+        "src": "/emoji/svg/1f383.webp"
       }
     }
   },
   ":robot:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f916.json"
+        "src": "/emoji/svg/1f916.webp"
       }
     }
   },
   ":alien:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f47d.json"
+        "src": "/emoji/svg/1f47d.webp"
       }
     }
   },
   ":alien-monster:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f47e.json"
+        "src": "/emoji/svg/1f47e.webp"
       }
     }
   },
   ":sun-with-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f31e.json"
+        "src": "/emoji/svg/1f31e.webp"
       }
     }
   },
   ":moon-face-first-quarter:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f31b.json"
+        "src": "/emoji/svg/1f31b.webp"
       }
     }
   },
   ":moon-face-last-quarter:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f31c.json"
+        "src": "/emoji/svg/1f31c.webp"
       }
     }
   },
   ":smiley-cat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f63a.json"
+        "src": "/emoji/svg/1f63a.webp"
       }
     }
   },
   ":smile-cat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f638.json"
+        "src": "/emoji/svg/1f638.webp"
       }
     }
   },
   ":joy-cat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f639.json"
+        "src": "/emoji/svg/1f639.webp"
       }
     }
   },
   ":heart-eyes-cat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f63b.json"
+        "src": "/emoji/svg/1f63b.webp"
       }
     }
   },
   ":smirk-cat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f63c.json"
+        "src": "/emoji/svg/1f63c.webp"
       }
     }
   },
   ":kissing-cat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f63d.json"
+        "src": "/emoji/svg/1f63d.webp"
       }
     }
   },
   ":scream-cat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f640.json"
+        "src": "/emoji/svg/1f640.webp"
       }
     }
   },
   ":crying-cat-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f63f.json"
+        "src": "/emoji/svg/1f63f.webp"
       }
     }
   },
   ":pouting-cat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f63e.json"
+        "src": "/emoji/svg/1f63e.webp"
       }
     }
   },
   ":see-no-evil-monkey:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f648.json"
+        "src": "/emoji/svg/1f648.webp"
       }
     }
   },
   ":hear-no-evil-monkey:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f649.json"
+        "src": "/emoji/svg/1f649.webp"
       }
     }
   },
   ":speak-no-evil-monkey:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f64a.json"
+        "src": "/emoji/svg/1f64a.webp"
       }
     }
   },
   ":glowing-star:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f31f.json"
+        "src": "/emoji/svg/1f31f.webp"
       }
     }
   },
   ":sparkles:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2728.json"
+        "src": "/emoji/svg/2728.webp"
       }
     }
   },
   ":electricity:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/26a1.json"
+        "src": "/emoji/svg/26a1.webp"
       }
     }
   },
   ":collision:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f4a5.json"
+        "src": "/emoji/svg/1f4a5.webp"
       }
     }
   },
   ":fire:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f525.json"
+        "src": "/emoji/svg/1f525.webp"
       }
     }
   },
   ":100:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f4af.json"
+        "src": "/emoji/svg/1f4af.webp"
       }
     }
   },
   ":party-popper:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f389.json"
+        "src": "/emoji/svg/1f389.webp"
       }
     }
   },
   ":confetti-ball:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f38a.json"
+        "src": "/emoji/svg/1f38a.webp"
       }
     }
   },
   ":red-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2764_fe0f.json"
+        "src": "/emoji/svg/2764_fe0f.webp"
       }
     }
   },
   ":orange-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f9e1.json"
+        "src": "/emoji/svg/1f9e1.webp"
       }
     }
   },
   ":yellow-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f49b.json"
+        "src": "/emoji/svg/1f49b.webp"
       }
     }
   },
   ":green-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f49a.json"
+        "src": "/emoji/svg/1f49a.webp"
       }
     }
   },
   ":light-blue-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa75.json"
+        "src": "/emoji/svg/1fa75.webp"
       }
     }
   },
   ":blue-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f499.json"
+        "src": "/emoji/svg/1f499.webp"
       }
     }
   },
   ":purple-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f49c.json"
+        "src": "/emoji/svg/1f49c.webp"
       }
     }
   },
   ":brown-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f90e.json"
+        "src": "/emoji/svg/1f90e.webp"
       }
     }
   },
   ":black-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f5a4.json"
+        "src": "/emoji/svg/1f5a4.webp"
       }
     }
   },
   ":grey-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa76.json"
+        "src": "/emoji/svg/1fa76.webp"
       }
     }
   },
   ":white-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f90d.json"
+        "src": "/emoji/svg/1f90d.webp"
       }
     }
   },
   ":pink-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa77.json"
+        "src": "/emoji/svg/1fa77.webp"
       }
     }
   },
   ":cupid:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f498.json"
+        "src": "/emoji/svg/1f498.webp"
       }
     }
   },
   ":gift-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f49d.json"
+        "src": "/emoji/svg/1f49d.webp"
       }
     }
   },
   ":sparkling-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f496.json"
+        "src": "/emoji/svg/1f496.webp"
       }
     }
   },
   ":heart-grow:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f497.json"
+        "src": "/emoji/svg/1f497.webp"
       }
     }
   },
   ":beating-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f493.json"
+        "src": "/emoji/svg/1f493.webp"
       }
     }
   },
   ":revolving-hearts:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f49e.json"
+        "src": "/emoji/svg/1f49e.webp"
       }
     }
   },
   ":two-hearts:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f495.json"
+        "src": "/emoji/svg/1f495.webp"
       }
     }
   },
   ":love-letter:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f48c.json"
+        "src": "/emoji/svg/1f48c.webp"
       }
     }
   },
   ":heart-box:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f49f.json"
+        "src": "/emoji/svg/1f49f.webp"
       }
     }
   },
   ":heart-exclamation-point:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2763_fe0f.json"
+        "src": "/emoji/svg/2763_fe0f.webp"
       }
     }
   },
   ":bandaged-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2764_fe0f_200d_1fa79.json"
+        "src": "/emoji/svg/2764_fe0f_200d_1fa79.webp"
       }
     }
   },
   ":broken-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f494.json"
+        "src": "/emoji/svg/1f494.webp"
       }
     }
   },
   ":fire-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2764_fe0f_200d_1f525.json"
+        "src": "/emoji/svg/2764_fe0f_200d_1f525.webp"
       }
     }
   },
   ":kiss:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f48b.json"
+        "src": "/emoji/svg/1f48b.webp"
       }
     }
   },
   ":footprints:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f463.json"
+        "src": "/emoji/svg/1f463.webp"
       }
     }
   },
   ":fingerprint:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fac6.json"
+        "src": "/emoji/svg/1fac6.webp"
       }
     }
   },
   ":anatomical-heart:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fac0.json"
+        "src": "/emoji/svg/1fac0.webp"
       }
     }
   },
   ":blood:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa78.json"
+        "src": "/emoji/svg/1fa78.webp"
       }
     }
   },
   ":microbe:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f9a0.json"
+        "src": "/emoji/svg/1f9a0.webp"
       }
     }
   },
   ":eyes:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f440.json"
+        "src": "/emoji/svg/1f440.webp"
       }
     }
   },
   ":eye:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f441_fe0f.json"
+        "src": "/emoji/svg/1f441_fe0f.webp"
       }
     }
   },
   ":biting-lip:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fae6.json"
+        "src": "/emoji/svg/1fae6.webp"
       }
     }
   },
   ":nose:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f443_1f3ff.json"
+        "src": "/emoji/svg/1f443_1f3ff.webp"
       }
     }
   },
   ":ear:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f442_1f3ff.json"
+        "src": "/emoji/svg/1f442_1f3ff.webp"
       }
     }
   },
   ":hearing-aid:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f9bb_1f3ff.json"
+        "src": "/emoji/svg/1f9bb_1f3ff.webp"
       }
     }
   },
   ":foot:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f9b6_1f3ff.json"
+        "src": "/emoji/svg/1f9b6_1f3ff.webp"
       }
     }
   },
   ":leg:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f9b5_1f3ff.json"
+        "src": "/emoji/svg/1f9b5_1f3ff.webp"
       }
     }
   },
   ":leg-mechanical:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f9bf.json"
+        "src": "/emoji/svg/1f9bf.webp"
       }
     }
   },
   ":arm-mechanical:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f9be.json"
+        "src": "/emoji/svg/1f9be.webp"
       }
     }
   },
   ":muscle:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f4aa_1f3ff.json"
+        "src": "/emoji/svg/1f4aa_1f3ff.webp"
       }
     }
   },
   ":clap:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f44f_1f3ff.json"
+        "src": "/emoji/svg/1f44f_1f3ff.webp"
       }
     }
   },
   ":thumbs-up:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f44d_1f3ff.json"
+        "src": "/emoji/svg/1f44d_1f3ff.webp"
       }
     }
   },
   ":thumbs-down:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f44e_1f3ff.json"
+        "src": "/emoji/svg/1f44e_1f3ff.webp"
       }
     }
   },
   ":heart-hands:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faf6_1f3ff.json"
+        "src": "/emoji/svg/1faf6_1f3ff.webp"
       }
     }
   },
   ":raising-hands:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f64c_1f3ff.json"
+        "src": "/emoji/svg/1f64c_1f3ff.webp"
       }
     }
   },
   ":open-hands:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f450_1f3ff.json"
+        "src": "/emoji/svg/1f450_1f3ff.webp"
       }
     }
   },
   ":palms-up:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f932_1f3ff.json"
+        "src": "/emoji/svg/1f932_1f3ff.webp"
       }
     }
   },
   ":fist-rightwards:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f91c_1f3ff.json"
+        "src": "/emoji/svg/1f91c_1f3ff.webp"
       }
     }
   },
   ":fist-leftwards:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f91b_1f3ff.json"
+        "src": "/emoji/svg/1f91b_1f3ff.webp"
       }
     }
   },
   ":raised-fist:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/270a_1f3ff.json"
+        "src": "/emoji/svg/270a_1f3ff.webp"
       }
     }
   },
   ":fist:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f44a_1f3ff.json"
+        "src": "/emoji/svg/1f44a_1f3ff.webp"
       }
     }
   },
   ":palm-down:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faf3_1f3ff.json"
+        "src": "/emoji/svg/1faf3_1f3ff.webp"
       }
     }
   },
   ":palm-up:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faf4_1f3ff.json"
+        "src": "/emoji/svg/1faf4_1f3ff.webp"
       }
     }
   },
   ":rightwards-hand:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faf1_1f3ff.json"
+        "src": "/emoji/svg/1faf1_1f3ff.webp"
       }
     }
   },
   ":leftwards-hand:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faf2_1f3ff.json"
+        "src": "/emoji/svg/1faf2_1f3ff.webp"
       }
     }
   },
   ":push-rightwards:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faf8_1f3ff.json"
+        "src": "/emoji/svg/1faf8_1f3ff.webp"
       }
     }
   },
   ":push-leftwards:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faf7_1f3ff.json"
+        "src": "/emoji/svg/1faf7_1f3ff.webp"
       }
     }
   },
   ":wave:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f44b_1f3ff.json"
+        "src": "/emoji/svg/1f44b_1f3ff.webp"
       }
     }
   },
   ":back-hand:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f91a_1f3ff.json"
+        "src": "/emoji/svg/1f91a_1f3ff.webp"
       }
     }
   },
   ":palm:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f590_fe0f.json"
+        "src": "/emoji/svg/1f590_fe0f.webp"
       }
     }
   },
   ":raised-hand:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/270b_1f3ff.json"
+        "src": "/emoji/svg/270b_1f3ff.webp"
       }
     }
   },
   ":vulcan:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f596_1f3ff.json"
+        "src": "/emoji/svg/1f596_1f3ff.webp"
       }
     }
   },
@@ -2276,2686 +2276,2686 @@ export const EMOJI: Record<string, EmojiEntry> = {
     }
   },
   ":metal:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f918_1f3ff.json"
+        "src": "/emoji/svg/1f918_1f3ff.webp"
       }
     }
   },
   ":victory:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/270c_fe0f.json"
+        "src": "/emoji/svg/270c_fe0f.webp"
       }
     }
   },
   ":crossed-fingers:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f91e_1f3ff.json"
+        "src": "/emoji/svg/1f91e_1f3ff.webp"
       }
     }
   },
   ":hand-with-index-finger-and-thumb-crossed:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faf0_1f3ff.json"
+        "src": "/emoji/svg/1faf0_1f3ff.webp"
       }
     }
   },
   ":call-me-hand:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f919_1f3ff.json"
+        "src": "/emoji/svg/1f919_1f3ff.webp"
       }
     }
   },
   ":pinched-fingers:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f90c_1f3ff.json"
+        "src": "/emoji/svg/1f90c_1f3ff.webp"
       }
     }
   },
   ":pinch:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f90f_1f3ff.json"
+        "src": "/emoji/svg/1f90f_1f3ff.webp"
       }
     }
   },
   ":ok:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f44c_1f3ff.json"
+        "src": "/emoji/svg/1f44c_1f3ff.webp"
       }
     }
   },
   ":pointing:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faf5_1f3ff.json"
+        "src": "/emoji/svg/1faf5_1f3ff.webp"
       }
     }
   },
   ":point-right:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f449_1f3ff.json"
+        "src": "/emoji/svg/1f449_1f3ff.webp"
       }
     }
   },
   ":point-left:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f448_1f3ff.json"
+        "src": "/emoji/svg/1f448_1f3ff.webp"
       }
     }
   },
   ":index-finger:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/261d_fe0f.json"
+        "src": "/emoji/svg/261d_fe0f.webp"
       }
     }
   },
   ":point-up:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f446_1f3ff.json"
+        "src": "/emoji/svg/1f446_1f3ff.webp"
       }
     }
   },
   ":point-down:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f447_1f3ff.json"
+        "src": "/emoji/svg/1f447_1f3ff.webp"
       }
     }
   },
   ":middle-finger:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f595_1f3ff.json"
+        "src": "/emoji/svg/1f595_1f3ff.webp"
       }
     }
   },
   ":writing-hand:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/270d_fe0f.json"
+        "src": "/emoji/svg/270d_fe0f.webp"
       }
     }
   },
   ":selfie:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f933_1f3ff.json"
+        "src": "/emoji/svg/1f933_1f3ff.webp"
       }
     }
   },
   ":folded-hands:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f64f_1f3ff.json"
+        "src": "/emoji/svg/1f64f_1f3ff.webp"
       }
     }
   },
   ":nail-care:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f485_1f3ff.json"
+        "src": "/emoji/svg/1f485_1f3ff.webp"
       }
     }
   },
   ":handshake:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "smileys_and_emotions"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faf1_1f3ff_200d_1faf2_1f3fe.json"
+        "src": "/emoji/svg/1faf1_1f3ff_200d_1faf2_1f3fe.webp"
       }
     }
   },
   ":dancer-woman:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "people"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f483_1f3ff.json"
+        "src": "/emoji/svg/1f483_1f3ff.webp"
       }
     }
   },
   ":bouquet:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f490.json"
+        "src": "/emoji/svg/1f490.webp"
       }
     }
   },
   ":rose:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f339.json"
+        "src": "/emoji/svg/1f339.webp"
       }
     }
   },
   ":wilted-flower:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f940.json"
+        "src": "/emoji/svg/1f940.webp"
       }
     }
   },
   ":fallen-leaf:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f342.json"
+        "src": "/emoji/svg/1f342.webp"
       }
     }
   },
   ":plant:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f331.json"
+        "src": "/emoji/svg/1f331.webp"
       }
     }
   },
   ":leaves:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f343.json"
+        "src": "/emoji/svg/1f343.webp"
       }
     }
   },
   ":luck:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f340.json"
+        "src": "/emoji/svg/1f340.webp"
       }
     }
   },
   ":leafless-tree:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fabe.json"
+        "src": "/emoji/svg/1fabe.webp"
       }
     }
   },
   ":snowflake:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2744_fe0f.json"
+        "src": "/emoji/svg/2744_fe0f.webp"
       }
     }
   },
   ":volcano:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f30b.json"
+        "src": "/emoji/svg/1f30b.webp"
       }
     }
   },
   ":sunrise:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f305.json"
+        "src": "/emoji/svg/1f305.webp"
       }
     }
   },
   ":sunrise-over-mountains:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f304.json"
+        "src": "/emoji/svg/1f304.webp"
       }
     }
   },
   ":rainbow:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f308.json"
+        "src": "/emoji/svg/1f308.webp"
       }
     }
   },
   ":bubbles:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fae7.json"
+        "src": "/emoji/svg/1fae7.webp"
       }
     }
   },
   ":ocean:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f30a.json"
+        "src": "/emoji/svg/1f30a.webp"
       }
     }
   },
   ":wind-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f32c_fe0f.json"
+        "src": "/emoji/svg/1f32c_fe0f.webp"
       }
     }
   },
   ":tornado:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f32a_fe0f.json"
+        "src": "/emoji/svg/1f32a_fe0f.webp"
       }
     }
   },
   ":droplet:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f4a7.json"
+        "src": "/emoji/svg/1f4a7.webp"
       }
     }
   },
   ":rain-cloud:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f327_fe0f.json"
+        "src": "/emoji/svg/1f327_fe0f.webp"
       }
     }
   },
   ":cloud-with-lightning:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f329_fe0f.json"
+        "src": "/emoji/svg/1f329_fe0f.webp"
       }
     }
   },
   ":globe-showing-Europe-Africa:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f30d.json"
+        "src": "/emoji/svg/1f30d.webp"
       }
     }
   },
   ":globe-showing-Americas:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f30e.json"
+        "src": "/emoji/svg/1f30e.webp"
       }
     }
   },
   ":globe-showing-Asia-Australia:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f30f.json"
+        "src": "/emoji/svg/1f30f.webp"
       }
     }
   },
   ":comet:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2604_fe0f.json"
+        "src": "/emoji/svg/2604_fe0f.webp"
       }
     }
   },
   ":cow-face:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f42e.json"
+        "src": "/emoji/svg/1f42e.webp"
       }
     }
   },
   ":unicorn:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f984.json"
+        "src": "/emoji/svg/1f984.webp"
       }
     }
   },
   ":lizard:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f98e.json"
+        "src": "/emoji/svg/1f98e.webp"
       }
     }
   },
   ":dragon:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f409.json"
+        "src": "/emoji/svg/1f409.webp"
       }
     }
   },
   ":t-rex:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f996.json"
+        "src": "/emoji/svg/1f996.webp"
       }
     }
   },
   ":dinosaur:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f995.json"
+        "src": "/emoji/svg/1f995.webp"
       }
     }
   },
   ":turtle:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f422.json"
+        "src": "/emoji/svg/1f422.webp"
       }
     }
   },
   ":crocodile:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f40a.json"
+        "src": "/emoji/svg/1f40a.webp"
       }
     }
   },
   ":snake:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f40d.json"
+        "src": "/emoji/svg/1f40d.webp"
       }
     }
   },
   ":frog:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f438.json"
+        "src": "/emoji/svg/1f438.webp"
       }
     }
   },
   ":rabbit:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f407.json"
+        "src": "/emoji/svg/1f407.webp"
       }
     }
   },
   ":rat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f400.json"
+        "src": "/emoji/svg/1f400.webp"
       }
     }
   },
   ":poodle:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f429.json"
+        "src": "/emoji/svg/1f429.webp"
       }
     }
   },
   ":dog:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f415.json"
+        "src": "/emoji/svg/1f415.webp"
       }
     }
   },
   ":guide-dog:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f9ae.json"
+        "src": "/emoji/svg/1f9ae.webp"
       }
     }
   },
   ":service-dog:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f415_200d_1f9ba.json"
+        "src": "/emoji/svg/1f415_200d_1f9ba.webp"
       }
     }
   },
   ":pig:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f416.json"
+        "src": "/emoji/svg/1f416.webp"
       }
     }
   },
   ":racehorse:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f40e.json"
+        "src": "/emoji/svg/1f40e.webp"
       }
     }
   },
   ":donkey:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1facf.json"
+        "src": "/emoji/svg/1facf.webp"
       }
     }
   },
   ":ox:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f402.json"
+        "src": "/emoji/svg/1f402.webp"
       }
     }
   },
   ":goat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f410.json"
+        "src": "/emoji/svg/1f410.webp"
       }
     }
   },
   ":kangaroo:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f998.json"
+        "src": "/emoji/svg/1f998.webp"
       }
     }
   },
   ":tiger:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f405.json"
+        "src": "/emoji/svg/1f405.webp"
       }
     }
   },
   ":monkey:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f412.json"
+        "src": "/emoji/svg/1f412.webp"
       }
     }
   },
   ":gorilla:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f98d.json"
+        "src": "/emoji/svg/1f98d.webp"
       }
     }
   },
   ":orangutan:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f9a7.json"
+        "src": "/emoji/svg/1f9a7.webp"
       }
     }
   },
   ":chipmunk:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f43f_fe0f.json"
+        "src": "/emoji/svg/1f43f_fe0f.webp"
       }
     }
   },
   ":otter:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f9a6.json"
+        "src": "/emoji/svg/1f9a6.webp"
       }
     }
   },
   ":bat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f987.json"
+        "src": "/emoji/svg/1f987.webp"
       }
     }
   },
   ":bird:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f426.json"
+        "src": "/emoji/svg/1f426.webp"
       }
     }
   },
   ":black-bird:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f426_200d_2b1b.json"
+        "src": "/emoji/svg/1f426_200d_2b1b.webp"
       }
     }
   },
   ":rooster:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f413.json"
+        "src": "/emoji/svg/1f413.webp"
       }
     }
   },
   ":hatching-chick:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f423.json"
+        "src": "/emoji/svg/1f423.webp"
       }
     }
   },
   ":baby-chick:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f424.json"
+        "src": "/emoji/svg/1f424.webp"
       }
     }
   },
   ":hatched-chick:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f425.json"
+        "src": "/emoji/svg/1f425.webp"
       }
     }
   },
   ":eagle:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f985.json"
+        "src": "/emoji/svg/1f985.webp"
       }
     }
   },
   ":owl:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f989.json"
+        "src": "/emoji/svg/1f989.webp"
       }
     }
   },
   ":peace:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f54a_fe0f.json"
+        "src": "/emoji/svg/1f54a_fe0f.webp"
       }
     }
   },
   ":goose:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fabf.json"
+        "src": "/emoji/svg/1fabf.webp"
       }
     }
   },
   ":peacock:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f99a.json"
+        "src": "/emoji/svg/1f99a.webp"
       }
     }
   },
   ":phoenix:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f426_200d_1f525.json"
+        "src": "/emoji/svg/1f426_200d_1f525.webp"
       }
     }
   },
   ":seal:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f9ad.json"
+        "src": "/emoji/svg/1f9ad.webp"
       }
     }
   },
   ":shark:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f988.json"
+        "src": "/emoji/svg/1f988.webp"
       }
     }
   },
   ":dolphin:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f42c.json"
+        "src": "/emoji/svg/1f42c.webp"
       }
     }
   },
   ":whale:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f433.json"
+        "src": "/emoji/svg/1f433.webp"
       }
     }
   },
   ":fish:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f41f.json"
+        "src": "/emoji/svg/1f41f.webp"
       }
     }
   },
   ":blowfish:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f421.json"
+        "src": "/emoji/svg/1f421.webp"
       }
     }
   },
   ":lobster:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f99e.json"
+        "src": "/emoji/svg/1f99e.webp"
       }
     }
   },
   ":crab:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f980.json"
+        "src": "/emoji/svg/1f980.webp"
       }
     }
   },
   ":octopus:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f419.json"
+        "src": "/emoji/svg/1f419.webp"
       }
     }
   },
   ":jellyfish:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fabc.json"
+        "src": "/emoji/svg/1fabc.webp"
       }
     }
   },
   ":scorpion:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f982.json"
+        "src": "/emoji/svg/1f982.webp"
       }
     }
   },
   ":spider:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f577_fe0f.json"
+        "src": "/emoji/svg/1f577_fe0f.webp"
       }
     }
   },
   ":snail:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f40c.json"
+        "src": "/emoji/svg/1f40c.webp"
       }
     }
   },
   ":ant:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f41c.json"
+        "src": "/emoji/svg/1f41c.webp"
       }
     }
   },
   ":mosquito:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f99f.json"
+        "src": "/emoji/svg/1f99f.webp"
       }
     }
   },
   ":cockroach:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fab3.json"
+        "src": "/emoji/svg/1fab3.webp"
       }
     }
   },
   ":fly:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fab0.json"
+        "src": "/emoji/svg/1fab0.webp"
       }
     }
   },
   ":bee:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f41d.json"
+        "src": "/emoji/svg/1f41d.webp"
       }
     }
   },
   ":lady-bug:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f41e.json"
+        "src": "/emoji/svg/1f41e.webp"
       }
     }
   },
   ":butterfly:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f98b.json"
+        "src": "/emoji/svg/1f98b.webp"
       }
     }
   },
   ":bug:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f41b.json"
+        "src": "/emoji/svg/1f41b.webp"
       }
     }
   },
   ":worm:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fab1.json"
+        "src": "/emoji/svg/1fab1.webp"
       }
     }
   },
   ":paw prints:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "animals_and_nature"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f43e.json"
+        "src": "/emoji/svg/1f43e.webp"
       }
     }
   },
   ":tomato:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f345.json"
+        "src": "/emoji/svg/1f345.webp"
       }
     }
   },
   ":root-vegetable:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fadc.json"
+        "src": "/emoji/svg/1fadc.webp"
       }
     }
   },
   ":cooking:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f373.json"
+        "src": "/emoji/svg/1f373.webp"
       }
     }
   },
   ":burrito:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f32f.json"
+        "src": "/emoji/svg/1f32f.webp"
       }
     }
   },
   ":spaghetti:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f35d.json"
+        "src": "/emoji/svg/1f35d.webp"
       }
     }
   },
   ":steaming-bowl:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f35c.json"
+        "src": "/emoji/svg/1f35c.webp"
       }
     }
   },
   ":popcorn:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f37f.json"
+        "src": "/emoji/svg/1f37f.webp"
       }
     }
   },
   ":hot-beverage:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2615.json"
+        "src": "/emoji/svg/2615.webp"
       }
     }
   },
   ":clinking-beer-mugs:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f37b.json"
+        "src": "/emoji/svg/1f37b.webp"
       }
     }
   },
   ":clinking-glasses:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f942.json"
+        "src": "/emoji/svg/1f942.webp"
       }
     }
   },
   ":bottle-with-popping-cork:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f37e.json"
+        "src": "/emoji/svg/1f37e.webp"
       }
     }
   },
   ":wine-glass:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f377.json"
+        "src": "/emoji/svg/1f377.webp"
       }
     }
   },
   ":pour:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fad7.json"
+        "src": "/emoji/svg/1fad7.webp"
       }
     }
   },
   ":tropical-drink:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "food_and_drink"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f379.json"
+        "src": "/emoji/svg/1f379.webp"
       }
     }
   },
   ":construction:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f6a7.json"
+        "src": "/emoji/svg/1f6a7.webp"
       }
     }
   },
   ":police-car-light:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f6a8.json"
+        "src": "/emoji/svg/1f6a8.webp"
       }
     }
   },
   ":bicycle:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f6b2.json"
+        "src": "/emoji/svg/1f6b2.webp"
       }
     }
   },
   ":automobile:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f697.json"
+        "src": "/emoji/svg/1f697.webp"
       }
     }
   },
   ":racing-car:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3ce_fe0f.json"
+        "src": "/emoji/svg/1f3ce_fe0f.webp"
       }
     }
   },
   ":taxi:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f695.json"
+        "src": "/emoji/svg/1f695.webp"
       }
     }
   },
   ":bus:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f68c.json"
+        "src": "/emoji/svg/1f68c.webp"
       }
     }
   },
   ":sailboat:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/26f5.json"
+        "src": "/emoji/svg/26f5.webp"
       }
     }
   },
   ":canoe:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f6f6.json"
+        "src": "/emoji/svg/1f6f6.webp"
       }
     }
   },
   ":flying-saucer:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f6f8.json"
+        "src": "/emoji/svg/1f6f8.webp"
       }
     }
   },
   ":rocket:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f680.json"
+        "src": "/emoji/svg/1f680.webp"
       }
     }
   },
   ":airplane-departure:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f6eb.json"
+        "src": "/emoji/svg/1f6eb.webp"
       }
     }
   },
   ":airplane-arrival:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f6ec.json"
+        "src": "/emoji/svg/1f6ec.webp"
       }
     }
   },
   ":roller-coaster:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3a2.json"
+        "src": "/emoji/svg/1f3a2.webp"
       }
     }
   },
   ":ferris-wheel:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3a1.json"
+        "src": "/emoji/svg/1f3a1.webp"
       }
     }
   },
   ":camping:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "travel_and_places"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3d5_fe0f.json"
+        "src": "/emoji/svg/1f3d5_fe0f.webp"
       }
     }
   },
   ":balloon:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f388.json"
+        "src": "/emoji/svg/1f388.webp"
       }
     }
   },
   ":birthday-cake:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f382.json"
+        "src": "/emoji/svg/1f382.webp"
       }
     }
   },
   ":wrapped-gift:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f381.json"
+        "src": "/emoji/svg/1f381.webp"
       }
     }
   },
   ":fireworks:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f386.json"
+        "src": "/emoji/svg/1f386.webp"
       }
     }
   },
   ":piñata:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa85.json"
+        "src": "/emoji/svg/1fa85.webp"
       }
     }
   },
   ":mirror-ball:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faa9.json"
+        "src": "/emoji/svg/1faa9.webp"
       }
     }
   },
   ":gold-medal:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f947.json"
+        "src": "/emoji/svg/1f947.webp"
       }
     }
   },
   ":silver-medal:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f948.json"
+        "src": "/emoji/svg/1f948.webp"
       }
     }
   },
   ":bronze-medal:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f949.json"
+        "src": "/emoji/svg/1f949.webp"
       }
     }
   },
   ":trophy:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3c6.json"
+        "src": "/emoji/svg/1f3c6.webp"
       }
     }
   },
   ":soccer-ball:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/26bd.json"
+        "src": "/emoji/svg/26bd.webp"
       }
     }
   },
   ":baseball:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/26be.json"
+        "src": "/emoji/svg/26be.webp"
       }
     }
   },
   ":softball:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f94e.json"
+        "src": "/emoji/svg/1f94e.webp"
       }
     }
   },
   ":tennis:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3be.json"
+        "src": "/emoji/svg/1f3be.webp"
       }
     }
   },
   ":badminton:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3f8.json"
+        "src": "/emoji/svg/1f3f8.webp"
       }
     }
   },
   ":lacrosse:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f94d.json"
+        "src": "/emoji/svg/1f94d.webp"
       }
     }
   },
   ":cricket-game:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3cf.json"
+        "src": "/emoji/svg/1f3cf.webp"
       }
     }
   },
   ":field-hockey:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3d1.json"
+        "src": "/emoji/svg/1f3d1.webp"
       }
     }
   },
   ":ice-hockey:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3d2.json"
+        "src": "/emoji/svg/1f3d2.webp"
       }
     }
   },
   ":ice-skate:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/26f8_fe0f.json"
+        "src": "/emoji/svg/26f8_fe0f.webp"
       }
     }
   },
   ":roller-skates:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f6fc.json"
+        "src": "/emoji/svg/1f6fc.webp"
       }
     }
   },
   ":ballet-shoes:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa70.json"
+        "src": "/emoji/svg/1fa70.webp"
       }
     }
   },
   ":skateboard:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f6f9.json"
+        "src": "/emoji/svg/1f6f9.webp"
       }
     }
   },
   ":flag-in-hole:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/26f3.json"
+        "src": "/emoji/svg/26f3.webp"
       }
     }
   },
   ":direct-hit:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3af.json"
+        "src": "/emoji/svg/1f3af.webp"
       }
     }
   },
   ":flying-disc:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f94f.json"
+        "src": "/emoji/svg/1f94f.webp"
       }
     }
   },
   ":boomerang:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa83.json"
+        "src": "/emoji/svg/1fa83.webp"
       }
     }
   },
   ":kite:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa81.json"
+        "src": "/emoji/svg/1fa81.webp"
       }
     }
   },
   ":fishing-pole:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3a3.json"
+        "src": "/emoji/svg/1f3a3.webp"
       }
     }
   },
   ":martial-arts-uniform:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f94b.json"
+        "src": "/emoji/svg/1f94b.webp"
       }
     }
   },
   ":8-ball:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3b1.json"
+        "src": "/emoji/svg/1f3b1.webp"
       }
     }
   },
   ":ping-pong:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3d3.json"
+        "src": "/emoji/svg/1f3d3.webp"
       }
     }
   },
   ":bowling:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3b3.json"
+        "src": "/emoji/svg/1f3b3.webp"
       }
     }
   },
   ":die:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3b2.json"
+        "src": "/emoji/svg/1f3b2.webp"
       }
     }
   },
   ":slot-machine:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3b0.json"
+        "src": "/emoji/svg/1f3b0.webp"
       }
     }
   },
   ":wand:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa84.json"
+        "src": "/emoji/svg/1fa84.webp"
       }
     }
   },
   ":camera-flash:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f4f8.json"
+        "src": "/emoji/svg/1f4f8.webp"
       }
     }
   },
   ":splatter:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fadf.json"
+        "src": "/emoji/svg/1fadf.webp"
       }
     }
   },
   ":saxophone:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3b7.json"
+        "src": "/emoji/svg/1f3b7.webp"
       }
     }
   },
   ":trumpet:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3ba.json"
+        "src": "/emoji/svg/1f3ba.webp"
       }
     }
   },
   ":violin:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3bb.json"
+        "src": "/emoji/svg/1f3bb.webp"
       }
     }
   },
   ":harp:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa89.json"
+        "src": "/emoji/svg/1fa89.webp"
       }
     }
   },
   ":drum:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f941.json"
+        "src": "/emoji/svg/1f941.webp"
       }
     }
   },
   ":maracas:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa87.json"
+        "src": "/emoji/svg/1fa87.webp"
       }
     }
   },
   ":clapper:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "activities_and_events"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3ac.json"
+        "src": "/emoji/svg/1f3ac.webp"
       }
     }
   },
   ":battery-full:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f50b.json"
+        "src": "/emoji/svg/1f50b.webp"
       }
     }
   },
   ":battery-low:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faab.json"
+        "src": "/emoji/svg/1faab.webp"
       }
     }
   },
   ":coin:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa99.json"
+        "src": "/emoji/svg/1fa99.webp"
       }
     }
   },
   ":money-with-wings:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f4b8.json"
+        "src": "/emoji/svg/1f4b8.webp"
       }
     }
   },
   ":gem-stone:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f48e.json"
+        "src": "/emoji/svg/1f48e.webp"
       }
     }
   },
   ":balance-scale:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2696_fe0f.json"
+        "src": "/emoji/svg/2696_fe0f.webp"
       }
     }
   },
   ":light-bulb:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f4a1.json"
+        "src": "/emoji/svg/1f4a1.webp"
       }
     }
   },
   ":graduation-cap:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f393.json"
+        "src": "/emoji/svg/1f393.webp"
       }
     }
   },
   ":ring:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f48d.json"
+        "src": "/emoji/svg/1f48d.webp"
       }
     }
   },
   ":fan:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faad.json"
+        "src": "/emoji/svg/1faad.webp"
       }
     }
   },
   ":umbrella:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2602_fe0f.json"
+        "src": "/emoji/svg/2602_fe0f.webp"
       }
     }
   },
   ":shovel:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1fa8f.json"
+        "src": "/emoji/svg/1fa8f.webp"
       }
     }
   },
   ":gear:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2699_fe0f.json"
+        "src": "/emoji/svg/2699_fe0f.webp"
       }
     }
   },
   ":broken-chain:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/26d3_fe0f_200d_1f4a5.json"
+        "src": "/emoji/svg/26d3_fe0f_200d_1f4a5.webp"
       }
     }
   },
   ":pencil:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/270f_fe0f.json"
+        "src": "/emoji/svg/270f_fe0f.webp"
       }
     }
   },
   ":alarm-clock:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/23f0.json"
+        "src": "/emoji/svg/23f0.webp"
       }
     }
   },
   ":bellhop-bell:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f6ce_fe0f.json"
+        "src": "/emoji/svg/1f6ce_fe0f.webp"
       }
     }
   },
   ":bell:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f514.json"
+        "src": "/emoji/svg/1f514.webp"
       }
     }
   },
   ":crystal-ball:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f52e.json"
+        "src": "/emoji/svg/1f52e.webp"
       }
     }
   },
   ":bomb:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f4a3.json"
+        "src": "/emoji/svg/1f4a3.webp"
       }
     }
   },
   ":mouse-trap:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1faa4.json"
+        "src": "/emoji/svg/1faa4.webp"
       }
     }
   },
   ":locked:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "objects"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f512.json"
+        "src": "/emoji/svg/1f512.webp"
       }
     }
   },
   ":Aries:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2648.json"
+        "src": "/emoji/svg/2648.webp"
       }
     }
   },
   ":Taurus:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2649.json"
+        "src": "/emoji/svg/2649.webp"
       }
     }
   },
   ":Gemini:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/264a.json"
+        "src": "/emoji/svg/264a.webp"
       }
     }
   },
   ":Cancer:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/264b.json"
+        "src": "/emoji/svg/264b.webp"
       }
     }
   },
   ":Leo:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/264c.json"
+        "src": "/emoji/svg/264c.webp"
       }
     }
   },
   ":Virgo:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/264d.json"
+        "src": "/emoji/svg/264d.webp"
       }
     }
   },
   ":Libra:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/264e.json"
+        "src": "/emoji/svg/264e.webp"
       }
     }
   },
   ":Scorpio:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/264f.json"
+        "src": "/emoji/svg/264f.webp"
       }
     }
   },
   ":Sagittarius:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2650.json"
+        "src": "/emoji/svg/2650.webp"
       }
     }
   },
   ":Capricorn:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2651.json"
+        "src": "/emoji/svg/2651.webp"
       }
     }
   },
   ":Aquarius:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2652.json"
+        "src": "/emoji/svg/2652.webp"
       }
     }
   },
   ":Pisces:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2653.json"
+        "src": "/emoji/svg/2653.webp"
       }
     }
   },
   ":Ophiuchus:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/26ce.json"
+        "src": "/emoji/svg/26ce.webp"
       }
     }
   },
   ":exclamation:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2757.json"
+        "src": "/emoji/svg/2757.webp"
       }
     }
   },
   ":question:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2753.json"
+        "src": "/emoji/svg/2753.webp"
       }
     }
   },
   ":exclamation-question-mark:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2049_fe0f.json"
+        "src": "/emoji/svg/2049_fe0f.webp"
       }
     }
   },
   ":exclamation-double:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/203c_fe0f.json"
+        "src": "/emoji/svg/203c_fe0f.webp"
       }
     }
   },
   ":cross-mark:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/274c.json"
+        "src": "/emoji/svg/274c.webp"
       }
     }
   },
   ":sos:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f198.json"
+        "src": "/emoji/svg/1f198.webp"
       }
     }
   },
   ":phone-off:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f4f4.json"
+        "src": "/emoji/svg/1f4f4.webp"
       }
     }
   },
   ":radioactive:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2622_fe0f.json"
+        "src": "/emoji/svg/2622_fe0f.webp"
       }
     }
   },
   ":biohazard:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2623_fe0f.json"
+        "src": "/emoji/svg/2623_fe0f.webp"
       }
     }
   },
   ":warning:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/26a0_fe0f.json"
+        "src": "/emoji/svg/26a0_fe0f.webp"
       }
     }
   },
   ":check-mark:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2705.json"
+        "src": "/emoji/svg/2705.webp"
       }
     }
   },
   ":new:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f195.json"
+        "src": "/emoji/svg/1f195.webp"
       }
     }
   },
   ":free:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f193.json"
+        "src": "/emoji/svg/1f193.webp"
       }
     }
   },
   ":up!:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f199.json"
+        "src": "/emoji/svg/1f199.webp"
       }
     }
   },
   ":cool:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f192.json"
+        "src": "/emoji/svg/1f192.webp"
       }
     }
   },
   ":litter:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f6ae.json"
+        "src": "/emoji/svg/1f6ae.webp"
       }
     }
   },
   ":peace-symbol:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/262e_fe0f.json"
+        "src": "/emoji/svg/262e_fe0f.webp"
       }
     }
   },
   ":yin-yang:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/262f_fe0f.json"
+        "src": "/emoji/svg/262f_fe0f.webp"
       }
     }
   },
   ":infinity:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/267e_fe0f.json"
+        "src": "/emoji/svg/267e_fe0f.webp"
       }
     }
   },
   ":musical-notes:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3b6.json"
+        "src": "/emoji/svg/1f3b6.webp"
       }
     }
   },
   ":plus-sign:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "symbols"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/2795.json"
+        "src": "/emoji/svg/2795.webp"
       }
     }
   },
   ":chequered-flag:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "flags"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3c1.json"
+        "src": "/emoji/svg/1f3c1.webp"
       }
     }
   },
   ":triangular-flag:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "flags"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f6a9.json"
+        "src": "/emoji/svg/1f6a9.webp"
       }
     }
   },
   ":black-flag:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "flags"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3f4.json"
+        "src": "/emoji/svg/1f3f4.webp"
       }
     }
   },
   ":white-flag:": {
-    "kind": "lottie",
+    "kind": "svg",
     "categories": [
       "flags"
     ],
     "variants": {
       "default": {
-        "src": "/emoji/lottie/1f3f3_fe0f.json"
+        "src": "/emoji/svg/1f3f3_fe0f.webp"
       }
     }
   }
