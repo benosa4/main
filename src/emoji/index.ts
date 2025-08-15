@@ -22,4 +22,5 @@ export {
 export type { UsageRow } from './useEmojiUsage';
 export type { Tone, EmojiKind, EmojiEntry } from './emojiMap';
 export type { LottiePlayer, LottiePlayerOptions } from './AdvancedLottiePlayer';
-export type { DecoderConfig, EmojiPickerInitOptions } from './nativeDecoders';
+export type { DecoderConfig } from './nativeDecoders';
+export type { EmojiPickerInitOptions } from './init';

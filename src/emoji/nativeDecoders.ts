@@ -100,26 +100,30 @@ export class NativeDecoderLoader {
   private async loadDecoder(name: 'rlottie' | 'skottie', config: any): Promise<any> {
     try {
       console.log(`Загружаем декодер ${name}...`);
-      
+
+      // Для rlottie необходимо настроить путь к WASM до загрузки скрипта
+      if (name === 'rlottie') {
+        (window as any).Module = {
+          ...(window as any).Module,
+          locateFile: (path: string) => {
+            console.log(`rlottie ищет файл: ${path}`);
+            if (path.endsWith('.wasm')) {
+              console.log(`Перенаправляем WASM на: ${config.wasmUrl}`);
+              return config.wasmUrl;
+            }
+            return path;
+          },
+        };
+      }
+
       // Загружаем скрипт
       await this.loadScript(config.url);
-      
-      // Для rlottie настраиваем Module.locateFile
+
+      // Дополнительная настройка и проверка для rlottie
       if (name === 'rlottie' && (window as any).Module) {
         const module = (window as any).Module;
-        console.log('Настраиваем Module.locateFile для rlottie');
-        
-        module.locateFile = (path: string) => {
-          console.log(`rlottie ищет файл: ${path}`);
-          if (path.endsWith(".wasm")) {
-            console.log(`Перенаправляем WASM на: ${config.wasmUrl}`);
-            return config.wasmUrl;
-          }
-          return path;
-        };
-        
         console.log('Module.locateFile настроен:', module.locateFile);
-        
+
         // Инициализируем runtime
         if (module.onRuntimeInitialized) {
           await new Promise<void>((resolve) => {
@@ -130,12 +134,12 @@ export class NativeDecoderLoader {
             };
           });
         }
-        
+
         // Проверяем WASM файл
         if (config.wasmUrl) {
           await this.loadWasm(config.wasmUrl);
         }
-        
+
         // Ждем инициализации rlottie
         console.log('Ждем инициализации rlottie...');
         await new Promise<void>((resolve) => {
@@ -149,13 +153,13 @@ export class NativeDecoderLoader {
           };
           checkRlottie();
         });
-        
+
         // Создаем wrapper для совместимости
         if ((window as any).Module && (window as any).rlottie) {
           console.log('rlottie Module найден, создаем wrapper');
           const module = (window as any).Module;
           console.log('Доступные Module функции:', Object.keys(module).filter(key => key.startsWith('_')));
-          
+
           // Создаем wrapper объект
           const rlottieWrapper = {
             createAnimation: (data: any, options: any) => {
@@ -330,21 +334,6 @@ export class NativeDecoderLoader {
   /**
    * Загружает Web Worker
    */
-  private async loadWorker(url: string): Promise<void> {
-    try {
-      // Проверяем поддержку Web Workers
-      if (typeof Worker === 'undefined') {
-        throw new Error('Web Workers не поддерживаются');
-      }
-      
-      // Создаем worker для проверки
-      const worker = new Worker(url);
-      worker.terminate(); // Сразу завершаем для проверки
-    } catch (error) {
-      console.warn('Не удалось загрузить Web Worker:', error);
-    }
-  }
-
   /**
    * Проверяет, загружен ли декодер
    */

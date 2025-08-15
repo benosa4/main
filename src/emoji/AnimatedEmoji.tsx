@@ -1,13 +1,11 @@
 import { CSSProperties, useEffect, useRef, useState } from 'react';
 import {
   createPlayer,
-  disposePlayer,
   isSupported as lottieSupported,
 } from '@tamtam-chat/lottie-player';
-import { 
-  createAdvancedLottiePlayer, 
+import {
   checkDecoderSupport,
-  SUPPORT 
+  SUPPORT
 } from './AdvancedLottiePlayer';
 import { resolveEmojiSrc, Tone } from './emojiMap';
 
@@ -41,7 +39,6 @@ export function AnimatedEmoji({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [failed, setFailed] = useState(false);
   const [decoderSupport, setDecoderSupport] = useState<any>(null);
-  const [useAdvanced, setUseAdvanced] = useState(false);
 
   const resolved = resolveEmojiSrc(name, skinTone);
   const kind = resolved?.kind;
@@ -56,11 +53,7 @@ export function AnimatedEmoji({
     if (useAdvancedPlayer) {
       checkDecoderSupport().then(support => {
         setDecoderSupport(support);
-        // Используем расширенный плеер если поддерживаются Web Workers и OffscreenCanvas
-        setUseAdvanced(support.offscreenCanvas && SUPPORT.webWorkers);
       });
-    } else {
-      setUseAdvanced(false);
     }
   }, [useAdvancedPlayer]);
   
