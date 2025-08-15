@@ -1,4 +1,4 @@
 export const emojiConfig = {
   animateSingleEmoji: true,
-  pickerAnimations: true,
+  pickerAnimations: false,
 };

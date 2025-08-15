@@ -2,6 +2,8 @@ import { CSSProperties, useEffect, useRef, useState } from 'react';
 import lottie from 'lottie-web';
 import { resolveEmojiSrc, Tone } from './emojiMap';
 
+const lottieCache = new Map<string, unknown>();
+
 export interface AnimatedEmojiProps {
   name: string;            // shortcode, напр. ':smile:'
   skinTone?: Tone;
@@ -14,7 +16,7 @@ export interface AnimatedEmojiProps {
 
 /**
  * Рендер эмодзи всех видов (svg/webp как img, lottie, sprite).
- * Если animate=false, у Lottie показываем 1-й кадр (goToAndStop(0)).
+ * Для Lottie при animate=false отображаем статичное изображение.
  */
 export function AnimatedEmoji({
   name,
@@ -43,53 +45,56 @@ export function AnimatedEmoji({
 
   // Lottie
   useEffect(() => {
-    if (!divRef.current || kind !== 'lottie' || !src) return;
+    if (!divRef.current || kind !== 'lottie' || !src || !shouldAnimate) return;
 
     let anim: ReturnType<typeof lottie.loadAnimation> | null = null;
+    let cancelled = false;
     setFailed(false);
-    try {
-      anim = lottie.loadAnimation({
-        container: divRef.current,
-        path: src,
-        loop: true,
-        autoplay: shouldAnimate,
-        renderer: 'svg',
-        rendererSettings: {
-          preserveAspectRatio: 'xMidYMid meet',
-          progressiveLoad: true,
-          hideOnTransparent: true,
-        },
-      });
-      if (!shouldAnimate) {
-        const handle = () => anim?.goToAndStop(0, true);
-        anim.addEventListener('DOMLoaded', handle);
+    (async () => {
+      try {
+        const data =
+          lottieCache.get(src) ?? (await fetch(src).then((r) => r.json()));
+        lottieCache.set(src, data);
+        if (cancelled) return;
+        anim = lottie.loadAnimation({
+          container: divRef.current!,
+          animationData: data as object,
+          loop: true,
+          autoplay: true,
+          renderer: 'svg',
+          rendererSettings: {
+            preserveAspectRatio: 'xMidYMid meet',
+            progressiveLoad: true,
+            hideOnTransparent: true,
+          },
+        });
+      } catch {
+        if (!cancelled) setFailed(true);
       }
-    } catch {
-      setFailed(true);
-    }
+    })();
     return () => {
+      cancelled = true;
       anim?.destroy();
     };
   }, [src, kind, shouldAnimate]);
 
   if (!resolved) return null;
 
-  if (kind === 'lottie' && !failed) {
-    return (
-      <div
-        ref={divRef}
-        style={baseStyle}
-        className={className}
-        aria-label={name}
-        onClick={onClick}
-      />
-    );
-  }
-
-  if (kind === 'lottie' && failed) {
+  if (kind === 'lottie') {
     const fallback = src
       ?.replace('/lottie/', '/svg/')
       .replace(/\.json$/, '.webp');
+    if (shouldAnimate && !failed) {
+      return (
+        <div
+          ref={divRef}
+          style={baseStyle}
+          className={className}
+          aria-label={name}
+          onClick={onClick}
+        />
+      );
+    }
     return (
       <img
         src={fallback}

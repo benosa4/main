@@ -52,7 +52,7 @@ export function EmojiPicker({
   persistToneKey,
   categoryOrder,
   gridCellSize = 40,
-  animateInsidePicker = true,
+  animateInsidePicker = false,
   maxRecents = 36,
   overscan = 300,
 }: EmojiPickerProps) {
