@@ -1,8 +1,10 @@
 import { CSSProperties, useEffect, useRef, useState } from 'react';
-import lottie from 'lottie-web';
+import {
+  createPlayer,
+  disposePlayer,
+  isSupported as lottieSupported,
+} from '@tamtam-chat/lottie-player';
 import { resolveEmojiSrc, Tone } from './emojiMap';
-
-const lottieCache = new Map<string, unknown>();
 
 export interface AnimatedEmojiProps {
   name: string;            // shortcode, напр. ':smile:'
@@ -27,7 +29,7 @@ export function AnimatedEmoji({
   className,
   onClick,
 }: AnimatedEmojiProps) {
-  const divRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [failed, setFailed] = useState(false);
 
   const resolved = resolveEmojiSrc(name, skinTone);
@@ -43,40 +45,30 @@ export function AnimatedEmoji({
     boxSizing: 'border-box',
   };
 
-  // Lottie
+  // Lottie через воркер и OffscreenCanvas
   useEffect(() => {
-    if (!divRef.current || kind !== 'lottie' || !src || !shouldAnimate) return;
-
-    let anim: ReturnType<typeof lottie.loadAnimation> | null = null;
-    let cancelled = false;
+    if (!canvasRef.current || kind !== 'lottie' || !src) return;
+    if (!shouldAnimate || !lottieSupported) return;
     setFailed(false);
-    (async () => {
-      try {
-        const data =
-          lottieCache.get(src) ?? (await fetch(src).then((r) => r.json()));
-        lottieCache.set(src, data);
-        if (cancelled) return;
-        anim = lottie.loadAnimation({
-          container: divRef.current!,
-          animationData: data as object,
-          loop: true,
-          autoplay: true,
-          renderer: 'svg',
-          rendererSettings: {
-            preserveAspectRatio: 'xMidYMid meet',
-            progressiveLoad: true,
-            hideOnTransparent: true,
-          },
-        });
-      } catch {
-        if (!cancelled) setFailed(true);
-      }
-    })();
-    return () => {
-      cancelled = true;
-      anim?.destroy();
-    };
-  }, [src, kind, shouldAnimate]);
+    let disposed = false;
+    const canvas = canvasRef.current;
+    try {
+      const player = createPlayer({
+        canvas,
+        movie: src,
+        loop: true,
+        width: size,
+        height: size,
+        id: src,
+      });
+      return () => {
+        disposed = true;
+        disposePlayer(player);
+      };
+    } catch {
+      if (!disposed) setFailed(true);
+    }
+  }, [src, kind, shouldAnimate, size]);
 
   if (!resolved) return null;
 
@@ -84,10 +76,10 @@ export function AnimatedEmoji({
     const fallback = src
       ?.replace('/lottie/', '/svg/')
       .replace(/\.json$/, '.webp');
-    if (shouldAnimate && !failed) {
+    if (shouldAnimate && !failed && lottieSupported) {
       return (
-        <div
-          ref={divRef}
+        <canvas
+          ref={canvasRef}
           style={baseStyle}
           className={className}
           aria-label={name}
@@ -120,7 +112,6 @@ export function AnimatedEmoji({
     };
     return (
       <div
-        ref={divRef}
         style={style}
         className={className}
         aria-label={name}
