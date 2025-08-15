@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, runInAction } from 'mobx';
 import { MenuItem, fetchMenuItems } from './api';
 
 class MenuStore {
@@ -10,7 +10,10 @@ class MenuStore {
   }
 
   async load() {
-    this.items = await fetchMenuItems();
+    const items = await fetchMenuItems();
+    runInAction(() => {
+      this.items = items;
+    });
   }
 
   toggleVersion() {
