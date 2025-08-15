@@ -5,6 +5,8 @@
 
 import { autoLoadDecoders, checkNativeDecoderSupport } from './nativeDecoders';
 import { emojiConfig } from './config';
+import workerUrl from '@tamtam-chat/lottie-player/dist/worker?url';
+import { updateConfig as updateLottiePlayerConfig } from '@tamtam-chat/lottie-player';
 
 // Интерфейс для конфигурации инициализации
 export interface EmojiPickerInitOptions {
@@ -172,6 +174,13 @@ export class EmojiPickerInitializer {
     
     if (this.options.enableWasmDecoder && typeof WebAssembly !== 'undefined') {
       emojiConfig.wasmDecoder = true;
+    }
+
+    // Настраиваем worker для стандартного плеера Lottie
+    try {
+      updateLottiePlayerConfig({ workerUrl });
+    } catch (error) {
+      this.log('warn', 'Не удалось обновить конфигурацию Lottie плеера:', error);
     }
 
     this.log('info', 'Конфигурация обновлена:', emojiConfig);
