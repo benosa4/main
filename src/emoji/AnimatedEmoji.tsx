@@ -5,7 +5,8 @@ import {
 } from '@tamtam-chat/lottie-player';
 import {
   checkDecoderSupport,
-  SUPPORT
+  SUPPORT,
+  createAdvancedLottiePlayer
 } from './AdvancedLottiePlayer';
 import { resolveEmojiSrc, Tone } from './emojiMap';
 
@@ -150,6 +151,25 @@ export function AnimatedEmoji({
               
               if (player) {
                 console.log(`Нативный декодер инициализирован для ${name}`);
+              }
+            } else if (decoderSupport?.wasm) {
+              console.log(`[${name}] Нативные декодеры недоступны, пробуем wasm-декодер через worker`);
+              try {
+                player = await createAdvancedLottiePlayer({
+                  canvas,
+                  movie: src,
+                  loop: true,
+                  autoplay: true,
+                  width: size,
+                  height: size,
+                  id: src,
+                  useOffscreenCanvas: true,
+                  useWasmDecoder: true,
+                });
+                console.log(`WASM плеер инициализирован для ${name}`);
+              } catch (err) {
+                console.warn(`[${name}] WASM плеер не удался:`, err);
+                player = null;
               }
             } else {
               console.log(`[${name}] Нативные декодеры недоступны, используем стандартный плеер`);
