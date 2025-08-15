@@ -119,6 +119,11 @@ export class NativeDecoderLoader {
       // Загружаем скрипт
       await this.loadScript(config.url);
 
+      // Загружаем Worker если указан и поддерживается
+      if (config.workerUrl && checkNativeDecoderSupport().webWorkers) {
+        await this.loadWorker(config.workerUrl);
+      }
+
       // Дополнительная настройка и проверка для rlottie
       if (name === 'rlottie' && (window as any).Module) {
         const module = (window as any).Module;
@@ -334,6 +339,26 @@ export class NativeDecoderLoader {
   /**
    * Загружает Web Worker
    */
+  private async loadWorker(url: string): Promise<void> {
+    try {
+      console.log(`Загружаем worker: ${url}`);
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+      const workerUrl = URL.createObjectURL(blob);
+      const worker = new Worker(workerUrl);
+      // Worker создан успешно, завершаем его работу
+      worker.terminate();
+      URL.revokeObjectURL(workerUrl);
+      console.log('Worker загружен и проверен');
+    } catch (error) {
+      console.warn('Не удалось загрузить worker:', error);
+      // Не выбрасываем ошибку, так как worker может быть не критичен
+    }
+  }
+
   /**
    * Проверяет, загружен ли декодер
    */
