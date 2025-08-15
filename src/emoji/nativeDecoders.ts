@@ -117,13 +117,9 @@ export class NativeDecoderLoader {
         };
       }
 
-      // Загружаем скрипт или ESM модуль
-      if (name === 'rlottie') {
-        const mod = await import(/* @vite-ignore */ config.url);
-        (window as any).rlottie = mod.default || mod;
-      } else {
-        await this.loadScript(config.url);
-      }
+      // Загружаем скрипт. rlottie размещён в `public`, поэтому его нужно подключать
+      // через тег <script>, а не через `import`, иначе Vite не сможет обработать файл
+      await this.loadScript(config.url);
 
       // Загружаем Worker если указан и поддерживается
       if (config.workerUrl && checkNativeDecoderSupport().webWorkers) {
