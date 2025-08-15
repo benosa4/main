@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Конфигурация для загрузки нативных декодеров rlottie и skottie
  * Эти декодеры обеспечивают лучшую производительность по сравнению с JavaScript реализацией
@@ -116,8 +117,13 @@ export class NativeDecoderLoader {
         };
       }
 
-      // Загружаем скрипт
-      await this.loadScript(config.url);
+      // Загружаем скрипт или ESM модуль
+      if (name === 'rlottie') {
+        const mod = await import(/* @vite-ignore */ config.url);
+        (window as any).rlottie = mod.default || mod;
+      } else {
+        await this.loadScript(config.url);
+      }
 
       // Загружаем Worker если указан и поддерживается
       if (config.workerUrl && checkNativeDecoderSupport().webWorkers) {
