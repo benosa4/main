@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../tokens/design_tokens.dart';
+import 'package:voicebook/shared/tokens/design_tokens.dart';
 
 class GlassCard extends StatelessWidget {
   const GlassCard({super.key, required this.child, this.padding = const EdgeInsets.all(24)});

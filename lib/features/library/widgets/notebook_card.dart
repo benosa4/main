@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/models/notebook.dart';
-import '../../../shared/tokens/design_tokens.dart';
+import 'package:voicebook/core/models/notebook.dart';
+import 'package:voicebook/shared/tokens/design_tokens.dart';
 
 class NotebookCard extends StatelessWidget {
   const NotebookCard({super.key, required this.notebook, this.onTap, this.onExport});

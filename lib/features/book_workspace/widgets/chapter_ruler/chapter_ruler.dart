@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/models/models.dart';
-import '../../../../shared/tokens/design_tokens.dart';
+import 'package:voicebook/core/models/models.dart';
+import 'package:voicebook/shared/tokens/design_tokens.dart';
 
 class ChapterRuler extends StatelessWidget {
   const ChapterRuler({

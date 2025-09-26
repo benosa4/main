@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'router.dart';
-import 'theme.dart';
+import 'package:voicebook/app/router.dart';
+import 'package:voicebook/app/theme.dart';
 
 class VoicebookApp extends ConsumerWidget {
   const VoicebookApp({super.key});

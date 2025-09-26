@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/models/models.dart';
-import '../../core/providers/app_providers.dart';
-import '../../core/providers/dictation_controller.dart';
-import '../../shared/tokens/design_tokens.dart';
+import 'package:voicebook/core/models/models.dart';
+import 'package:voicebook/core/providers/app_providers.dart';
+import 'package:voicebook/core/providers/dictation_controller.dart';
+import 'package:voicebook/shared/tokens/design_tokens.dart';
 import 'widgets/chapter_ruler/chapter_ruler.dart';
 import 'widgets/editor/chapter_editor.dart';
 import 'widgets/fab_panel/fab_action_cluster.dart';

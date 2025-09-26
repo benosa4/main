@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../../shared/tokens/design_tokens.dart';
+import 'package:voicebook/shared/tokens/design_tokens.dart';
 
 class FabActionCluster extends StatelessWidget {
   const FabActionCluster({

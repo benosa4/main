@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../api/voicebook_api_service.dart';
-import '../models/models.dart';
-import '../storage/storage_service.dart';
+import 'package:voicebook/core/api/voicebook_api_service.dart';
+import 'package:voicebook/core/models/models.dart';
+import 'package:voicebook/core/storage/storage_service.dart';
 
 class VoicebookStoreState {
   const VoicebookStoreState({

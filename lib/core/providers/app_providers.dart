@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/models.dart';
-import '../services/dictation_service.dart';
-import 'dictation_controller.dart';
-import 'voicebook_store.dart';
-import '../api/voicebook_api_service.dart';
-import '../storage/storage_service.dart';
+import 'package:voicebook/core/api/voicebook_api_service.dart';
+import 'package:voicebook/core/models/models.dart';
+import 'package:voicebook/core/services/dictation_service.dart';
+import 'package:voicebook/core/storage/storage_service.dart';
+import 'package:voicebook/core/providers/dictation_controller.dart';
+import 'package:voicebook/core/providers/voicebook_store.dart';
 
 enum AppPermission { microphone, notifications, files }
 

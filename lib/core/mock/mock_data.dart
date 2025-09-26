@@ -1,4 +1,4 @@
-import '../models/models.dart';
+import 'package:voicebook/core/models/models.dart';
 
 final mockNotebooks = <Notebook>[
   Notebook(

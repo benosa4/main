@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/ui/glass_card.dart';
+import 'package:voicebook/shared/ui/glass_card.dart';
 
 class VoiceTrainingScreen extends ConsumerWidget {
   const VoiceTrainingScreen({super.key});

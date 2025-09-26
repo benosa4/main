@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import '../models/models.dart';
+import 'package:voicebook/core/models/models.dart';
 
 final storageServiceProvider = Provider<StorageService>((ref) {
   return StorageService();
