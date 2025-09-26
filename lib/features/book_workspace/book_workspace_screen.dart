@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/models/models.dart';
 import '../../core/providers/app_providers.dart';
+import '../../core/providers/dictation_controller.dart';
 import '../../shared/tokens/design_tokens.dart';
 import 'widgets/chapter_ruler/chapter_ruler.dart';
 import 'widgets/editor/chapter_editor.dart';
@@ -16,12 +17,20 @@ class BookWorkspaceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<DictationState>(dictationControllerProvider, (previous, next) {
+      if (next.error != null && next.error != previous?.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка надиктовки: ${next.error}')),
+        );
+      }
+    });
     final storeState = ref.watch(voicebookStoreProvider);
     final book = ref.watch(bookProvider(bookId));
     final summaries = ref.watch(chapterSummariesProvider(bookId));
     final chapters = ref.watch(bookChaptersProvider(bookId));
     final currentChapter = ref.watch(currentChapterProvider(bookId));
     final voiceProfile = ref.watch(voiceProfileProvider);
+    final dictationState = ref.watch(dictationControllerProvider);
 
     if (storeState.isLoading) {
       return Scaffold(
@@ -105,11 +114,8 @@ class BookWorkspaceScreen extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.outer),
             child: FabActionCluster(
-              onStartStop: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Режим записи микрофона недоступен в демо.')),
-                );
-              },
+              onToggleRecording: () =>
+                  ref.read(dictationControllerProvider.notifier).toggle(bookId: bookId, chapterId: currentChapter.id),
               onOpenComposer: () => context.pushNamed('aiComposer'),
               onPreviewTts: () {
                 if (voiceProfile.status == VoiceProfileStatus.ready) {
@@ -120,6 +126,8 @@ class BookWorkspaceScreen extends ConsumerWidget {
                   context.pushNamed('voiceTraining');
                 }
               },
+              isRecording: dictationState.isListening,
+              isConnecting: dictationState.isConnecting,
             ),
           ),
         );
@@ -187,11 +195,8 @@ class BookWorkspaceScreen extends ConsumerWidget {
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           floatingActionButton: FabActionCluster(
-            onStartStop: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Режим записи микрофона недоступен в демо.')),
-              );
-            },
+            onToggleRecording: () =>
+                ref.read(dictationControllerProvider.notifier).toggle(bookId: bookId, chapterId: currentChapter.id),
             onOpenComposer: () => context.pushNamed('aiComposer'),
             onPreviewTts: () {
               if (voiceProfile.status == VoiceProfileStatus.ready) {
@@ -202,6 +207,8 @@ class BookWorkspaceScreen extends ConsumerWidget {
                 context.pushNamed('voiceTraining');
               }
             },
+            isRecording: dictationState.isListening,
+            isConnecting: dictationState.isConnecting,
           ),
         );
       },

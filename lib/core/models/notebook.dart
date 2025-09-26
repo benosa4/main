@@ -23,6 +23,35 @@ class Notebook extends Equatable {
   final int words;
   final double audioMinutes;
 
+  factory Notebook.fromJson(Map<String, dynamic> json) {
+    return Notebook(
+      id: json['id'] as String,
+      title: json['title'] as String? ?? '',
+      coverUrl: json['coverUrl'] as String?,
+      tags: [
+        for (final tag in (json['tags'] as List<dynamic>? ?? const []))
+          tag as String,
+      ],
+      updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? DateTime.now(),
+      chapters: json['chapters'] as int? ?? 0,
+      words: json['words'] as int? ?? 0,
+      audioMinutes: (json['audioMinutes'] as num?)?.toDouble() ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'coverUrl': coverUrl,
+      'tags': tags,
+      'updatedAt': updatedAt.toIso8601String(),
+      'chapters': chapters,
+      'words': words,
+      'audioMinutes': audioMinutes,
+    };
+  }
+
   Notebook copyWith({
     String? title,
     String? coverUrl,

@@ -73,13 +73,9 @@ class LibraryScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: 16),
                 FilledButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Фильтры доступны в демо режиме.')),
-                    );
-                  },
+                  onPressed: () => _createNotebook(context, ref),
                   icon: const Icon(Icons.tune),
-                  label: const Text('Фильтры'),
+                  label: const Text('Новая книга'),
                 ),
               ],
             ),
@@ -110,7 +106,7 @@ class LibraryScreen extends ConsumerWidget {
                                 style: Theme.of(context).textTheme.headlineMedium),
                             const SizedBox(height: 16),
                             FilledButton.icon(
-                              onPressed: () => _showDemoDialog(context),
+                              onPressed: () => _createNotebook(context, ref),
                               icon: const Icon(Icons.add),
                               label: const Text('Новая книга'),
                             ),
@@ -145,7 +141,7 @@ class LibraryScreen extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showDemoDialog(context),
+        onPressed: () => _createNotebook(context, ref),
         icon: const Icon(Icons.add),
         label: const Text('Новая книга'),
       ),
@@ -156,19 +152,49 @@ class LibraryScreen extends ConsumerWidget {
     context.pushNamed('book', pathParameters: {'bookId': notebook.id});
   }
 
-  void _showDemoDialog(BuildContext context) {
-    showDialog<void>(
+  Future<void> _createNotebook(BuildContext context, WidgetRef ref) async {
+    final notebook = await _showCreateDialog(context, ref);
+    if (notebook != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Проект «${notebook.title}» создан и сохранён локально.')),
+      );
+      _openNotebook(context, notebook);
+    }
+  }
+
+  Future<Notebook?> _showCreateDialog(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController(text: 'Новый проект');
+    return showDialog<Notebook>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Демо режим'),
-        content: const Text('Создание и импорт книг появится после подключения реального хранилища.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Понятно'),
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Новая книга'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Название проекта'),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Отмена'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final navigator = Navigator.of(dialogContext);
+                final title = controller.text.trim();
+                final notebook = await ref
+                    .read(voicebookStoreProvider.notifier)
+                    .createNotebook(title);
+                if (dialogContext.mounted) {
+                  navigator.pop(notebook);
+                }
+              },
+              child: const Text('Создать'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

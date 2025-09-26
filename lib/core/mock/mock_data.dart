@@ -61,6 +61,8 @@ final mockChapterMap = <String, List<Chapter>>{
           ],
         ),
       ],
+      body:
+          'Станция дышала приглушённым гулом серверов, когда Ина сделала первую запись. Она стояла у микрофона и вслушивалась в туман, пытаясь понять, чей голос спрятан в шорохах эфира.',
     ),
     Chapter(
       id: 'ch-1',
@@ -90,6 +92,8 @@ final mockChapterMap = <String, List<Chapter>>{
           ],
         ),
       ],
+      body:
+          'Туман повис над станцией так плотно, будто сам эфир решил стать стеной. Алекс проверял уровни сигнала, а Ина вслушивалась в шёпоты, которые записались ночью. В них слышалась просьба о помощи.',
     ),
     Chapter(
       id: 'ch-2',
@@ -112,6 +116,8 @@ final mockChapterMap = <String, List<Chapter>>{
           ],
         ),
       ],
+      body:
+          'В архиве запахло озоном и пылью. Стеллажи с плёнками уходили в темноту, а на мониторе оживали забытые голоса. Ина нашла старую кассету и включила её — из динамиков раздался голос, который она слышала в тумане.',
     ),
   ],
   'book-speech-guide': [
@@ -130,6 +136,8 @@ final mockChapterMap = <String, List<Chapter>>{
         SceneNode(id: 'guide-scene-1', title: 'Дыхательная гимнастика'),
         SceneNode(id: 'guide-scene-2', title: 'Артикуляционная зарядка'),
       ],
+      body:
+          'Перед записью прогрейте голос: сделайте три глубоких вдоха, растягивайте губы и язык. Представьте, что каждое слово — это луч света, который вы направляете в микрофон.',
     ),
     Chapter(
       id: 'guide-ch-2',
@@ -146,6 +154,8 @@ final mockChapterMap = <String, List<Chapter>>{
         SceneNode(id: 'guide-scene-3', title: 'Где делать паузы'),
         SceneNode(id: 'guide-scene-4', title: 'Упражнение «Метроном»'),
       ],
+      body:
+          'Паузы — главный инструмент темпа. Представьте метроном и говорите под его такт. Делайте короткие остановки перед важными словами, чтобы слушатель успел представить картину.',
     ),
   ],
   'book-travel-notes': [
@@ -164,6 +174,8 @@ final mockChapterMap = <String, List<Chapter>>{
         SceneNode(id: 'travel-scene-1', title: 'Раннее утро'),
         SceneNode(id: 'travel-scene-2', title: 'Базар и специи'),
       ],
+      body:
+          'Утро в оазисе начиналось с запаха шафрана. Торговцы раскладывали ткани, а я записывал истории путников. Их голоса становились заметками, которые позже сложились в эту главу.',
     ),
   ],
 };
@@ -175,4 +187,18 @@ final mockVoiceProfile = VoiceProfile(
   locale: 'ru-RU',
   status: VoiceProfileStatus.training,
   isConsentGiven: true,
+);
+
+final mockAppSettings = AppSettings(
+  autoPunctuation: true,
+  defaultLanguage: 'ru-RU',
+  fallbackPolicy: 'WS → HTTP → Offline буфер',
+  aiProvider: 'Voicebook AI',
+  dailyTokenLimit: 12000,
+  defaultAiPreset: 'Научно-популярный',
+  usePersonalVoice: false,
+  defaultVoice: 'Night Station v2',
+  syncStrategy: 'cloud',
+  voiceCommandsEnabled: true,
+  voiceCommands: const ['"Новая глава"', '"Начать запись"', '"Перефразируй абзац"'],
 );
