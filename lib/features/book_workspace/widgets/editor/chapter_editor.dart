@@ -40,7 +40,7 @@ class _ChapterEditorState extends State<ChapterEditor> {
           child: GlassCard(
             child: quill.QuillEditor.basic(
               controller: _controller,
-              configurations: const quill.QuillEditorConfigurations(
+              config: const quill.QuillEditorConfig(
                 scrollable: true,
                 expands: true,
               ),

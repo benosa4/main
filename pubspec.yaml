@@ -19,7 +19,6 @@ dependencies:
   flutter_quill: ^11.4.2
   record: ^6.1.1
   just_audio: ^0.10.5
-  flutter_treeview: ^1.0.7
   drag_and_drop_lists: ^0.4.2
   reorderables: ^0.6.0
   hive: ^2.2.3

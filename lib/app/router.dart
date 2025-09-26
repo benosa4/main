@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/ai_composer/ai_composer_drawer.dart';
@@ -14,7 +15,7 @@ import '../features/voice_training/voice_training_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   if (kIsWeb) {
-    GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
+    setUrlStrategy(PathUrlStrategy());
   }
 
   return GoRouter(
