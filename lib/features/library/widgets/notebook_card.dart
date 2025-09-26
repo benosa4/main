@@ -68,10 +68,10 @@ class NotebookCard extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _TagChip(label: '${notebook.chapters} глав'),
-                      _TagChip(label: '${notebook.words ~/ 1000} тыс. слов'),
+                      _TagChip('${notebook.chapters} глав'),
+                      _TagChip('${notebook.words ~/ 1000} тыс. слов'),
                       if (notebook.audioMinutes > 0)
-                        _TagChip(label: '${notebook.audioMinutes.round()} мин аудио'),
+                        _TagChip('${notebook.audioMinutes.round()} мин аудио'),
                       ...notebook.tags.map(_TagChip.new),
                     ],
                   ),
