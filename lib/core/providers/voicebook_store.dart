@@ -40,7 +40,7 @@ class VoicebookStoreState {
     AppSettings? settings,
     String? userId,
     Object? error = const _NoUpdate(),
-    StackTrace? stackTrace = const _NoUpdate(),
+    Object? stackTrace = const _NoUpdate(),
   }) {
     return VoicebookStoreState(
       isLoading: isLoading ?? this.isLoading,
@@ -51,7 +51,7 @@ class VoicebookStoreState {
       settings: settings ?? this.settings,
       userId: userId ?? this.userId,
       error: error is _NoUpdate ? this.error : error,
-      stackTrace: stackTrace is _NoUpdate ? this.stackTrace : stackTrace,
+      stackTrace: stackTrace is _NoUpdate ? this.stackTrace : stackTrace as StackTrace?,
     );
   }
 }

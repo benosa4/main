@@ -18,9 +18,9 @@ class LibraryScreen extends ConsumerWidget {
     final notebooks = ref.watch(notebooksProvider);
 
     if (storeState.isLoading) {
-      return const Scaffold(
-        appBar: AppBar(title: Text('Библиотека')),
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        appBar: AppBar(title: const Text('Библиотека')),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 

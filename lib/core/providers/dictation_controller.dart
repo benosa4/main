@@ -33,8 +33,8 @@ class DictationState {
     String? activeBookId,
     String? activeChapterId,
     List<DictationPhrase>? phrases,
-    String? lastCommittedId = _noUpdate,
-    String? lastCommittedText = _noUpdate,
+    Object? lastCommittedId = _noUpdate,
+    Object? lastCommittedText = _noUpdate,
     Object? error = _noUpdate,
   }) {
     return DictationState(
@@ -43,9 +43,12 @@ class DictationState {
       activeBookId: activeBookId ?? this.activeBookId,
       activeChapterId: activeChapterId ?? this.activeChapterId,
       phrases: phrases ?? this.phrases,
-      lastCommittedId: identical(lastCommittedId, _noUpdate) ? this.lastCommittedId : lastCommittedId,
-      lastCommittedText:
-          identical(lastCommittedText, _noUpdate) ? this.lastCommittedText : lastCommittedText,
+      lastCommittedId: identical(lastCommittedId, _noUpdate)
+          ? this.lastCommittedId
+          : lastCommittedId as String?,
+      lastCommittedText: identical(lastCommittedText, _noUpdate)
+          ? this.lastCommittedText
+          : lastCommittedText as String?,
       error: identical(error, _noUpdate) ? this.error : error,
     );
   }
