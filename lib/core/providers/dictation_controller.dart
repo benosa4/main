@@ -3,8 +3,8 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../services/dictation_service.dart';
-import 'voicebook_store.dart';
+import 'package:voicebook/core/providers/voicebook_store.dart';
+import 'package:voicebook/core/services/dictation_service.dart';
 
 class DictationState {
   const DictationState({

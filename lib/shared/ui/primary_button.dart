@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../tokens/design_tokens.dart';
+import 'package:voicebook/shared/tokens/design_tokens.dart';
 
 class PrimaryButton extends StatelessWidget {
   const PrimaryButton({super.key, required this.label, required this.onPressed, this.icon});

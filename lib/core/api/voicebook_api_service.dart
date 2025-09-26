@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import '../mock/mock_data.dart';
-import '../models/models.dart';
+import 'package:voicebook/core/mock/mock_data.dart';
+import 'package:voicebook/core/models/models.dart';
 
 /// Defines the contract for interacting with the Voicebook backend API.
 ///

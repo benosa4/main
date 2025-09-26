@@ -5,11 +5,11 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/models/models.dart';
-import '../../../../core/providers/app_providers.dart';
-import '../../../../core/providers/dictation_controller.dart';
-import '../../../../shared/tokens/design_tokens.dart';
-import '../../../../shared/ui/glass_card.dart';
+import 'package:voicebook/core/models/models.dart';
+import 'package:voicebook/core/providers/app_providers.dart';
+import 'package:voicebook/core/providers/dictation_controller.dart';
+import 'package:voicebook/shared/tokens/design_tokens.dart';
+import 'package:voicebook/shared/ui/glass_card.dart';
 
 class ChapterEditor extends ConsumerStatefulWidget {
   const ChapterEditor({super.key, required this.chapter});

@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/providers/app_providers.dart';
-import '../features/ai_composer/ai_composer_drawer.dart';
-import '../features/book_workspace/book_workspace_screen.dart';
-import '../features/export/export_screen.dart';
-import '../features/library/library_screen.dart';
-import '../features/onboarding/onboarding_screen.dart';
-import '../features/settings/settings_screen.dart';
-import '../features/structure_mindmap/structure_mindmap_screen.dart';
-import '../features/voice_training/voice_training_screen.dart';
+import 'package:voicebook/core/providers/app_providers.dart';
+import 'package:voicebook/features/ai_composer/ai_composer_drawer.dart';
+import 'package:voicebook/features/book_workspace/book_workspace_screen.dart';
+import 'package:voicebook/features/export/export_screen.dart';
+import 'package:voicebook/features/library/library_screen.dart';
+import 'package:voicebook/features/onboarding/onboarding_screen.dart';
+import 'package:voicebook/features/settings/settings_screen.dart';
+import 'package:voicebook/features/structure_mindmap/structure_mindmap_screen.dart';
+import 'package:voicebook/features/voice_training/voice_training_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../shared/ui/glass_card.dart';
+import 'package:voicebook/shared/ui/glass_card.dart';
 
 class ExportScreen extends StatelessWidget {
   const ExportScreen({super.key, required this.bookId});

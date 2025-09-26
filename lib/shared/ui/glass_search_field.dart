@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../tokens/design_tokens.dart';
+import 'package:voicebook/shared/tokens/design_tokens.dart';
 
 class GlassSearchField extends StatelessWidget {
   const GlassSearchField({
