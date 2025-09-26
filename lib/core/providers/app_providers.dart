@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../mock/mock_data.dart';
 import '../models/models.dart';
+import 'voicebook_store.dart';
+import '../api/voicebook_api_service.dart';
 
 enum AppPermission { microphone, notifications, files }
 
@@ -56,21 +57,20 @@ class PermissionController extends StateNotifier<PermissionState> {
 final permissionsProvider =
     StateNotifierProvider<PermissionController, PermissionState>((ref) => PermissionController());
 
-class LibraryController extends StateNotifier<List<Notebook>> {
-  LibraryController() : super(List.unmodifiable(mockNotebooks));
-}
+final voicebookApiProvider = Provider<VoicebookApiService>((ref) {
+  return const MockVoicebookApiService();
+});
 
-final notebooksProvider =
-    StateNotifierProvider<LibraryController, List<Notebook>>((ref) => LibraryController());
+final voicebookStoreProvider =
+    StateNotifierProvider<VoicebookStore, VoicebookStoreState>((ref) {
+  final api = ref.watch(voicebookApiProvider);
+  return VoicebookStore(api);
+});
 
-Notebook? _findNotebook(List<Notebook> notebooks, String bookId) {
-  for (final notebook in notebooks) {
-    if (notebook.id == bookId) {
-      return notebook;
-    }
-  }
-  return null;
-}
+final notebooksProvider = Provider<List<Notebook>>((ref) {
+  final store = ref.watch(voicebookStoreProvider);
+  return store.notebooks;
+});
 
 Chapter? _findChapter(List<Chapter> chapters, String chapterId) {
   for (final chapter in chapters) {
@@ -82,16 +82,21 @@ Chapter? _findChapter(List<Chapter> chapters, String chapterId) {
 }
 
 final bookProvider = Provider.family<Notebook?, String>((ref, bookId) {
-  final notebooks = ref.watch(notebooksProvider);
-  return _findNotebook(notebooks, bookId);
+  final store = ref.watch(voicebookStoreProvider);
+  return store.findNotebook(bookId);
 });
 
 final bookExistsProvider = Provider.family<bool, String>((ref, bookId) {
-  return ref.watch(bookProvider(bookId)) != null;
+  final store = ref.watch(voicebookStoreProvider);
+  if (store.isLoading) {
+    return true;
+  }
+  return store.findNotebook(bookId) != null;
 });
 
 final bookChaptersProvider = Provider.family<List<Chapter>, String>((ref, bookId) {
-  return List.unmodifiable(mockChapterMap[bookId] ?? const []);
+  final store = ref.watch(voicebookStoreProvider);
+  return store.getChapters(bookId);
 });
 
 final chapterSummariesProvider = Provider.family<List<ChapterSummary>, String>((ref, bookId) {
@@ -133,4 +138,7 @@ final chapterStructureProvider =
   return chapter?.structure ?? const [];
 });
 
-final voiceProfileProvider = StateProvider<VoiceProfile>((ref) => mockVoiceProfile);
+final voiceProfileProvider = Provider<VoiceProfile?>((ref) {
+  final store = ref.watch(voicebookStoreProvider);
+  return store.voiceProfile;
+});

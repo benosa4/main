@@ -14,7 +14,38 @@ class LibraryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final storeState = ref.watch(voicebookStoreProvider);
     final notebooks = ref.watch(notebooksProvider);
+
+    if (storeState.isLoading) {
+      return const Scaffold(
+        appBar: AppBar(title: Text('Библиотека')),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (storeState.hasError) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Библиотека')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.outer),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  'Не удалось загрузить библиотеку. Попробуйте перезапустить приложение.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
