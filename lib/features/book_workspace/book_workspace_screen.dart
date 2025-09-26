@@ -58,11 +58,9 @@ class BookWorkspaceScreen extends ConsumerWidget {
           ),
         );
 
-        final editor = Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.gutter),
-            child: ChapterEditor(chapter: chapter),
-          ),
+        final editor = Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.gutter),
+          child: ChapterEditor(chapter: chapter),
         );
 
         final fabPanel = Align(
@@ -125,7 +123,7 @@ class BookWorkspaceScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ruler,
-                  editor,
+                  Expanded(child: editor),
                   Expanded(
                     child: Stack(
                       children: [
