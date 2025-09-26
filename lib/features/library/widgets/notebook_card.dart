@@ -4,9 +4,11 @@ import '../../../core/models/notebook.dart';
 import '../../../shared/tokens/design_tokens.dart';
 
 class NotebookCard extends StatelessWidget {
-  const NotebookCard({super.key, required this.notebook});
+  const NotebookCard({super.key, required this.notebook, this.onTap, this.onExport});
 
   final Notebook notebook;
+  final VoidCallback? onTap;
+  final VoidCallback? onExport;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +23,7 @@ class NotebookCard extends StatelessWidget {
     );
     return InkWell(
       borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
-      onTap: () {},
+      onTap: onTap,
       child: Ink(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
@@ -53,7 +55,19 @@ class NotebookCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.auto_stories_rounded, color: Colors.white70),
                       const Spacer(),
-                      _NotebookMenu(onSelected: (_) {}),
+                      _NotebookMenu(
+                        onSelected: (value) {
+                          switch (value) {
+                            case 'export':
+                              onExport?.call();
+                              break;
+                            default:
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Действие "$value" недоступно в демо.')),
+                              );
+                          }
+                        },
+                      ),
                     ],
                   ),
                   const Spacer(),
@@ -110,10 +124,10 @@ class _NotebookMenu extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusSmall)),
       onSelected: onSelected,
       itemBuilder: (context) => const [
-        PopupMenuItem(value: 'rename', child: Text('Переименовать')),
-        PopupMenuItem(value: 'duplicate', child: Text('Дублировать')),
-        PopupMenuItem(value: 'export', child: Text('Экспортировать')),
-        PopupMenuItem(value: 'archive', child: Text('Архивировать')),
+        PopupMenuItem(value: 'rename', child: Text('Переименовать')), 
+        PopupMenuItem(value: 'duplicate', child: Text('Дублировать')), 
+        PopupMenuItem(value: 'export', child: Text('Экспортировать')), 
+        PopupMenuItem(value: 'archive', child: Text('Архивировать')), 
       ],
     );
   }

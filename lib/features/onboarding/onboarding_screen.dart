@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/providers/app_providers.dart';
 
 class OnboardingScreen extends ConsumerWidget {
   const OnboardingScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final permissions = ref.watch(permissionsProvider);
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       body: Stack(
@@ -22,10 +27,15 @@ class OnboardingScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
                   Expanded(
                     child: Column(
-                      children: const [
-                        Expanded(child: _HeroCarousel()),
-                        SizedBox(height: 24),
-                        _PermissionRequestRow(),
+                      children: [
+                        const Expanded(child: _HeroCarousel()),
+                        const SizedBox(height: 24),
+                        _PermissionRequestRow(
+                          state: permissions,
+                          onToggle: (permission) {
+                            ref.read(permissionsProvider.notifier).toggle(permission);
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -33,8 +43,15 @@ class OnboardingScreen extends ConsumerWidget {
                   const _LanguageSelector(),
                   const SizedBox(height: 24),
                   _PrimaryCta(
+                    enabled: permissions.allGranted,
                     onPressed: () {
-                      // Permissions and navigation handled in controller.
+                      if (!permissions.allGranted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Разрешите доступ к микрофону, уведомлениям и файлам.')),
+                        );
+                        return;
+                      }
+                      context.go('/library');
                     },
                   ),
                 ],
@@ -250,7 +267,10 @@ class _HeroCarouselState extends State<_HeroCarousel> {
 }
 
 class _PermissionRequestRow extends StatelessWidget {
-  const _PermissionRequestRow();
+  const _PermissionRequestRow({required this.state, required this.onToggle});
+
+  final PermissionState state;
+  final ValueChanged<AppPermission> onToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -258,21 +278,27 @@ class _PermissionRequestRow extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWide = constraints.maxWidth > 720;
-        final cards = const [
+        final cards = [
           _PermissionCard(
             icon: Icons.mic_rounded,
             title: 'Микрофон',
             description: 'Точный захват речи и шумоподавление.',
+            granted: state.microphone,
+            onTap: () => onToggle(AppPermission.microphone),
           ),
           _PermissionCard(
             icon: Icons.notifications_active,
             title: 'Уведомления',
             description: 'Напоминания о записях и экспортных задачах.',
+            granted: state.notifications,
+            onTap: () => onToggle(AppPermission.notifications),
           ),
           _PermissionCard(
             icon: Icons.folder_outlined,
             title: 'Файлы',
             description: 'Хранение черновиков и экспорта офлайн.',
+            granted: state.files,
+            onTap: () => onToggle(AppPermission.files),
           ),
         ];
 
@@ -307,11 +333,15 @@ class _PermissionCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.description,
+    required this.granted,
+    required this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String description;
+  final bool granted;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -322,8 +352,8 @@ class _PermissionCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 24,
-            backgroundColor: Colors.white12,
-            child: Icon(icon, color: Colors.white),
+            backgroundColor: granted ? Colors.green.withOpacity(0.2) : Colors.white12,
+            child: Icon(granted ? Icons.check_circle : icon, color: Colors.white),
           ),
           const SizedBox(height: 16),
           Text(title, style: theme.textTheme.titleLarge?.copyWith(color: Colors.white)),
@@ -334,9 +364,12 @@ class _PermissionCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.white24),
-            onPressed: () {},
-            child: const Text('Разрешить'),
+            style: FilledButton.styleFrom(
+              backgroundColor: granted ? Colors.green : Colors.white24,
+              foregroundColor: granted ? Colors.white : Colors.white,
+            ),
+            onPressed: onTap,
+            child: Text(granted ? 'Разрешено' : 'Разрешить'),
           ),
         ],
       ),
@@ -379,22 +412,23 @@ class _LanguageSelector extends StatelessWidget {
 }
 
 class _PrimaryCta extends StatelessWidget {
-  const _PrimaryCta({required this.onPressed});
+  const _PrimaryCta({required this.onPressed, required this.enabled});
 
   final VoidCallback onPressed;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     return FilledButton.icon(
       style: FilledButton.styleFrom(
-        backgroundColor: Colors.white,
-        foregroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: enabled ? Colors.white : Colors.white24,
+        foregroundColor: enabled ? Theme.of(context).colorScheme.primary : Colors.white54,
         padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
       ),
-      onPressed: onPressed,
+      onPressed: enabled ? onPressed : null,
       icon: const Icon(Icons.play_arrow_rounded),
-      label: const Text('Начать диктовку'),
+      label: Text(enabled ? 'Начать диктовку' : 'Разрешите доступы, чтобы продолжить'),
     );
   }
 }

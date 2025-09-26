@@ -1,43 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/models/models.dart';
+import '../../core/providers/app_providers.dart';
 import '../../shared/tokens/design_tokens.dart';
 import '../../shared/ui/glass_card.dart';
 import '../../shared/ui/glass_search_field.dart';
 import 'widgets/notebook_card.dart';
-
-final notebooksProvider = StateProvider<List<Notebook>>((ref) {
-  return [
-    Notebook(
-      id: '1',
-      title: 'Город из тумана',
-      tags: const ['Фантастика', 'Draft'],
-      updatedAt: DateTime.now(),
-      chapters: 12,
-      words: 45213,
-      audioMinutes: 95,
-    ),
-    Notebook(
-      id: '2',
-      title: 'Практическое руководство по речи',
-      tags: const ['Non-fiction'],
-      updatedAt: DateTime.now().subtract(const Duration(days: 1)),
-      chapters: 8,
-      words: 28340,
-      audioMinutes: 61,
-    ),
-    Notebook(
-      id: '3',
-      title: 'Записки путешественника',
-      tags: const ['Эссе', 'Audio-ready'],
-      updatedAt: DateTime.now().subtract(const Duration(days: 3)),
-      chapters: 15,
-      words: 67201,
-      audioMinutes: 120,
-    ),
-  ];
-});
 
 class LibraryScreen extends ConsumerWidget {
   const LibraryScreen({super.key});
@@ -47,6 +17,16 @@ class LibraryScreen extends ConsumerWidget {
     final notebooks = ref.watch(notebooksProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Библиотека'),
+        actions: [
+          IconButton(
+            tooltip: 'Настройки',
+            onPressed: () => context.pushNamed('settings'),
+            icon: const Icon(Icons.settings_outlined),
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(AppSpacing.outer),
         child: Column(
@@ -62,7 +42,11 @@ class LibraryScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: 16),
                 FilledButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Фильтры доступны в демо режиме.')),
+                    );
+                  },
                   icon: const Icon(Icons.tune),
                   label: const Text('Фильтры'),
                 ),
@@ -95,7 +79,7 @@ class LibraryScreen extends ConsumerWidget {
                                 style: Theme.of(context).textTheme.headlineMedium),
                             const SizedBox(height: 16),
                             FilledButton.icon(
-                              onPressed: () {},
+                              onPressed: () => _showDemoDialog(context),
                               icon: const Icon(Icons.add),
                               label: const Text('Новая книга'),
                             ),
@@ -116,7 +100,11 @@ class LibraryScreen extends ConsumerWidget {
                           itemCount: notebooks.length,
                           itemBuilder: (context, index) {
                             final notebook = notebooks[index];
-                            return NotebookCard(notebook: notebook);
+                            return NotebookCard(
+                              notebook: notebook,
+                              onTap: () => _openNotebook(context, notebook),
+                              onExport: () => context.pushNamed('export', queryParameters: {'bookId': notebook.id}),
+                            );
                           },
                         );
                       },
@@ -126,9 +114,29 @@ class LibraryScreen extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () => _showDemoDialog(context),
         icon: const Icon(Icons.add),
         label: const Text('Новая книга'),
+      ),
+    );
+  }
+
+  void _openNotebook(BuildContext context, Notebook notebook) {
+    context.pushNamed('book', pathParameters: {'bookId': notebook.id});
+  }
+
+  void _showDemoDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Демо режим'),
+        content: const Text('Создание и импорт книг появится после подключения реального хранилища.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Понятно'),
+          ),
+        ],
       ),
     );
   }

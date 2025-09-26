@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/models.dart';
+import '../../core/providers/app_providers.dart';
 import '../../shared/ui/glass_card.dart';
 
-class StructureMindmapScreen extends StatelessWidget {
-  const StructureMindmapScreen({super.key, required this.nodes});
+class StructureMindmapScreen extends ConsumerWidget {
+  const StructureMindmapScreen({super.key, required this.bookId, this.chapterId});
 
-  final List<SceneNode> nodes;
+  final String bookId;
+  final String? chapterId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final fallbackChapterId = ref.watch(currentChapterIdProvider(bookId));
+    final effectiveChapterId = chapterId ?? fallbackChapterId;
+    final chapter = ref.watch(chapterProvider((bookId: bookId, chapterId: effectiveChapterId)));
+    final nodes = ref.watch(chapterStructureProvider((bookId: bookId, chapterId: effectiveChapterId)));
+
     return Dialog(
       insetPadding: const EdgeInsets.all(32),
       child: GlassCard(
@@ -21,8 +29,13 @@ class StructureMindmapScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text('Структура главы', style: Theme.of(context).textTheme.headlineMedium),
-                  const Spacer(),
+                  Expanded(
+                    child: Text(
+                      chapter != null ? 'Структура: ${chapter.title}' : 'Структура главы',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                   IconButton(onPressed: () {}, icon: const Icon(Icons.help_outline)),
                 ],
               ),
@@ -65,19 +78,30 @@ class StructureMindmapScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: ListView(
-                    children: nodes
-                        .map(
-                          (node) => _MindmapNode(
-                            node: node,
-                            depth: 0,
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ),
+                child: nodes.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(Icons.fork_right, size: 48),
+                            SizedBox(height: 12),
+                            Text('Структура ещё не заполнена.'),
+                          ],
+                        ),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: ListView(
+                          children: nodes
+                              .map(
+                                (node) => _MindmapNode(
+                                  node: node,
+                                  depth: 0,
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
               ),
               const SizedBox(height: 16),
               Row(

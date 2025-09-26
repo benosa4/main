@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/models/models.dart';
 import '../../../../shared/tokens/design_tokens.dart';
@@ -130,7 +131,13 @@ class _ChapterEditorState extends State<ChapterEditor> {
                   _MetaChip(label: 'ЦА: ${widget.chapter.meta['audience'] ?? '—'}'),
                   _StatusBadge(status: widget.chapter.status),
                   OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      GoRouter.of(context).pushNamed(
+                        'mindmap',
+                        pathParameters: {'bookId': widget.chapter.bookId},
+                        queryParameters: {'chapterId': widget.chapter.id},
+                      );
+                    },
                     icon: const Icon(Icons.account_tree_outlined),
                     label: const Text('Структура'),
                   ),
@@ -166,7 +173,13 @@ class _ChapterEditorState extends State<ChapterEditor> {
               Positioned(
                 top: 24,
                 right: 24,
-                child: _AiHintCard(onAction: (action) {}),
+                child: _AiHintCard(
+                  onAction: (action) {
+                    if (action == 'expand' || action == 'rephrase' || action == 'simplify') {
+                      GoRouter.of(context).pushNamed('aiComposer');
+                    }
+                  },
+                ),
               ),
             ],
           ),

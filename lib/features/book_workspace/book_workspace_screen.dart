@@ -1,52 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/models/models.dart';
+import '../../core/providers/app_providers.dart';
 import '../../shared/tokens/design_tokens.dart';
 import 'widgets/chapter_ruler/chapter_ruler.dart';
 import 'widgets/editor/chapter_editor.dart';
 import 'widgets/fab_panel/fab_action_cluster.dart';
-
-final _demoChapters = [
-  Chapter(
-    id: 'ch1',
-    bookId: 'book1',
-    title: 'Пролог: Ночная станция',
-    subtitle: 'Как всё началось',
-    status: ChapterStatus.edit,
-    meta: {'genre': 'Sci-fi', 'audience': '16+', 'wordCount': '3720'},
-  ),
-  Chapter(
-    id: 'ch2',
-    bookId: 'book1',
-    title: 'Глава 1. Сигналы в тумане',
-    subtitle: 'Первые записи',
-    status: ChapterStatus.draft,
-    meta: {'genre': 'Sci-fi', 'audience': '16+', 'wordCount': '2980'},
-  ),
-  Chapter(
-    id: 'ch3',
-    bookId: 'book1',
-    title: 'Глава 2. Архив воспоминаний',
-    subtitle: 'Шёпоты железа',
-    status: ChapterStatus.draft,
-    meta: {'genre': 'Sci-fi', 'audience': '16+', 'wordCount': '4120'},
-  ),
-];
-
-final chapterSummariesProvider = StateProvider<List<ChapterSummary>>((ref) {
-  return List.generate(_demoChapters.length, (index) {
-    final chapter = _demoChapters[index];
-    return ChapterSummary(
-      id: chapter.id,
-      title: chapter.title,
-      order: index,
-      wordCount: 3500 + index * 620,
-    );
-  });
-});
-
-final currentChapterProvider = StateProvider<Chapter>((ref) => _demoChapters.first);
 
 class BookWorkspaceScreen extends ConsumerWidget {
   const BookWorkspaceScreen({super.key, required this.bookId});
@@ -55,8 +16,21 @@ class BookWorkspaceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final summaries = ref.watch(chapterSummariesProvider);
-    final chapter = ref.watch(currentChapterProvider);
+    final book = ref.watch(bookProvider(bookId));
+    final summaries = ref.watch(chapterSummariesProvider(bookId));
+    final chapter = ref.watch(currentChapterProvider(bookId));
+    final voiceProfile = ref.watch(voiceProfileProvider);
+
+    if (book == null || chapter == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Рабочее пространство')),
+        body: const Center(
+          child: Text('Книга недоступна в демо данных. Вернитесь в библиотеку.'),
+        ),
+      );
+    }
+
+    final chapters = ref.watch(bookChaptersProvider(bookId));
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -69,20 +43,17 @@ class BookWorkspaceScreen extends ConsumerWidget {
             chapters: summaries,
             activeChapterId: chapter.id,
             onSelect: (chapterId) {
-              final next = _demoChapters.firstWhere((element) => element.id == chapterId);
-              ref.read(currentChapterProvider.notifier).state = next;
+              ref.read(currentChapterIdProvider(bookId).notifier).state = chapterId;
             },
-            onAdd: () {},
+            onAdd: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Добавление новых глав включится в полной версии.')),
+              );
+            },
             onReorder: (oldIndex, newIndex) {
-              final notifier = ref.read(chapterSummariesProvider.notifier);
-              final list = [...notifier.state];
-              if (newIndex > oldIndex) newIndex -= 1;
-              final item = list.removeAt(oldIndex);
-              list.insert(newIndex, item.copyWith(order: newIndex));
-              notifier.state = [
-                for (var i = 0; i < list.length; i++)
-                  list[i].copyWith(order: i),
-              ];
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Перестановка глав сохранится при подключении хранилища.')),
+              );
             },
           ),
         );
@@ -99,15 +70,56 @@ class BookWorkspaceScreen extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.outer),
             child: FabActionCluster(
-              onStartStop: () {},
-              onOpenComposer: () {},
-              onPreviewTts: () {},
+              onStartStop: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Режим записи микрофона недоступен в демо.')),
+                );
+              },
+              onOpenComposer: () => context.pushNamed('aiComposer'),
+              onPreviewTts: () {
+                if (voiceProfile.status == VoiceProfileStatus.ready) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Готовим предпрослушку голосом ${voiceProfile.name}...')),
+                  );
+                } else {
+                  context.pushNamed('voiceTraining');
+                }
+              },
             ),
           ),
         );
 
+        final appBar = AppBar(
+          titleSpacing: 16,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(book.title),
+              if (chapters.isNotEmpty)
+                Text(
+                  chapter.title,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  overflow: TextOverflow.ellipsis,
+                ),
+            ],
+          ),
+          actions: [
+            IconButton(
+              tooltip: 'Экспорт',
+              onPressed: () => context.pushNamed('export', queryParameters: {'bookId': bookId}),
+              icon: const Icon(Icons.ios_share_outlined),
+            ),
+            IconButton(
+              tooltip: 'Настройки',
+              onPressed: () => context.pushNamed('settings'),
+              icon: const Icon(Icons.settings_outlined),
+            ),
+          ],
+        );
+
         if (isDesktop) {
           return Scaffold(
+            appBar: appBar,
             body: SafeArea(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -129,6 +141,7 @@ class BookWorkspaceScreen extends ConsumerWidget {
         }
 
         return Scaffold(
+          appBar: appBar,
           body: SafeArea(
             child: Column(
               children: [
@@ -139,9 +152,21 @@ class BookWorkspaceScreen extends ConsumerWidget {
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           floatingActionButton: FabActionCluster(
-            onStartStop: () {},
-            onOpenComposer: () {},
-            onPreviewTts: () {},
+            onStartStop: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Режим записи микрофона недоступен в демо.')),
+              );
+            },
+            onOpenComposer: () => context.pushNamed('aiComposer'),
+            onPreviewTts: () {
+              if (voiceProfile.status == VoiceProfileStatus.ready) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Готовим предпрослушку голосом ${voiceProfile.name}...')),
+                );
+              } else {
+                context.pushNamed('voiceTraining');
+              }
+            },
           ),
         );
       },
