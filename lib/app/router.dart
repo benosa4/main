@@ -1,7 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/providers/app_providers.dart';
@@ -17,10 +15,6 @@ import '../features/voice_training/voice_training_screen.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  if (kIsWeb) {
-    setUrlStrategy(PathUrlStrategy());
-  }
-
   final permissions = ref.watch(permissionsProvider);
 
   return GoRouter(
