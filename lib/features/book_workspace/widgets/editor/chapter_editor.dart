@@ -77,6 +77,10 @@ class _ChapterEditorState extends State<ChapterEditor> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final editorTextStyle = (theme.textTheme.bodyMedium ?? const TextStyle()).copyWith(
+      color: (theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -157,13 +161,16 @@ class _ChapterEditorState extends State<ChapterEditor> {
                     _EditorToolbar(onCommand: (command) {}),
                     const Divider(height: 1),
                     Expanded(
-                      child: quill.QuillEditor.basic(
-                        controller: _controller,
-                        focusNode: _editorFocusNode,
-                        scrollController: _scrollController,
-                        config: const quill.QuillEditorConfig(
-                          expands: true,
-                          placeholder: 'Начните диктовать или печатать...',
+                      child: DefaultTextStyle.merge(
+                        style: editorTextStyle,
+                        child: quill.QuillEditor.basic(
+                          controller: _controller,
+                          focusNode: _editorFocusNode,
+                          scrollController: _scrollController,
+                          config: const quill.QuillEditorConfig(
+                            expands: true,
+                            placeholder: 'Начните диктовать или печатать...',
+                          ),
                         ),
                       ),
                     ),
