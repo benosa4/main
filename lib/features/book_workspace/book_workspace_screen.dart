@@ -16,12 +16,51 @@ class BookWorkspaceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final storeState = ref.watch(voicebookStoreProvider);
     final book = ref.watch(bookProvider(bookId));
     final summaries = ref.watch(chapterSummariesProvider(bookId));
-    final chapter = ref.watch(currentChapterProvider(bookId));
+    final chapters = ref.watch(bookChaptersProvider(bookId));
+    final currentChapter = ref.watch(currentChapterProvider(bookId));
     final voiceProfile = ref.watch(voiceProfileProvider);
 
-    if (book == null || chapter == null) {
+    if (storeState.isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Рабочее пространство')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (storeState.hasError) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Рабочее пространство')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.outer),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  'Не удалось загрузить книгу. Вернитесь в библиотеку и попробуйте снова.',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (chapters.isNotEmpty && (currentChapter == null ||
+        !chapters.any((chapter) => chapter.id == currentChapter.id))) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(currentChapterIdProvider(bookId).notifier).state = chapters.first.id;
+      });
+    }
+
+    if (book == null || currentChapter == null || voiceProfile == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Рабочее пространство')),
         body: const Center(
@@ -29,8 +68,6 @@ class BookWorkspaceScreen extends ConsumerWidget {
         ),
       );
     }
-
-    final chapters = ref.watch(bookChaptersProvider(bookId));
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -41,7 +78,7 @@ class BookWorkspaceScreen extends ConsumerWidget {
           width: isDesktop ? 104 : 84,
           child: ChapterRuler(
             chapters: summaries,
-            activeChapterId: chapter.id,
+            activeChapterId: currentChapter.id,
             onSelect: (chapterId) {
               ref.read(currentChapterIdProvider(bookId).notifier).state = chapterId;
             },
@@ -60,7 +97,7 @@ class BookWorkspaceScreen extends ConsumerWidget {
 
         final editor = Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.gutter),
-          child: ChapterEditor(chapter: chapter),
+          child: ChapterEditor(chapter: currentChapter),
         );
 
         final fabPanel = Align(
@@ -95,7 +132,7 @@ class BookWorkspaceScreen extends ConsumerWidget {
               Text(book.title),
               if (chapters.isNotEmpty)
                 Text(
-                  chapter.title,
+                  currentChapter.title,
                   style: Theme.of(context).textTheme.bodyMedium,
                   overflow: TextOverflow.ellipsis,
                 ),
