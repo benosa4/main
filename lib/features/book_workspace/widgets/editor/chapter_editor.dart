@@ -72,7 +72,7 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
     _titleController.dispose();
     _subtitleController.dispose();
     _saveTimer?.cancel();
-    unawaited(_dictationSubscription.close());
+    _dictationSubscription.close();
     super.dispose();
   }
 
