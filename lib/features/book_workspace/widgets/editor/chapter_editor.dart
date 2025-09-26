@@ -154,7 +154,7 @@ class _ChapterEditorState extends State<ChapterEditor> {
                         controller: _controller,
                         focusNode: _editorFocusNode,
                         scrollController: _scrollController,
-                        configurations: const quill.QuillEditorConfigurations(
+                        config: const quill.QuillEditorConfig(
                           expands: true,
                           placeholder: 'Начните диктовать или печатать...',
                         ),

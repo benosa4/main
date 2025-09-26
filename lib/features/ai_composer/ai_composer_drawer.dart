@@ -91,7 +91,7 @@ class _AiComposerDrawerState extends State<AiComposerDrawer> {
                   ),
                   FilledButton.icon(
                     onPressed: () {},
-                    icon: const Icon(Icons.sparkles),
+                    icon: const Icon(Icons.auto_awesome_outlined),
                     label: const Text('Сделать художественнее'),
                   ),
                 ],
