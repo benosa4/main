@@ -186,17 +186,53 @@ class _MockWebSocketChannel implements WebSocketChannel {
   final StreamChannelController<dynamic> _controller;
   WebSocketSink? _sink;
 
-  @override
-  Stream<dynamic> get stream => _controller.foreign.stream;
+  StreamChannel<dynamic> get _channel => _controller.foreign;
 
   @override
-  WebSocketSink get sink => _sink ??= _MockWebSocketSink(_controller.foreign.sink);
+  Stream<dynamic> get stream => _channel.stream;
+
+  @override
+  WebSocketSink get sink => _sink ??= _MockWebSocketSink(_channel.sink);
 
   @override
   Future<void> get ready => Future<void>.value();
 
   @override
   String? get protocol => null;
+
+  @override
+  StreamChannel<S> cast<S>() => _channel.cast<S>();
+
+  @override
+  StreamChannel<dynamic> changeSink(
+    StreamSink<dynamic> Function(StreamSink<dynamic>) change,
+  ) =>
+      _channel.changeSink(change);
+
+  @override
+  StreamChannel<dynamic> changeStream(
+    Stream<dynamic> Function(Stream<dynamic>) change,
+  ) =>
+      _channel.changeStream(change);
+
+  @override
+  void pipe(StreamChannel<dynamic> other) => _channel.pipe(other);
+
+  @override
+  StreamChannel<S> transform<S>(StreamChannelTransformer<S, dynamic> transformer) =>
+      _channel.transform(transformer);
+
+  @override
+  StreamChannel<dynamic> transformSink(
+    StreamSinkTransformer<dynamic, dynamic> transformer,
+  ) =>
+      _channel.transformSink(transformer);
+
+  @override
+  StreamChannel<dynamic> transformStream(
+    StreamTransformer<dynamic, dynamic> transformer,
+  ) =>
+      _channel.transformStream(transformer);
 
   @override
   int? get closeCode => null;
