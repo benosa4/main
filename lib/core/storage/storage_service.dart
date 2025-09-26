@@ -23,7 +23,7 @@ class StorageService {
 
   bool _initialized = false;
   late Box<Map> _notebooksBox;
-  late Box<Map> _chaptersBox;
+  late Box<List> _chaptersBox;
   late Box<Map> _settingsBox;
   late Box<Map> _voiceProfileBox;
   late Box _appBox;
@@ -35,7 +35,7 @@ class StorageService {
 
     if (!kIsWeb && Hive.isBoxOpen(_notebooksBoxKey)) {
       _notebooksBox = Hive.box<Map>(_notebooksBoxKey);
-      _chaptersBox = Hive.box<Map>(_chaptersBoxKey);
+      _chaptersBox = Hive.box<List>(_chaptersBoxKey);
       _settingsBox = Hive.box<Map>(_settingsBoxKey);
       _voiceProfileBox = Hive.box<Map>(_voiceProfileBoxKey);
       _appBox = Hive.box(_appBoxKey);
@@ -45,7 +45,7 @@ class StorageService {
 
     await Hive.initFlutter();
     _notebooksBox = await Hive.openBox<Map>(_notebooksBoxKey);
-    _chaptersBox = await Hive.openBox<Map>(_chaptersBoxKey);
+    _chaptersBox = await Hive.openBox<List>(_chaptersBoxKey);
     _settingsBox = await Hive.openBox<Map>(_settingsBoxKey);
     _voiceProfileBox = await Hive.openBox<Map>(_voiceProfileBoxKey);
     _appBox = await Hive.openBox<dynamic>(_appBoxKey);

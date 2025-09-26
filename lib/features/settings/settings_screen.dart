@@ -12,9 +12,9 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsProvider);
     if (settings == null) {
-      return const Scaffold(
-        appBar: AppBar(title: Text('Настройки')),
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        appBar: AppBar(title: const Text('Настройки')),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 

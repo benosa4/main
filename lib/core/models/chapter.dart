@@ -46,7 +46,7 @@ class Chapter extends Equatable {
         orElse: () => ChapterStatus.draft,
       ),
       meta: {
-        for (final entry in (json['meta'] as Map<String, dynamic>? ?? const {}))
+        for (final entry in (json['meta'] as Map<String, dynamic>? ?? const <String, dynamic>{}))
           entry.key: entry.value as String?,
       },
       structure: [

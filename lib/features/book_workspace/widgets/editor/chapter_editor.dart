@@ -26,7 +26,6 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
   late final FocusNode _editorFocusNode;
   late final TextEditingController _titleController;
   late final TextEditingController _subtitleController;
-  ProviderSubscription<DictationState>? _dictationSubscription;
   Timer? _saveTimer;
   bool _saving = false;
   _AiActionState _aiActionState = _AiActionState.idle;
@@ -40,7 +39,7 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
     _editorFocusNode = FocusNode();
     _titleController = TextEditingController(text: widget.chapter.title);
     _subtitleController = TextEditingController(text: widget.chapter.subtitle ?? '');
-    _dictationSubscription = ref.listen<DictationState>(
+    ref.listen<DictationState>(
       dictationControllerProvider,
       (previous, next) {
         if (next.lastCommittedText != null && next.lastCommittedText!.trim().isNotEmpty) {
@@ -65,7 +64,6 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
 
   @override
   void dispose() {
-    _dictationSubscription?.close();
     _controller.removeListener(_scheduleAutosave);
     _controller.dispose();
     _scrollController.dispose();

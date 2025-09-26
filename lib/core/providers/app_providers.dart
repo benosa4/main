@@ -61,7 +61,7 @@ final permissionsProvider =
     StateNotifierProvider<PermissionController, PermissionState>((ref) => PermissionController());
 
 final voicebookApiProvider = Provider<VoicebookApiService>((ref) {
-  return const MockVoicebookApiService();
+  return MockVoicebookApiService();
 });
 
 final voicebookStoreProvider =

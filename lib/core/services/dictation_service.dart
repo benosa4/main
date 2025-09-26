@@ -180,19 +180,32 @@ class MockDictationGateway implements DictationGateway {
   }
 }
 
-class _MockWebSocketChannel extends WebSocketChannel {
+class _MockWebSocketChannel implements WebSocketChannel {
   _MockWebSocketChannel(this._controller);
 
   final StreamChannelController<dynamic> _controller;
+  WebSocketSink? _sink;
 
   @override
   Stream<dynamic> get stream => _controller.foreign.stream;
 
   @override
-  WebSocketSink get sink => _MockWebSocketSink(_controller.foreign.sink);
+  WebSocketSink get sink => _sink ??= _MockWebSocketSink(_controller.foreign.sink);
+
+  @override
+  Future<void> get ready => Future<void>.value();
+
+  @override
+  String? get protocol => null;
+
+  @override
+  int? get closeCode => null;
+
+  @override
+  String? get closeReason => null;
 }
 
-class _MockWebSocketSink extends WebSocketSink {
+class _MockWebSocketSink implements WebSocketSink {
   _MockWebSocketSink(this._inner);
 
   final StreamSink<dynamic> _inner;
@@ -202,6 +215,9 @@ class _MockWebSocketSink extends WebSocketSink {
 
   @override
   void addError(Object error, [StackTrace? stackTrace]) => _inner.addError(error, stackTrace);
+
+  @override
+  Future<void> addStream(Stream<dynamic> stream) => _inner.addStream(stream);
 
   @override
   Future<void> close([int? closeCode, String? closeReason]) => _inner.close();
