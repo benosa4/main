@@ -1,8 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/models.dart';
+import '../services/dictation_service.dart';
+import 'dictation_controller.dart';
 import 'voicebook_store.dart';
 import '../api/voicebook_api_service.dart';
+import '../storage/storage_service.dart';
 
 enum AppPermission { microphone, notifications, files }
 
@@ -64,7 +67,8 @@ final voicebookApiProvider = Provider<VoicebookApiService>((ref) {
 final voicebookStoreProvider =
     StateNotifierProvider<VoicebookStore, VoicebookStoreState>((ref) {
   final api = ref.watch(voicebookApiProvider);
-  return VoicebookStore(api);
+  final storage = ref.watch(storageServiceProvider);
+  return VoicebookStore(api, storage);
 });
 
 final notebooksProvider = Provider<List<Notebook>>((ref) {
@@ -141,4 +145,16 @@ final chapterStructureProvider =
 final voiceProfileProvider = Provider<VoiceProfile?>((ref) {
   final store = ref.watch(voicebookStoreProvider);
   return store.voiceProfile;
+});
+
+final appSettingsProvider = Provider<AppSettings?>((ref) {
+  final store = ref.watch(voicebookStoreProvider);
+  return store.settings;
+});
+
+final dictationControllerProvider =
+    StateNotifierProvider<DictationController, DictationState>((ref) {
+  final gateway = ref.watch(dictationGatewayProvider);
+  final store = ref.watch(voicebookStoreProvider.notifier);
+  return DictationController(gateway, store);
 });

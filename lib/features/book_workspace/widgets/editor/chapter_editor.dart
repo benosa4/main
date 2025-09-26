@@ -2,29 +2,35 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/models/models.dart';
+import '../../../../core/providers/app_providers.dart';
+import '../../../../core/providers/dictation_controller.dart';
 import '../../../../shared/tokens/design_tokens.dart';
 import '../../../../shared/ui/glass_card.dart';
 
-class ChapterEditor extends StatefulWidget {
+class ChapterEditor extends ConsumerStatefulWidget {
   const ChapterEditor({super.key, required this.chapter});
 
   final Chapter chapter;
 
   @override
-  State<ChapterEditor> createState() => _ChapterEditorState();
+  ConsumerState<ChapterEditor> createState() => _ChapterEditorState();
 }
 
-class _ChapterEditorState extends State<ChapterEditor> {
+class _ChapterEditorState extends ConsumerState<ChapterEditor> {
   late quill.QuillController _controller;
   late final ScrollController _scrollController;
   late final FocusNode _editorFocusNode;
-  late TextEditingController _titleController;
-  late TextEditingController _subtitleController;
+  late final TextEditingController _titleController;
+  late final TextEditingController _subtitleController;
+  ProviderSubscription<DictationState>? _dictationSubscription;
   Timer? _saveTimer;
   bool _saving = false;
+  _AiActionState _aiActionState = _AiActionState.idle;
+  String _aiStatusMessage = '';
 
   @override
   void initState() {
@@ -34,6 +40,15 @@ class _ChapterEditorState extends State<ChapterEditor> {
     _editorFocusNode = FocusNode();
     _titleController = TextEditingController(text: widget.chapter.title);
     _subtitleController = TextEditingController(text: widget.chapter.subtitle ?? '');
+    _dictationSubscription = ref.listen<DictationState>(
+      dictationControllerProvider,
+      (previous, next) {
+        if (next.lastCommittedText != null && next.lastCommittedText!.trim().isNotEmpty) {
+          _appendDictation(next.lastCommittedText!);
+          ref.read(dictationControllerProvider.notifier).acknowledgeCommit();
+        }
+      },
+    );
   }
 
   @override
@@ -50,6 +65,8 @@ class _ChapterEditorState extends State<ChapterEditor> {
 
   @override
   void dispose() {
+    _dictationSubscription?.close();
+    _controller.removeListener(_scheduleAutosave);
     _controller.dispose();
     _scrollController.dispose();
     _editorFocusNode.dispose();
@@ -60,23 +77,97 @@ class _ChapterEditorState extends State<ChapterEditor> {
   }
 
   void _initController() {
-    _controller = quill.QuillController.basic();
+    final document = quill.Document()..insert(0, widget.chapter.body.isEmpty ? '' : '${widget.chapter.body}\n');
+    _controller = quill.QuillController(
+      document: document,
+      selection: const TextSelection.collapsed(offset: 0),
+    );
     _controller.addListener(_scheduleAutosave);
   }
 
   void _scheduleAutosave() {
     _saveTimer?.cancel();
     setState(() => _saving = true);
-    _saveTimer = Timer(const Duration(seconds: 2), () {
+    _saveTimer = Timer(const Duration(seconds: 2), () async {
+      final body = _controller.document.toPlainText().trimRight();
+      await ref.read(voicebookStoreProvider.notifier).updateChapterDraft(
+            bookId: widget.chapter.bookId,
+            chapterId: widget.chapter.id,
+            title: _titleController.text.trim(),
+            subtitle: _subtitleController.text.trim(),
+            body: body,
+          );
       if (mounted) {
         setState(() => _saving = false);
       }
     });
   }
 
+  void _appendDictation(String text) {
+    if (text.trim().isEmpty) {
+      return;
+    }
+    _controller.removeListener(_scheduleAutosave);
+    final doc = _controller.document;
+    final insertOffset = doc.length == 0 ? 0 : doc.length - 1;
+    final formatted = text.trimRight().endsWith('.') ? text.trimRight() : '${text.trimRight()}.';
+    doc.insert(insertOffset, '${formatted}\n\n');
+    _controller.addListener(_scheduleAutosave);
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _runAiAction(String action) {
+    if (_aiActionState == _AiActionState.processing) {
+      return;
+    }
+    final prompts = {
+      'expand': 'AI расширяет абзац...',
+      'rephrase': 'AI ищет новую формулировку...',
+      'simplify': 'AI упрощает выбранный текст...',
+    };
+    final completions = {
+      'expand': 'Добавлено художественное описание сцены.',
+      'rephrase': 'Предложена альтернативная формулировка.',
+      'simplify': 'Текст стал короче и яснее.',
+    };
+    setState(() {
+      _aiActionState = _AiActionState.processing;
+      _aiStatusMessage = prompts[action] ?? 'AI работает...';
+    });
+    Future.delayed(const Duration(milliseconds: 2200), () {
+      if (!mounted) {
+        return;
+      }
+      final insertion = switch (action) {
+        'expand' => 'Туман вспыхнул мягким светом, и голоса словно выстроились в хореографию.',
+        'rephrase' => 'Мы услышали более уверенную версию записи, где эмоции читаются сразу.',
+        'simplify' => 'Туман загудел, и станции стало легче дышать.',
+        _ => 'AI подсказал новый вариант фразы.',
+      };
+      _controller.document.insert(_controller.document.length - 1, '$insertion\n\n');
+      _scheduleAutosave();
+      setState(() {
+        _aiActionState = _AiActionState.completed;
+        _aiStatusMessage = completions[action] ?? 'AI внёс правку.';
+      });
+      Future.delayed(const Duration(milliseconds: 1400), () {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _aiActionState = _AiActionState.idle;
+          _aiStatusMessage = '';
+        });
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final dictationState = ref.watch(dictationControllerProvider);
     final editorTextStyle = (theme.textTheme.bodyMedium ?? const TextStyle()).copyWith(
       color: (theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface),
     );
@@ -119,7 +210,7 @@ class _ChapterEditorState extends State<ChapterEditor> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      _SaveIndicator(isSaving: _saving),
+                      _SaveIndicator(isSaving: _saving || dictationState.isListening),
                       const SizedBox(height: 12),
                       _WordCountChip(count: widget.chapter.meta['wordCount'] ?? '—'),
                     ],
@@ -183,11 +274,54 @@ class _ChapterEditorState extends State<ChapterEditor> {
                 child: _AiHintCard(
                   onAction: (action) {
                     if (action == 'expand' || action == 'rephrase' || action == 'simplify') {
+                      _runAiAction(action);
+                    } else {
                       GoRouter.of(context).pushNamed('aiComposer');
                     }
                   },
                 ),
               ),
+              Positioned(
+                left: 20,
+                right: 20,
+                bottom: 20,
+                child: _DictationStreamView(state: dictationState),
+              ),
+              if (_aiActionState != _AiActionState.idle)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(AppSpacing.radiusMedium)),
+                        color: theme.colorScheme.surfaceTint.withOpacity(0.08),
+                      ),
+                      child: Center(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 260),
+                          child: _aiActionState == _AiActionState.processing
+                              ? Column(
+                                  key: const ValueKey('processing'),
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const CircularProgressIndicator(),
+                                    const SizedBox(height: 12),
+                                    Text(_aiStatusMessage, style: theme.textTheme.bodyLarge),
+                                  ],
+                                )
+                              : Column(
+                                  key: const ValueKey('completed'),
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.auto_awesome, color: Colors.greenAccent, size: 36),
+                                    const SizedBox(height: 8),
+                                    Text(_aiStatusMessage, style: theme.textTheme.bodyLarge),
+                                  ],
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -382,3 +516,92 @@ class _AiHintCard extends StatelessWidget {
     );
   }
 }
+
+class _DictationStreamView extends StatelessWidget {
+  const _DictationStreamView({required this.state});
+
+  final DictationState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isVisible = state.isConnecting || state.isListening || state.phrases.isNotEmpty;
+    if (!isVisible) {
+      return const SizedBox.shrink();
+    }
+    final background = theme.colorScheme.surface.withOpacity(0.85);
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+        color: background,
+        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 18, offset: Offset(0, 8))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              Icon(state.isListening ? Icons.mic : Icons.graphic_eq,
+                  color: theme.colorScheme.primary),
+              const SizedBox(width: 8),
+              Text(
+                state.isConnecting
+                    ? 'Подключаемся к надиктовке...'
+                    : state.isListening
+                        ? 'Идёт надиктовка'
+                        : 'Последние результаты',
+                style: theme.textTheme.titleSmall,
+              ),
+              const Spacer(),
+              if (state.isListening)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...state.phrases.take(3).map(
+            (phrase) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    switch (phrase.status) {
+                      DictationPhraseStatus.streaming => Icons.circle,
+                      DictationPhraseStatus.committing => Icons.sync,
+                      DictationPhraseStatus.committed => Icons.check_circle,
+                    },
+                    size: 16,
+                    color: switch (phrase.status) {
+                      DictationPhraseStatus.streaming => theme.colorScheme.primary,
+                      DictationPhraseStatus.committing => AppColors.accent,
+                      DictationPhraseStatus.committed => Colors.greenAccent,
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: AnimatedDefaultTextStyle(
+                      duration: const Duration(milliseconds: 200),
+                      style: theme.textTheme.bodyMedium!.copyWith(
+                        fontStyle: phrase.status == DictationPhraseStatus.streaming ? FontStyle.italic : null,
+                      ),
+                      child: Text(phrase.text),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+enum _AiActionState { idle, processing, completed }
