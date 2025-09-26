@@ -72,8 +72,8 @@ final voicebookStoreProvider =
 });
 
 final notebooksProvider = Provider<List<Notebook>>((ref) {
-  final store = ref.watch(voicebookStoreProvider);
-  return store.notebooks;
+  final state = ref.watch(voicebookStoreProvider);
+  return state.notebooks;
 });
 
 Chapter? _findChapter(List<Chapter> chapters, String chapterId) {
@@ -85,22 +85,31 @@ Chapter? _findChapter(List<Chapter> chapters, String chapterId) {
   return null;
 }
 
+Notebook? _findNotebook(List<Notebook> notebooks, String bookId) {
+  for (final notebook in notebooks) {
+    if (notebook.id == bookId) {
+      return notebook;
+    }
+  }
+  return null;
+}
+
 final bookProvider = Provider.family<Notebook?, String>((ref, bookId) {
-  final store = ref.watch(voicebookStoreProvider);
-  return store.findNotebook(bookId);
+  final state = ref.watch(voicebookStoreProvider);
+  return _findNotebook(state.notebooks, bookId);
 });
 
 final bookExistsProvider = Provider.family<bool, String>((ref, bookId) {
-  final store = ref.watch(voicebookStoreProvider);
-  if (store.isLoading) {
+  final state = ref.watch(voicebookStoreProvider);
+  if (state.isLoading) {
     return true;
   }
-  return store.findNotebook(bookId) != null;
+  return _findNotebook(state.notebooks, bookId) != null;
 });
 
 final bookChaptersProvider = Provider.family<List<Chapter>, String>((ref, bookId) {
-  final store = ref.watch(voicebookStoreProvider);
-  return store.getChapters(bookId);
+  final state = ref.watch(voicebookStoreProvider);
+  return state.chaptersByBook[bookId] ?? const <Chapter>[];
 });
 
 final chapterSummariesProvider = Provider.family<List<ChapterSummary>, String>((ref, bookId) {
