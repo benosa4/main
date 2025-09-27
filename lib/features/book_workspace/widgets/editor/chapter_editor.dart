@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -24,6 +25,8 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
   late quill.QuillController _controller;
   late final ScrollController _scrollController;
   late final FocusNode _editorFocusNode;
+  late final FocusNode _titleFocusNode;
+  late final FocusNode _subtitleFocusNode;
   late final TextEditingController _titleController;
   late final TextEditingController _subtitleController;
   late final ProviderSubscription<DictationState> _dictationSubscription;
@@ -40,6 +43,8 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
     _initController();
     _scrollController = ScrollController();
     _editorFocusNode = FocusNode();
+    _titleFocusNode = FocusNode();
+    _subtitleFocusNode = FocusNode();
     _titleController = TextEditingController(text: widget.chapter.title);
     _subtitleController = TextEditingController(text: widget.chapter.subtitle ?? '');
     _dictationSubscription = ref.listenManual<DictationState>(
@@ -81,6 +86,8 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
     _controller.dispose();
     _scrollController.dispose();
     _editorFocusNode.dispose();
+    _titleFocusNode.dispose();
+    _subtitleFocusNode.dispose();
     _titleController.dispose();
     _subtitleController.dispose();
     _saveTimer?.cancel();
@@ -116,18 +123,78 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
   }
 
   void _appendDictation(String text) {
-    if (text.trim().isEmpty) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) {
       return;
     }
-    _controller.removeListener(_scheduleAutosave);
-    final doc = _controller.document;
-    final insertOffset = doc.length == 0 ? 0 : doc.length - 1;
-    final formatted = text.trimRight().endsWith('.') ? text.trimRight() : '${text.trimRight()}.';
-    doc.insert(insertOffset, '${formatted}\n\n');
-    _controller.addListener(_scheduleAutosave);
-    if (mounted) {
-      setState(() {});
+
+    if (_titleFocusNode.hasFocus) {
+      _insertIntoTextController(_titleController, trimmed, allowSentenceTermination: false);
+      return;
     }
+
+    if (_subtitleFocusNode.hasFocus) {
+      _insertIntoTextController(_subtitleController, trimmed, allowSentenceTermination: false);
+      return;
+    }
+
+    final sanitized = trimmed.replaceAll('\n', ' ').trim();
+    if (sanitized.isEmpty) {
+      return;
+    }
+
+    final shouldTerminate =
+        !sanitized.endsWith('.') && !sanitized.endsWith('!') && !sanitized.endsWith('?');
+    final textToInsert = shouldTerminate ? '$sanitized.' : sanitized;
+    final docLength = _controller.document.length;
+    final selection = _controller.selection;
+    var selectionStart = selection.start;
+    var selectionEnd = selection.end;
+
+    if (selectionStart < 0 || selectionEnd < 0) {
+      selectionStart = math.max(0, docLength - 1);
+      selectionEnd = selectionStart;
+    }
+
+    final safeStart = math.max(0, math.min(selectionStart, docLength));
+    final isAtEnd = docLength <= 1 || safeStart >= docLength - 1;
+    final insertionText = isAtEnd ? '$textToInsert\n\n' : '$textToInsert ';
+    final baseIndex = docLength == 0 ? 0 : math.max(0, math.min(selectionStart, docLength - 1));
+    final selectionLength = math.max(0, selectionEnd - selectionStart);
+
+    _controller.replaceText(
+      baseIndex,
+      selectionLength,
+      insertionText,
+      TextSelection.collapsed(offset: baseIndex + insertionText.length),
+    );
+    _scheduleAutosave();
+  }
+
+  void _insertIntoTextController(
+    TextEditingController controller,
+    String text, {
+    required bool allowSentenceTermination,
+  }) {
+    final sanitized = text.replaceAll('\n', ' ').trim();
+    if (sanitized.isEmpty) {
+      return;
+    }
+    final needsPeriod = allowSentenceTermination &&
+        !sanitized.endsWith('.') &&
+        !sanitized.endsWith('!') &&
+        !sanitized.endsWith('?');
+    final insertion = needsPeriod ? '$sanitized.' : sanitized;
+    final selection = controller.selection;
+    final currentText = controller.text;
+    final start = selection.start >= 0 ? selection.start : currentText.length;
+    final end = selection.end >= 0 ? selection.end : currentText.length;
+    final updated = currentText.replaceRange(start, end, insertion);
+    controller.value = controller.value.copyWith(
+      text: updated,
+      selection: TextSelection.collapsed(offset: start + insertion.length),
+    );
+    _scheduleAutosave();
   }
 
   void _runAiAction(String action) {
@@ -187,84 +254,123 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
       color: (theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface),
     );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        GlassCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        TextField(
-                          controller: _titleController,
-                          style: theme.textTheme.headlineMedium,
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Заголовок главы',
-                          ),
-                          onChanged: (_) => _scheduleAutosave(),
-                        ),
-                        TextField(
-                          controller: _subtitleController,
-                          style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                          decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Подзаголовок',
-                          ),
-                          onChanged: (_) => _scheduleAutosave(),
-                        ),
-                      ],
-                    ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 860;
+        final spineWidth = math.max(260.0, math.min(340.0, constraints.maxWidth * 0.32));
+
+        Widget buildSpinePanel({required bool fillHeight, required double width}) {
+          final scrollableContent = SingleChildScrollView(
+            padding: const EdgeInsets.only(right: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: _titleController,
+                  focusNode: _titleFocusNode,
+                  style: theme.textTheme.headlineMedium,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Заголовок главы',
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      _SaveIndicator(isSaving: _saving || dictationState.isListening),
-                      const SizedBox(height: 12),
-                      _WordCountChip(count: widget.chapter.meta['wordCount'] ?? '—'),
-                    ],
+                  onChanged: (_) => _scheduleAutosave(),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _subtitleController,
+                  focusNode: _subtitleFocusNode,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _MetaChip(label: 'Жанр: ${widget.chapter.meta['genre'] ?? '—'}'),
-                  _MetaChip(label: 'ЦА: ${widget.chapter.meta['audience'] ?? '—'}'),
-                  _StatusBadge(status: widget.chapter.status),
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      GoRouter.of(context).pushNamed(
-                        'mindmap',
-                        pathParameters: {'bookId': widget.chapter.bookId},
-                        queryParameters: {'chapterId': widget.chapter.id},
-                      );
-                    },
-                    icon: const Icon(Icons.account_tree_outlined),
-                    label: const Text('Структура'),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Подзаголовок',
                   ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        Expanded(
-          child: Stack(
+                  onChanged: (_) => _scheduleAutosave(),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Параметры',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _MetaChip(label: 'Жанр: ${widget.chapter.meta['genre'] ?? '—'}'),
+                    _MetaChip(label: 'ЦА: ${widget.chapter.meta['audience'] ?? '—'}'),
+                    _StatusBadge(status: widget.chapter.status),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    GoRouter.of(context).pushNamed(
+                      'mindmap',
+                      pathParameters: {'bookId': widget.chapter.bookId},
+                      queryParameters: {'chapterId': widget.chapter.id},
+                    );
+                  },
+                  icon: const Icon(Icons.account_tree_outlined),
+                  label: const Text('Структура'),
+                ),
+              ],
+            ),
+          );
+
+          final spineCardChild = fillHeight
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: scrollableContent),
+                    const SizedBox(height: 12),
+                    const Divider(height: 1),
+                    const SizedBox(height: 12),
+                    _SaveIndicator(isSaving: _saving || dictationState.isListening),
+                    const SizedBox(height: 12),
+                    _WordCountChip(count: widget.chapter.meta['wordCount'] ?? '—'),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    scrollableContent,
+                    const SizedBox(height: 12),
+                    const Divider(height: 1),
+                    const SizedBox(height: 12),
+                    _SaveIndicator(isSaving: _saving || dictationState.isListening),
+                    const SizedBox(height: 12),
+                    _WordCountChip(count: widget.chapter.meta['wordCount'] ?? '—'),
+                  ],
+                );
+
+          final card = GlassCard(child: spineCardChild);
+
+          if (fillHeight) {
+            return SizedBox(
+              width: width,
+              child: SizedBox.expand(child: card),
+            );
+          }
+
+          if (width.isFinite) {
+            return SizedBox(width: width, child: card);
+          }
+
+          return card;
+        }
+
+        Widget buildEditorStack() {
+          return Stack(
             children: [
               GlassCard(
                 padding: EdgeInsets.zero,
                 child: Column(
                   children: [
-                    _EditorToolbar(onCommand: (command) {}),
+                    _EditorToolbar(controller: _controller),
                     const Divider(height: 1),
                     Expanded(
                       child: DefaultTextStyle.merge(
@@ -340,7 +446,9 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
                   child: IgnorePointer(
                     child: Container(
                       decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(AppSpacing.radiusMedium)),
+                        borderRadius: const BorderRadius.vertical(
+                          bottom: Radius.circular(AppSpacing.radiusMedium),
+                        ),
                         color: theme.colorScheme.surfaceTint.withOpacity(0.08),
                       ),
                       child: Center(
@@ -371,61 +479,171 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
                   ),
                 ),
             ],
-          ),
-        ),
-      ],
+          );
+        }
+
+        final editorPanel = Expanded(child: buildEditorStack());
+
+        if (isCompact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              buildSpinePanel(fillHeight: false, width: double.infinity),
+              const SizedBox(height: 20),
+              editorPanel,
+            ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            buildSpinePanel(fillHeight: true, width: spineWidth),
+            const SizedBox(width: 20),
+            editorPanel,
+          ],
+        );
+      },
     );
   }
 }
 
 class _EditorToolbar extends StatelessWidget {
-  const _EditorToolbar({required this.onCommand});
+  const _EditorToolbar({required this.controller});
 
-  final ValueChanged<String> onCommand;
+  final quill.QuillController controller;
 
   @override
   Widget build(BuildContext context) {
-    final buttons = [
-      _ToolbarButton(icon: Icons.undo, label: 'Назад'),
-      _ToolbarButton(icon: Icons.redo, label: 'Вперёд'),
-      const SizedBox(width: 12),
-      _ToolbarButton(icon: Icons.format_bold, label: 'Жирный'),
-      _ToolbarButton(icon: Icons.format_italic, label: 'Курсив'),
-      _ToolbarButton(icon: Icons.title, label: 'H1'),
-      _ToolbarButton(icon: Icons.subtitles_outlined, label: 'H2'),
-      _ToolbarButton(icon: Icons.format_list_bulleted, label: 'Список'),
-      _ToolbarButton(icon: Icons.format_quote, label: 'Цитата'),
-      _ToolbarButton(icon: Icons.code, label: 'Код'),
-    ];
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusMedium)),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: buttons
-              .map((b) => Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: b))
-              .toList(),
-        ),
-      ),
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusMedium)),
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _ToolbarButton(
+                  icon: Icons.undo,
+                  label: 'Назад',
+                  onPressed: controller.undo,
+                ),
+                _ToolbarButton(
+                  icon: Icons.redo,
+                  label: 'Вперёд',
+                  onPressed: controller.redo,
+                ),
+                const SizedBox(width: 12),
+                _ToolbarToggleButton(
+                  icon: Icons.format_bold,
+                  label: 'Жирный',
+                  attribute: quill.Attribute.bold,
+                  controller: controller,
+                ),
+                _ToolbarToggleButton(
+                  icon: Icons.format_italic,
+                  label: 'Курсив',
+                  attribute: quill.Attribute.italic,
+                  controller: controller,
+                ),
+                _ToolbarToggleButton(
+                  icon: Icons.title,
+                  label: 'H1',
+                  attribute: quill.Attribute.h1,
+                  controller: controller,
+                ),
+                _ToolbarToggleButton(
+                  icon: Icons.subtitles_outlined,
+                  label: 'H2',
+                  attribute: quill.Attribute.h2,
+                  controller: controller,
+                ),
+                _ToolbarToggleButton(
+                  icon: Icons.format_list_bulleted,
+                  label: 'Список',
+                  attribute: quill.Attribute.ul,
+                  controller: controller,
+                ),
+                _ToolbarToggleButton(
+                  icon: Icons.format_quote,
+                  label: 'Цитата',
+                  attribute: quill.Attribute.blockQuote,
+                  controller: controller,
+                ),
+                _ToolbarToggleButton(
+                  icon: Icons.code,
+                  label: 'Код',
+                  attribute: quill.Attribute.codeBlock,
+                  controller: controller,
+                ),
+              ]
+                  .map((widget) => Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: widget))
+                  .toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
 class _ToolbarButton extends StatelessWidget {
-  const _ToolbarButton({required this.icon, required this.label});
+  const _ToolbarButton({required this.icon, required this.label, required this.onPressed});
 
   final IconData icon;
   final String label;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     return FilledButton.tonalIcon(
-      onPressed: () {},
+      onPressed: onPressed,
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+    );
+  }
+}
+
+class _ToolbarToggleButton extends StatelessWidget {
+  const _ToolbarToggleButton({
+    required this.icon,
+    required this.label,
+    required this.attribute,
+    required this.controller,
+  });
+
+  final IconData icon;
+  final String label;
+  final quill.Attribute attribute;
+  final quill.QuillController controller;
+
+  void _toggle() {
+    final style = controller.getSelectionStyle();
+    final existing = style.attributes[attribute.key];
+    final shouldRemove = existing != null && existing.value == attribute.value;
+    if (shouldRemove) {
+      controller.formatSelection(quill.Attribute(attribute.key, attribute.scope, null));
+    } else {
+      controller.formatSelection(attribute);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isActive = controller.getSelectionStyle().attributes[attribute.key]?.value == attribute.value;
+
+    return FilledButton.tonalIcon(
+      onPressed: _toggle,
+      style: isActive
+          ? FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.24),
+            )
+          : null,
       icon: Icon(icon, size: 18),
       label: Text(label),
     );
