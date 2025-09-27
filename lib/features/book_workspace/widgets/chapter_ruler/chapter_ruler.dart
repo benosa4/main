@@ -1,14 +1,11 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-import 'package:voicebook/core/models/models.dart';
-import 'package:voicebook/core/storage/ui_state_storage.dart';
-import 'package:voicebook/shared/tokens/design_tokens.dart';
+import 'package:voicebook/core/models/chapter_summary.dart';
 
 class ChapterRuler extends StatefulWidget {
   const ChapterRuler({
@@ -19,7 +16,7 @@ class ChapterRuler extends StatefulWidget {
     required this.onSelect,
     required this.onReorder,
     required this.onAddChapter,
-    this.width = 68.0,
+    this.width = 68,
     this.compact = false,
   });
 
@@ -36,637 +33,457 @@ class ChapterRuler extends StatefulWidget {
   State<ChapterRuler> createState() => _ChapterRulerState();
 }
 
-class _ChapterRulerState extends State<ChapterRuler> with SingleTickerProviderStateMixin {
+class _ChapterRulerState extends State<ChapterRuler> {
+  static const _scrollBoxName = 'ui_state';
+  static const _scrollKeyPrefix = 'chapterRulerScrollOffset::';
   static const _tickSpacing = 48.0;
-  static const _tickParallaxFactor = 0.12;
+  static const _tickParallax = 0.14;
 
   final ScrollController _scrollController = ScrollController();
-  final FocusNode _focusNode = FocusNode(debugLabel: 'ChapterRulerFocus');
-  final Map<String, GlobalKey> _itemKeys = {};
 
-  UiStateStorage? _uiStateStorage;
+  Box<dynamic>? _uiStateBox;
   Timer? _persistDebounce;
-  double _scrollOffset = 0;
-  int _focusedIndex = 0;
-
-  late final AnimationController _breathController = AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 6),
-    lowerBound: 0,
-    upperBound: 1,
-  )..repeat(reverse: true);
+  double? _pendingRestoreOffset;
 
   @override
   void initState() {
     super.initState();
-    _focusedIndex = math.max(0, widget.chapters.indexWhere((c) => c.id == widget.activeChapterId));
-    _restoreScroll();
     _scrollController.addListener(_handleScrollChange);
-    _focusNode.addListener(_handleFocusChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureActiveVisible());
+    _restoreScrollOffset();
   }
 
   @override
   void didUpdateWidget(covariant ChapterRuler oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.activeChapterId != widget.activeChapterId) {
-      _focusedIndex = math.max(0, widget.chapters.indexWhere((c) => c.id == widget.activeChapterId));
-      _ensureActiveVisible();
+    if (oldWidget.bookId != widget.bookId) {
+      _pendingRestoreOffset = null;
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0);
+      }
+      _restoreScrollOffset();
     }
 
-    if (oldWidget.chapters.length != widget.chapters.length && _scrollController.hasClients) {
-      final max = _scrollController.position.maxScrollExtent;
-      if (_scrollController.offset > max) {
-        _scrollController.jumpTo(max);
-      }
+    if (oldWidget.chapters.length != widget.chapters.length) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_scrollController.hasClients) {
+          return;
+        }
+        final maxExtent = _scrollController.position.maxScrollExtent;
+        if (_scrollController.offset > maxExtent) {
+          _scrollController.jumpTo(maxExtent);
+        }
+      });
     }
   }
 
   @override
   void dispose() {
     _persistDebounce?.cancel();
-    _persistScroll();
+    _persistScrollOffset();
     _scrollController.removeListener(_handleScrollChange);
-    _focusNode.removeListener(_handleFocusChanged);
     _scrollController.dispose();
-    _focusNode.dispose();
-    _breathController.dispose();
     super.dispose();
   }
 
-  void _handleScrollChange() {
-    final offset = _scrollController.offset;
-    if (offset == _scrollOffset) {
-      return;
-    }
-    setState(() {
-      _scrollOffset = offset;
-    });
-    _persistDebounce?.cancel();
-    _persistDebounce = Timer(const Duration(milliseconds: 240), _persistScroll);
-  }
-
-  Future<void> _restoreScroll() async {
-    UiStateStorage storage;
+  Future<void> _restoreScrollOffset() async {
     try {
-      storage = await UiStateStorage.open();
+      _uiStateBox ??= await Hive.openBox<dynamic>(_scrollBoxName);
     } catch (_) {
       return;
     }
 
-    final stored = storage.readChapterRulerOffset(widget.bookId);
-    _uiStateStorage = storage;
-    if (stored == null) {
-      return;
-    }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_scrollController.hasClients) {
-        return;
-      }
-      final maxExtent = _scrollController.position.maxScrollExtent;
-      final clamped = stored.clamp(0.0, maxExtent);
-      _scrollController.jumpTo(clamped);
-      setState(() {
-        _scrollOffset = clamped;
-      });
-    });
-  }
-
-  void _persistScroll() {
-    final storage = _uiStateStorage;
-    if (storage == null) {
-      return;
-    }
-    storage.writeChapterRulerOffset(widget.bookId, _scrollController.offset);
-  }
-
-  void _handleFocusChanged() {
-    if (_focusNode.hasFocus) {
-      _focusedIndex = math.max(0, widget.chapters.indexWhere((c) => c.id == widget.activeChapterId));
+    final key = '$_scrollKeyPrefix${widget.bookId}';
+    final stored = _uiStateBox?.get(key);
+    if (stored is num) {
+      _pendingRestoreOffset = stored.toDouble();
+      _scheduleApplyPendingOffset();
+    } else {
+      _pendingRestoreOffset = 0;
+      _scheduleApplyPendingOffset();
     }
   }
 
-  KeyEventResult _handleKey(FocusNode node, RawKeyEvent event) {
-    if (event is! RawKeyDownEvent) {
-      return KeyEventResult.ignored;
-    }
-
-    final isMetaPressed = event.isMetaPressed || event.isControlPressed;
-    if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-      if (isMetaPressed) {
-        _reorderFromKeyboard(1);
-      } else {
-        _moveFocus(1);
-      }
-      return KeyEventResult.handled;
-    }
-
-    if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-      if (isMetaPressed) {
-        _reorderFromKeyboard(-1);
-      } else {
-        _moveFocus(-1);
-      }
-      return KeyEventResult.handled;
-    }
-
-    if (event.logicalKey == LogicalKeyboardKey.enter ||
-        event.logicalKey == LogicalKeyboardKey.space) {
-      if (_focusedIndex >= 0 && _focusedIndex < widget.chapters.length) {
-        widget.onSelect(widget.chapters[_focusedIndex].id);
-      }
-      return KeyEventResult.handled;
-    }
-
-    return KeyEventResult.ignored;
-  }
-
-  void _moveFocus(int delta) {
-    if (widget.chapters.isEmpty) {
-      return;
-    }
-    _focusedIndex = (_focusedIndex + delta).clamp(0, widget.chapters.length - 1);
-    widget.onSelect(widget.chapters[_focusedIndex].id);
-  }
-
-  void _reorderFromKeyboard(int direction) {
-    if (widget.chapters.length <= 1) {
-      return;
-    }
-    final currentIndex = widget.chapters.indexWhere((c) => c.id == widget.activeChapterId);
-    if (currentIndex == -1) {
-      return;
-    }
-    final baseTarget = (currentIndex + direction).clamp(0, widget.chapters.length - 1);
-    if (baseTarget == currentIndex) {
-      return;
-    }
-    final rawNewIndex = direction > 0
-        ? math.min(widget.chapters.length, baseTarget + 1)
-        : baseTarget;
-    widget.onReorder(currentIndex, rawNewIndex);
-  }
-
-  void _ensureActiveVisible() {
+  void _scheduleApplyPendingOffset() {
     if (!mounted) {
       return;
     }
-    final key = _itemKeys[widget.activeChapterId];
-    if (key == null) {
-      return;
-    }
-    final context = key.currentContext;
-    if (context == null) {
-      return;
-    }
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
       }
-      Scrollable.ensureVisible(
-        context,
-        duration: const Duration(milliseconds: 280),
-        alignment: 0.3,
-        curve: Curves.easeOutCubic,
-      );
+      if (!_scrollController.hasClients) {
+        if (_pendingRestoreOffset != null) {
+          _scheduleApplyPendingOffset();
+        }
+        return;
+      }
+      final target = (_pendingRestoreOffset ?? 0).clamp(
+        0.0,
+        _scrollController.position.maxScrollExtent,
+      ).toDouble();
+      _pendingRestoreOffset = null;
+      _scrollController.jumpTo(target);
     });
+  }
+
+  void _handleScrollChange() {
+    _persistDebounce?.cancel();
+    _persistDebounce = Timer(const Duration(milliseconds: 200), _persistScrollOffset);
+  }
+
+  void _persistScrollOffset() {
+    _persistDebounce?.cancel();
+    if (_uiStateBox == null || !_scrollController.hasClients) {
+      return;
+    }
+    final key = '$_scrollKeyPrefix${widget.bookId}';
+    final offset = _scrollController.offset;
+    _uiStateBox!.put(key, offset);
   }
 
   @override
   Widget build(BuildContext context) {
-    final compact = widget.compact;
     final rulerWidth = widget.width;
+    final media = MediaQuery.of(context);
+    final paddingTop = media.padding.top > 0 ? 12.0 : 16.0;
 
     return SizedBox(
       width: rulerWidth,
       child: ClipRRect(
-        borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppColors.primary, AppColors.secondary],
+        borderRadius: const BorderRadius.only(
+          topRight: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                ),
+              ),
             ),
-            border: Border.all(color: AppColors.border.withOpacity(0.18)),
-            boxShadow: const [
-              BoxShadow(color: Colors.black12, blurRadius: 12, offset: Offset(0, 6)),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-                  child: const SizedBox(),
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+                child: Container(
+                  color: Colors.white.withOpacity(0.06),
                 ),
               ),
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _RulerTickPainter(
-                    offset: _scrollOffset,
-                    spacing: _tickSpacing,
-                    parallaxFactor: _tickParallaxFactor,
-                    color: Colors.white.withOpacity(0.1),
-                  ),
+            ),
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _RulerTexturePainter(
+                  controller: _scrollController,
+                  tickSpacing: _tickSpacing,
+                  parallaxFactor: _tickParallax,
                 ),
               ),
-              Positioned.fill(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: _buildList(context, compact),
-                ),
-              ),
-              Positioned(
-                bottom: compact ? 12 : 16,
-                left: 0,
-                right: 0,
-                child: _AddChapterButton(
-                  onPressed: widget.onAddChapter,
-                  compact: compact,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildList(BuildContext context, bool compact) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: (compact ? 72 : 92)),
-      child: Focus(
-        focusNode: _focusNode,
-        onKey: _handleKey,
-        child: ReorderableListView.builder(
-          padding: EdgeInsets.only(top: compact ? 16 : 24, bottom: compact ? 16 : 24),
-          scrollController: _scrollController,
-          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-          itemCount: widget.chapters.length,
-          buildDefaultDragHandles: false,
-          onReorder: (oldIndex, newIndex) {
-            widget.onReorder(oldIndex, newIndex);
-          },
-          itemBuilder: (context, index) {
-            final chapter = widget.chapters[index];
-            final isActive = chapter.id == widget.activeChapterId;
-            final key = _itemKeys.putIfAbsent(chapter.id, () => GlobalObjectKey(chapter.id));
-
-            return KeyedSubtree(
-              key: ValueKey(chapter.id),
+            ),
+            Positioned.fill(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: compact ? 4 : 6),
-                child: _ChapterTab(
-                  key: key,
-                  chapter: chapter,
-                  index: index,
-                  isActive: isActive,
-                  compact: compact,
-                  controller: _breathController,
-                  rulerFocusNode: _focusNode,
-                  onTap: () => widget.onSelect(chapter.id),
+                padding: EdgeInsets.fromLTRB(6, paddingTop, 6, 96),
+                child: RepaintBoundary(
+                  child: _buildReorderableList(),
                 ),
               ),
-            );
-          },
+            ),
+            Positioned(
+              left: 8,
+              right: 8,
+              bottom: 16,
+              child: _AddChapterFab(onPressed: widget.onAddChapter),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-class _ChapterTab extends StatefulWidget {
-  const _ChapterTab({
-    super.key,
-    required this.chapter,
-    required this.index,
-    required this.isActive,
-    required this.compact,
-    required this.controller,
-    required this.rulerFocusNode,
-    required this.onTap,
-  });
-
-  final ChapterSummary chapter;
-  final int index;
-  final bool isActive;
-  final bool compact;
-  final AnimationController controller;
-  final FocusNode rulerFocusNode;
-  final VoidCallback onTap;
-
-  @override
-  State<_ChapterTab> createState() => _ChapterTabState();
-}
-
-class _ChapterTabState extends State<_ChapterTab> {
-  bool _hovering = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final paletteColor = _chapterColor(widget.chapter.id);
-    final luminance = paletteColor.computeLuminance();
-    final textColor = luminance > 0.6 ? const Color(0xFF0F172A) : Colors.white;
-    final captionColor = Color.lerp(textColor, Colors.black, 0.2)!;
-    final accent = AppColors.accent.withOpacity(0.24);
-
-    final padding = EdgeInsets.symmetric(horizontal: widget.compact ? 10 : 12, vertical: widget.compact ? 6 : 8);
-    final minHeight = widget.compact ? 36.0 : 44.0;
-
-    final animation = CurvedAnimation(parent: widget.controller, curve: Curves.easeInOut);
-    final glowOpacity = widget.isActive ? Tween(begin: 0.2, end: 0.24).animate(animation) : null;
-
-    final borderColor = widget.isActive
-        ? accent
-        : AppColors.border.withOpacity(0.18);
-
-    Widget buildTile({Widget? trailing}) {
-      return GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          widget.rulerFocusNode.requestFocus();
-          widget.onTap();
-        },
-        child: AnimatedBuilder(
-          animation: widget.controller,
-          builder: (context, child) {
-            final glow = glowOpacity?.value ?? 0;
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 120),
-              curve: Curves.easeOut,
-              height: minHeight,
-              padding: padding,
-              decoration: BoxDecoration(
-                boxShadow: widget.isActive
-                    ? [
-                        BoxShadow(
-                          color: AppColors.accent.withOpacity(0.12 + glow / 2),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ]
-                    : [
-                        if (_hovering)
-                          const BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 6,
-                            offset: Offset(0, 2),
-                          ),
-                      ],
-                border: Border.all(
-                  color: widget.isActive ? accent : borderColor,
-                  width: widget.isActive ? 1.6 : 1,
-                ),
-                color: paletteColor,
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: ClipPath(
-                clipper: _BookmarkClipper(compact: widget.compact),
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 200),
-                        opacity: _hovering ? 0.08 : 0.0,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Colors.white.withOpacity(0.32), Colors.white.withOpacity(0)],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: Padding(
-                        padding: EdgeInsets.only(left: widget.compact ? 12 : 14, right: widget.compact ? 10 : 12),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '#${widget.index + 1}',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: captionColor,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    widget.chapter.title,
-                                    maxLines: widget.compact ? 1 : 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: textColor,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (trailing != null) trailing,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
+  Widget _buildReorderableList() {
+    if (widget.chapters.isEmpty) {
+      return ListView(
+        controller: _scrollController,
+        physics: const BouncingScrollPhysics(),
+        children: const [SizedBox(height: 12)],
       );
     }
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovering = true),
-      onExit: (_) => setState(() => _hovering = false),
-      cursor: SystemMouseCursors.click,
-      child: FocusableActionDetector(
-        mouseCursor: SystemMouseCursors.click,
-        child: kIsWeb
-            ? buildTile(
-                trailing: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 120),
-                  opacity: _hovering ? 1 : 0,
-                  child: ReorderableDragStartListener(
-                    index: widget.index,
-                    child: Icon(
-                      Icons.drag_indicator,
-                      size: widget.compact ? 16 : 18,
-                      color: textColor.withOpacity(0.72),
-                    ),
-                  ),
-                ),
-              )
-            : ReorderableDelayedDragStartListener(
-                index: widget.index,
-                child: buildTile(
-                  trailing: Icon(
-                    Icons.more_vert,
-                    size: widget.compact ? 16 : 18,
-                    color: textColor.withOpacity(0.72),
-                  ),
-                ),
-              ),
-      ),
-    );
-  }
-}
-
-class _AddChapterButton extends StatefulWidget {
-  const _AddChapterButton({required this.onPressed, required this.compact});
-
-  final VoidCallback onPressed;
-  final bool compact;
-
-  @override
-  State<_AddChapterButton> createState() => _AddChapterButtonState();
-}
-
-class _AddChapterButtonState extends State<_AddChapterButton> with SingleTickerProviderStateMixin {
-  late final AnimationController _pulseController = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 320),
-    lowerBound: 0,
-    upperBound: 1,
-  );
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
-
-  void _handleTap() {
-    widget.onPressed();
-    _pulseController
-      ..value = 0
-      ..forward();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final size = widget.compact ? 48.0 : 56.0;
-    final gradient = const LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [AppColors.primary, AppColors.secondary],
-    );
-
-    return SizedBox(
-      height: size,
-      child: Center(
-        child: AnimatedBuilder(
-          animation: _pulseController,
-          builder: (context, child) {
-            final double scale =
-                1 + (_pulseController.isAnimating ? (0.04 * (1 - _pulseController.value)) : 0);
+    return ReorderableListView.builder(
+      padding: EdgeInsets.zero,
+      scrollController: _scrollController,
+      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      primary: false,
+      buildDefaultDragHandles: false,
+      itemCount: widget.chapters.length,
+      proxyDecorator: (context, child, animation) {
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (context, _) {
+            final t = Curves.easeOut.transform(animation.value);
             return Transform.scale(
-              scale: scale,
+              scale: 1 + t * 0.04,
               child: child,
             );
           },
-          child: Material(
-            color: Colors.transparent,
-            elevation: widget.compact ? 2 : 4,
-            shape: const CircleBorder(),
-            child: InkWell(
-              onTap: _handleTap,
-              customBorder: const CircleBorder(),
-              child: Ink(
-                width: size,
-                height: size,
-                decoration: ShapeDecoration(
-                  shape: const CircleBorder(),
-                  gradient: gradient,
-                  shadows: const [
-                    BoxShadow(color: Colors.black26, blurRadius: 12, offset: Offset(0, 4)),
-                  ],
-                ),
-                child: const Icon(Icons.add, color: Colors.white),
+        );
+      },
+      onReorder: widget.onReorder,
+      itemBuilder: (context, index) {
+        final chapter = widget.chapters[index];
+        final active = chapter.id == widget.activeChapterId;
+        final tile = _ChapterTab(
+          key: ValueKey(chapter.id),
+          index: index,
+          label: '${index + 1}. ${chapter.title}',
+          color: _colorFor(chapter.id),
+          compact: widget.compact,
+          isActive: active,
+          showHandle: kIsWeb,
+          onTap: () => widget.onSelect(chapter.id),
+        );
+
+        if (kIsWeb) {
+          return tile;
+        }
+
+        return ReorderableDelayedDragStartListener(
+          key: ValueKey(chapter.id),
+          index: index,
+          child: tile,
+        );
+      },
+    );
+  }
+}
+
+class _RulerTexturePainter extends CustomPainter {
+  _RulerTexturePainter({
+    required ScrollController controller,
+    required this.tickSpacing,
+    required this.parallaxFactor,
+  }) : _controller = controller,
+       super(repaint: controller);
+
+  final ScrollController _controller;
+  final double tickSpacing;
+  final double parallaxFactor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+
+    final highlight = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0x33FFFFFF), Color(0x00000000)],
+      ).createShader(rect);
+    canvas.drawRect(rect, highlight);
+
+    final innerShadow = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.centerRight,
+        end: Alignment.centerLeft,
+        colors: [Color(0x3D000000), Color(0x00000000)],
+      ).createShader(Rect.fromLTWH(size.width - 18, 0, 18, size.height));
+    canvas.drawRect(Rect.fromLTWH(size.width - 18, 0, 18, size.height), innerShadow);
+
+    final tickPaint = Paint()
+      ..color = Colors.white.withOpacity(0.18)
+      ..strokeWidth = 1
+      ..strokeCap = StrokeCap.round
+      ..isAntiAlias = true;
+
+    final offset = _controller.hasClients ? _controller.offset : 0.0;
+    final base = -offset * parallaxFactor;
+    for (double y = base % tickSpacing; y < size.height; y += tickSpacing) {
+      canvas.drawLine(
+        Offset(size.width - 20, y),
+        Offset(size.width - 8, y),
+        tickPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RulerTexturePainter oldDelegate) {
+    return oldDelegate.tickSpacing != tickSpacing ||
+        oldDelegate.parallaxFactor != parallaxFactor ||
+        oldDelegate._controller != _controller;
+  }
+}
+
+class _ChapterTab extends StatelessWidget {
+  const _ChapterTab({
+    super.key,
+    required this.index,
+    required this.label,
+    required this.color,
+    required this.compact,
+    required this.isActive,
+    required this.showHandle,
+    required this.onTap,
+  });
+
+  final int index;
+  final String label;
+  final Color color;
+  final bool compact;
+  final bool isActive;
+  final bool showHandle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final height = compact ? 36.0 : 44.0;
+    final shape = const _BookmarkShape(radius: 14, cut: 12);
+    final background = isActive ? color.withOpacity(0.95) : color.withOpacity(0.82);
+    final textStyle = Theme.of(context).textTheme.labelMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          fontSize: compact ? 12 : 13.5,
+          height: 1.1,
+          color: Colors.black.withOpacity(0.8),
+        ) ??
+        TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: compact ? 12 : 13.5,
+          height: 1.1,
+          color: Colors.black.withOpacity(0.8),
+        );
+
+    final tab = RepaintBoundary(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            customBorder: shape,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              height: height,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: ShapeDecoration(
+                color: background,
+                shape: shape,
+                shadows: isActive
+                    ? [
+                        const BoxShadow(
+                          color: Color(0x3D06B6D4),
+                          blurRadius: 16,
+                          spreadRadius: 1.4,
+                          offset: Offset(0, 2),
+                        ),
+                      ]
+                    : const [
+                        BoxShadow(
+                          color: Color(0x14000000),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: textStyle,
+                    ),
+                  ),
+                  if (showHandle)
+                    ReorderableDragStartListener(
+                      index: index,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 6),
+                        child: Icon(
+                          Icons.drag_handle_rounded,
+                          size: 18,
+                          color: Colors.black.withOpacity(0.4),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
         ),
       ),
     );
+
+    return tab;
   }
 }
 
-class _RulerTickPainter extends CustomPainter {
-  const _RulerTickPainter({
-    required this.offset,
-    required this.spacing,
-    required this.parallaxFactor,
-    required this.color,
-  });
+class _BookmarkShape extends ShapeBorder {
+  const _BookmarkShape({this.radius = 14, this.cut = 12});
 
-  final double offset;
-  final double spacing;
-  final double parallaxFactor;
-  final Color color;
+  final double radius;
+  final double cut;
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1;
+  EdgeInsetsGeometry get dimensions => EdgeInsets.zero;
 
-    final parallaxOffset = (offset * parallaxFactor) % spacing;
-    double y = -parallaxOffset;
-    while (y < size.height) {
-      final startX = size.width - 18;
-      canvas.drawLine(Offset(startX, y), Offset(size.width - 8, y), paint);
-      y += spacing;
-    }
+  @override
+  ShapeBorder scale(double t) {
+    return _BookmarkShape(radius: radius * t, cut: cut * t);
   }
 
   @override
-  bool shouldRepaint(covariant _RulerTickPainter oldDelegate) {
-    return offset != oldDelegate.offset || color != oldDelegate.color || spacing != oldDelegate.spacing;
+  Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
+    final r = Radius.circular(radius);
+    return Path()
+      ..moveTo(rect.left + cut, rect.top)
+      ..lineTo(rect.right - radius, rect.top)
+      ..arcToPoint(Offset(rect.right, rect.top + radius), radius: r)
+      ..lineTo(rect.right, rect.bottom - radius)
+      ..arcToPoint(Offset(rect.right - radius, rect.bottom), radius: r)
+      ..lineTo(rect.left + cut, rect.bottom)
+      ..lineTo(rect.left, rect.bottom - cut)
+      ..lineTo(rect.left, rect.top + cut)
+      ..close();
+  }
+
+  @override
+  Path getInnerPath(Rect rect, {TextDirection? textDirection}) {
+    return getOuterPath(rect, textDirection: textDirection);
+  }
+
+  @override
+  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {}
+
+  @override
+  BorderSide get side => BorderSide.none;
+}
+
+class _AddChapterFab extends StatelessWidget {
+  const _AddChapterFab({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 56,
+      child: FloatingActionButton.extended(
+        heroTag: 'chapter-ruler-add',
+        backgroundColor: const Color(0xFF4F46E5).withOpacity(0.92),
+        foregroundColor: Colors.white,
+        elevation: 8,
+        onPressed: onPressed,
+        label: const Text('+ Глава'),
+      ),
+    );
   }
 }
 
-class _BookmarkClipper extends CustomClipper<Path> {
-  const _BookmarkClipper({required this.compact});
-
-  final bool compact;
-
-  @override
-  Path getClip(Size size) {
-    final notch = compact ? 10.0 : 12.0;
-    final curve = compact ? 12.0 : 16.0;
-    final path = Path();
-
-    path.moveTo(notch, 0);
-    path.lineTo(size.width - curve, 0);
-    path.quadraticBezierTo(size.width, 0, size.width, curve);
-    path.lineTo(size.width, size.height - curve);
-    path.quadraticBezierTo(size.width, size.height, size.width - curve, size.height);
-    path.lineTo(notch, size.height);
-    path.quadraticBezierTo(0, size.height, 0, size.height - curve * 0.6);
-    path.lineTo(0, curve * 0.6);
-    path.quadraticBezierTo(0, 0, notch, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant _BookmarkClipper oldClipper) => oldClipper.compact != compact;
-}
-
-const _chapterPalette = <Color>[
+const List<Color> _pastelPalette = <Color>[
   Color(0xFFE8E7FE),
   Color(0xFFEDE6FB),
   Color(0xFFE6FAFD),
@@ -679,7 +496,10 @@ const _chapterPalette = <Color>[
   Color(0xFFE7FFF6),
 ];
 
-Color _chapterColor(String chapterId) {
-  final hash = chapterId.codeUnits.fold<int>(0, (value, element) => (value * 31 + element) & 0x7fffffff);
-  return _chapterPalette[hash % _chapterPalette.length];
+Color _colorFor(String id) {
+  if (id.isEmpty) {
+    return _pastelPalette.first;
+  }
+  final hash = id.codeUnits.fold<int>(0, (acc, unit) => (acc * 31 + unit) & 0x7fffffff);
+  return _pastelPalette[hash % _pastelPalette.length];
 }
