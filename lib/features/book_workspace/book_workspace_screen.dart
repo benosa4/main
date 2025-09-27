@@ -83,20 +83,21 @@ class BookWorkspaceScreen extends ConsumerWidget {
         final isDesktop = constraints.maxWidth >= 1024;
         final isTablet = constraints.maxWidth >= 600 && constraints.maxWidth < 1024;
 
-        final ruler = SizedBox(
-          width: isDesktop ? 104 : 84,
-          child: ChapterRuler(
-            chapters: summaries,
-            activeChapterId: currentChapter.id,
-            onSelect: (chapterId) {
-              ref.read(currentChapterIdProvider(bookId).notifier).state = chapterId;
-            },
-            onAdd: () async {
-              final notifier = ref.read(voicebookStoreProvider.notifier);
-              try {
-                final chapter = await notifier.createChapter(bookId);
-                if (context.mounted) {
-                  ref.read(currentChapterIdProvider(bookId).notifier).state = chapter.id;
+        final ruler = ChapterRuler(
+          bookId: bookId,
+          width: isDesktop ? 72 : 64,
+          compact: !isDesktop,
+          chapters: summaries,
+          activeChapterId: currentChapter.id,
+          onSelect: (chapterId) {
+            ref.read(currentChapterIdProvider(bookId).notifier).state = chapterId;
+          },
+          onAddChapter: () async {
+            final notifier = ref.read(voicebookStoreProvider.notifier);
+            try {
+              final chapter = await notifier.createChapter(bookId);
+              if (context.mounted) {
+                ref.read(currentChapterIdProvider(bookId).notifier).state = chapter.id;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Глава «${chapter.title}» добавлена.')), 
                   );
@@ -109,14 +110,13 @@ class BookWorkspaceScreen extends ConsumerWidget {
                 }
               }
             },
-            onReorder: (oldIndex, newIndex) {
-              ref.read(voicebookStoreProvider.notifier).reorderChapters(
-                    bookId: bookId,
-                    oldIndex: oldIndex,
-                    newIndex: newIndex,
-                  );
-            },
-          ),
+          onReorder: (oldIndex, newIndex) {
+            ref.read(voicebookStoreProvider.notifier).reorderChapters(
+                  bookId: bookId,
+                  oldIndex: oldIndex,
+                  newIndex: newIndex,
+                );
+          },
         );
 
         final editor = Padding(
