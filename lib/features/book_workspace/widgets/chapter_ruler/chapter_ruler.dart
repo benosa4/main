@@ -5,12 +5,10 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:voicebook/core/models/models.dart';
+import 'package:voicebook/core/storage/ui_state_storage.dart';
 import 'package:voicebook/shared/tokens/design_tokens.dart';
-
-const _kScrollStorageKeyPrefix = 'chapterRulerScrollOffset::';
 
 class ChapterRuler extends StatefulWidget {
   const ChapterRuler({
@@ -46,7 +44,7 @@ class _ChapterRulerState extends State<ChapterRuler> with SingleTickerProviderSt
   final FocusNode _focusNode = FocusNode(debugLabel: 'ChapterRulerFocus');
   final Map<String, GlobalKey> _itemKeys = {};
 
-  Box<dynamic>? _uiBox;
+  UiStateStorage? _uiStateStorage;
   Timer? _persistDebounce;
   double _scrollOffset = 0;
   int _focusedIndex = 0;
@@ -109,15 +107,16 @@ class _ChapterRulerState extends State<ChapterRuler> with SingleTickerProviderSt
   }
 
   Future<void> _restoreScroll() async {
+    UiStateStorage storage;
     try {
-      _uiBox = await Hive.openBox('ui_state');
+      storage = await UiStateStorage.open();
     } catch (_) {
       return;
     }
 
-    final key = '$_kScrollStorageKeyPrefix${widget.bookId}';
-    final stored = _uiBox?.get(key);
-    if (stored is! num) {
+    final stored = storage.readChapterRulerOffset(widget.bookId);
+    _uiStateStorage = storage;
+    if (stored == null) {
       return;
     }
 
@@ -126,7 +125,7 @@ class _ChapterRulerState extends State<ChapterRuler> with SingleTickerProviderSt
         return;
       }
       final maxExtent = _scrollController.position.maxScrollExtent;
-      final clamped = stored.toDouble().clamp(0.0, maxExtent);
+      final clamped = stored.clamp(0.0, maxExtent);
       _scrollController.jumpTo(clamped);
       setState(() {
         _scrollOffset = clamped;
@@ -135,12 +134,11 @@ class _ChapterRulerState extends State<ChapterRuler> with SingleTickerProviderSt
   }
 
   void _persistScroll() {
-    final box = _uiBox;
-    if (box == null) {
+    final storage = _uiStateStorage;
+    if (storage == null) {
       return;
     }
-    final key = '$_kScrollStorageKeyPrefix${widget.bookId}';
-    box.put(key, _scrollController.offset);
+    storage.writeChapterRulerOffset(widget.bookId, _scrollController.offset);
   }
 
   void _handleFocusChanged() {

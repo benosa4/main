@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
@@ -9,6 +9,8 @@ import 'package:go_router/go_router.dart';
 import 'package:voicebook/core/models/models.dart';
 import 'package:voicebook/core/providers/app_providers.dart';
 import 'package:voicebook/core/providers/dictation_controller.dart';
+import 'package:voicebook/features/book_workspace/widgets/chapter_header_card/chapter_header_card.dart';
+import 'package:voicebook/features/book_workspace/widgets/editor/editor_toolbar.dart';
 import 'package:voicebook/shared/tokens/design_tokens.dart';
 import 'package:voicebook/shared/ui/glass_card.dart';
 
@@ -251,130 +253,105 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
         dictationState.isConnecting || dictationState.isListening || dictationState.phrases.isNotEmpty;
     final showDictationPanel = hasDictationActivity && !_dictationPanelCollapsed;
     final editorTextStyle = (theme.textTheme.bodyMedium ?? const TextStyle()).copyWith(
-      color: (theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface),
+      color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface,
+      height: 1.6,
+      fontSize: 16,
     );
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isCompact = constraints.maxWidth < 860;
-        final spineWidth = math.max(260.0, math.min(340.0, constraints.maxWidth * 0.32));
-
-        Widget buildSpinePanel({required bool fillHeight, required double width}) {
-          final scrollableContent = SingleChildScrollView(
-            padding: const EdgeInsets.only(right: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: _titleController,
-                  focusNode: _titleFocusNode,
-                  style: theme.textTheme.headlineMedium,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Заголовок главы',
-                  ),
-                  onChanged: (_) => _scheduleAutosave(),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _subtitleController,
-                  focusNode: _subtitleFocusNode,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Подзаголовок',
-                  ),
-                  onChanged: (_) => _scheduleAutosave(),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Параметры',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _MetaChip(label: 'Жанр: ${widget.chapter.meta['genre'] ?? '—'}'),
-                    _MetaChip(label: 'ЦА: ${widget.chapter.meta['audience'] ?? '—'}'),
-                    _StatusBadge(status: widget.chapter.status),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    GoRouter.of(context).pushNamed(
-                      'mindmap',
-                      pathParameters: {'bookId': widget.chapter.bookId},
-                      queryParameters: {'chapterId': widget.chapter.id},
-                    );
-                  },
-                  icon: const Icon(Icons.account_tree_outlined),
-                  label: const Text('Структура'),
-                ),
-              ],
-            ),
-          );
-
-          final spineCardChild = fillHeight
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: scrollableContent),
-                    const SizedBox(height: 12),
-                    const Divider(height: 1),
-                    const SizedBox(height: 12),
-                    _SaveIndicator(isSaving: _saving || dictationState.isListening),
-                    const SizedBox(height: 12),
-                    _WordCountChip(count: widget.chapter.meta['wordCount'] ?? '—'),
-                  ],
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    scrollableContent,
-                    const SizedBox(height: 12),
-                    const Divider(height: 1),
-                    const SizedBox(height: 12),
-                    _SaveIndicator(isSaving: _saving || dictationState.isListening),
-                    const SizedBox(height: 12),
-                    _WordCountChip(count: widget.chapter.meta['wordCount'] ?? '—'),
-                  ],
-                );
-
-          final card = GlassCard(child: spineCardChild);
-
-          if (fillHeight) {
-            return SizedBox(
-              width: width,
-              child: SizedBox.expand(child: card),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ChapterHeaderCard(
+          titleController: _titleController,
+          subtitleController: _subtitleController,
+          titleFocusNode: _titleFocusNode,
+          subtitleFocusNode: _subtitleFocusNode,
+          metaChips: [
+            _MetaChip(label: 'Жанр: ${widget.chapter.meta['genre'] ?? '—'}'),
+            _MetaChip(label: 'ЦА: ${widget.chapter.meta['audience'] ?? '—'}'),
+            _StatusBadge(status: widget.chapter.status),
+          ],
+          onOpenStructure: () {
+            GoRouter.of(context).pushNamed(
+              'mindmap',
+              pathParameters: {'bookId': widget.chapter.bookId},
+              queryParameters: {'chapterId': widget.chapter.id},
             );
-          }
+          },
+          saved: !_saving && !dictationState.isListening,
+          wordCount: _resolveWordCount(),
+          onTitleChanged: (_) => _scheduleAutosave(),
+          onSubtitleChanged: (_) => _scheduleAutosave(),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: _buildEditorSurface(
+            context: context,
+            editorTextStyle: editorTextStyle,
+            dictationState: dictationState,
+            hasDictationActivity: hasDictationActivity,
+            showDictationPanel: showDictationPanel,
+          ),
+        ),
+      ],
+    );
+  }
 
-          if (width.isFinite) {
-            return SizedBox(width: width, child: card);
-          }
+  int? _resolveWordCount() {
+    final value = widget.chapter.meta['wordCount'];
+    if (value is num) {
+      return value.toInt();
+    }
+    if (value is String) {
+      return int.tryParse(value);
+    }
+    return null;
+  }
 
-          return card;
-        }
+  Widget _buildEditorSurface({
+    required BuildContext context,
+    required TextStyle editorTextStyle,
+    required DictationState dictationState,
+    required bool hasDictationActivity,
+    required bool showDictationPanel,
+  }) {
+    final theme = Theme.of(context);
 
-        Widget buildEditorStack() {
-          return Stack(
+    final editorCard = ClipRRect(
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.68),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+            border: Border.all(color: AppColors.border.withOpacity(0.18)),
+            boxShadow: const [
+              BoxShadow(color: Colors.black12, blurRadius: 12, offset: Offset(0, 6)),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              GlassCard(
-                padding: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    _EditorToolbar(controller: _controller),
-                    const Divider(height: 1),
-                    Expanded(
-                      child: DefaultTextStyle.merge(
-                        style: editorTextStyle,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: EditorToolbar(
+                    onCommand: (command) => _handleToolbarCommand(context, command),
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: DefaultTextStyle.merge(
+                  style: editorTextStyle,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 760),
                         child: quill.QuillEditor.basic(
                           controller: _controller,
                           focusNode: _editorFocusNode,
@@ -386,269 +363,206 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
-              Positioned(
-                top: 24,
-                right: 24,
-                child: _AiHintDrawer(
-                  expanded: _aiPanelExpanded,
-                  onToggle: () {
-                    setState(() => _aiPanelExpanded = !_aiPanelExpanded);
-                  },
-                  onAction: (action) {
-                    if (action == 'expand' || action == 'rephrase' || action == 'simplify') {
-                      _runAiAction(action);
-                    } else {
-                      GoRouter.of(context).pushNamed('aiComposer');
-                    }
-                  },
-                ),
-              ),
-              if (hasDictationActivity)
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                    child: IgnorePointer(
-                      ignoring: !showDictationPanel,
-                      child: AnimatedSlide(
-                        duration: const Duration(milliseconds: 260),
-                        curve: Curves.easeOutCubic,
-                        offset: showDictationPanel ? Offset.zero : const Offset(0, 0.12),
-                        child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 260),
-                          opacity: showDictationPanel ? 1 : 0,
-                          child: _DictationStreamView(
-                            state: dictationState,
-                            onDismiss: () {
-                              setState(() => _dictationPanelCollapsed = true);
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              if (!showDictationPanel && hasDictationActivity)
-                Positioned(
-                  bottom: 24,
-                  right: 24,
-                  child: _DictationPanelHandle(
-                    onPressed: () {
-                      setState(() => _dictationPanelCollapsed = false);
-                    },
-                  ),
-                ),
-              if (_aiActionState != _AiActionState.idle)
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.vertical(
-                          bottom: Radius.circular(AppSpacing.radiusMedium),
-                        ),
-                        color: theme.colorScheme.surfaceTint.withOpacity(0.08),
-                      ),
-                      child: Center(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 260),
-                          child: _aiActionState == _AiActionState.processing
-                              ? Column(
-                                  key: const ValueKey('processing'),
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const CircularProgressIndicator(),
-                                    const SizedBox(height: 12),
-                                    Text(_aiStatusMessage, style: theme.textTheme.bodyLarge),
-                                  ],
-                                )
-                              : Column(
-                                  key: const ValueKey('completed'),
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.auto_awesome, color: Colors.greenAccent, size: 36),
-                                    const SizedBox(height: 8),
-                                    Text(_aiStatusMessage, style: theme.textTheme.bodyLarge),
-                                  ],
-                                ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
             ],
-          );
-        }
-
-        final editorPanel = Expanded(child: buildEditorStack());
-
-        if (isCompact) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              buildSpinePanel(fillHeight: false, width: double.infinity),
-              const SizedBox(height: 20),
-              editorPanel,
-            ],
-          );
-        }
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            buildSpinePanel(fillHeight: true, width: spineWidth),
-            const SizedBox(width: 20),
-            editorPanel,
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _EditorToolbar extends StatelessWidget {
-  const _EditorToolbar({required this.controller});
-
-  final quill.QuillController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (context, _) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface.withOpacity(0.7),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusMedium)),
           ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _ToolbarButton(
-                  icon: Icons.undo,
-                  label: 'Назад',
-                  onPressed: controller.undo,
+        ),
+      ),
+    );
+
+    return Stack(
+      children: [
+        editorCard,
+        Positioned(
+          top: 20,
+          right: 20,
+          child: _AiHintDrawer(
+            expanded: _aiPanelExpanded,
+            onToggle: () {
+              setState(() => _aiPanelExpanded = !_aiPanelExpanded);
+            },
+            onAction: (action) {
+              if (action == 'expand' || action == 'rephrase' || action == 'simplify') {
+                _runAiAction(action);
+              } else {
+                GoRouter.of(context).pushNamed('aiComposer');
+              }
+            },
+          ),
+        ),
+        if (hasDictationActivity)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: IgnorePointer(
+                ignoring: !showDictationPanel,
+                child: AnimatedSlide(
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutCubic,
+                  offset: showDictationPanel ? Offset.zero : const Offset(0, 0.12),
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 260),
+                    opacity: showDictationPanel ? 1 : 0,
+                    child: _DictationStreamView(
+                      state: dictationState,
+                      onDismiss: () {
+                        setState(() => _dictationPanelCollapsed = true);
+                      },
+                    ),
+                  ),
                 ),
-                _ToolbarButton(
-                  icon: Icons.redo,
-                  label: 'Вперёд',
-                  onPressed: controller.redo,
-                ),
-                const SizedBox(width: 12),
-                _ToolbarToggleButton(
-                  icon: Icons.format_bold,
-                  label: 'Жирный',
-                  attribute: quill.Attribute.bold,
-                  controller: controller,
-                ),
-                _ToolbarToggleButton(
-                  icon: Icons.format_italic,
-                  label: 'Курсив',
-                  attribute: quill.Attribute.italic,
-                  controller: controller,
-                ),
-                _ToolbarToggleButton(
-                  icon: Icons.title,
-                  label: 'H1',
-                  attribute: quill.Attribute.h1,
-                  controller: controller,
-                ),
-                _ToolbarToggleButton(
-                  icon: Icons.subtitles_outlined,
-                  label: 'H2',
-                  attribute: quill.Attribute.h2,
-                  controller: controller,
-                ),
-                _ToolbarToggleButton(
-                  icon: Icons.format_list_bulleted,
-                  label: 'Список',
-                  attribute: quill.Attribute.ul,
-                  controller: controller,
-                ),
-                _ToolbarToggleButton(
-                  icon: Icons.format_quote,
-                  label: 'Цитата',
-                  attribute: quill.Attribute.blockQuote,
-                  controller: controller,
-                ),
-                _ToolbarToggleButton(
-                  icon: Icons.code,
-                  label: 'Код',
-                  attribute: quill.Attribute.codeBlock,
-                  controller: controller,
-                ),
-              ]
-                  .map((widget) => Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: widget))
-                  .toList(),
+              ),
             ),
           ),
+        if (!showDictationPanel && hasDictationActivity)
+          Positioned(
+            bottom: 24,
+            right: 24,
+            child: _DictationPanelHandle(
+              onPressed: () {
+                setState(() => _dictationPanelCollapsed = false);
+              },
+            ),
+          ),
+        if (_aiActionState != _AiActionState.idle)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+                  color: theme.colorScheme.surfaceTint.withOpacity(0.08),
+                ),
+                child: Center(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 260),
+                    child: _aiActionState == _AiActionState.processing
+                        ? Column(
+                            key: const ValueKey('processing'),
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const CircularProgressIndicator(),
+                              const SizedBox(height: 12),
+                              Text(_aiStatusMessage, style: theme.textTheme.bodyLarge),
+                            ],
+                          )
+                        : Column(
+                            key: const ValueKey('completed'),
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.auto_awesome, color: Colors.greenAccent, size: 36),
+                              const SizedBox(height: 8),
+                              Text(_aiStatusMessage, style: theme.textTheme.bodyLarge),
+                            ],
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _handleToolbarCommand(BuildContext context, EditorCommand command) {
+    switch (command) {
+      case EditorCommand.undo:
+        _controller.undo();
+        break;
+      case EditorCommand.redo:
+        _controller.redo();
+        break;
+      case EditorCommand.heading1:
+        _toggleHeading(1);
+        break;
+      case EditorCommand.heading2:
+        _toggleHeading(2);
+        break;
+      case EditorCommand.bold:
+        _toggleAttribute(quill.Attribute.bold);
+        break;
+      case EditorCommand.italic:
+        _toggleAttribute(quill.Attribute.italic);
+        break;
+      case EditorCommand.bulletList:
+        _toggleList(quill.Attribute.ul);
+        break;
+      case EditorCommand.more:
+        _showMoreFormattingMenu(context);
+        break;
+    }
+    _scheduleAutosave();
+  }
+
+  void _toggleAttribute(quill.Attribute attribute) {
+    final style = _controller.getSelectionStyle();
+    final isApplied = style.attributes.containsKey(attribute.key);
+    final target = isApplied ? quill.Attribute.clone(attribute, null) : attribute;
+    _controller.formatSelection(target);
+  }
+
+  void _toggleHeading(int level) {
+    final heading = _controller.getSelectionStyle().attributes[quill.Attribute.heading.key];
+    final target = level == 1 ? quill.Attribute.h1 : quill.Attribute.h2;
+    final shouldUnset = heading?.value == level;
+    _controller.formatSelection(shouldUnset ? quill.Attribute.clone(quill.Attribute.heading, null) : target);
+  }
+
+  void _toggleList(quill.Attribute attribute) {
+    final style = _controller.getSelectionStyle();
+    final isActive = style.attributes.containsKey(attribute.key);
+    _controller.formatSelection(isActive ? quill.Attribute.clone(attribute, null) : attribute);
+  }
+
+  Future<void> _showMoreFormattingMenu(BuildContext context) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.white.withOpacity(0.9),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.format_list_numbered),
+                title: const Text('Нумерованный список'),
+                onTap: () => Navigator.of(context).pop('ordered'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.format_quote),
+                title: const Text('Цитата'),
+                onTap: () => Navigator.of(context).pop('quote'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.code),
+                title: const Text('Код'),
+                onTap: () => Navigator.of(context).pop('code'),
+              ),
+            ],
+          ),
         );
       },
     );
-  }
-}
 
-class _ToolbarButton extends StatelessWidget {
-  const _ToolbarButton({required this.icon, required this.label, required this.onPressed});
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return FilledButton.tonalIcon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 18),
-      label: Text(label),
-    );
-  }
-}
-
-class _ToolbarToggleButton extends StatelessWidget {
-  const _ToolbarToggleButton({
-    required this.icon,
-    required this.label,
-    required this.attribute,
-    required this.controller,
-  });
-
-  final IconData icon;
-  final String label;
-  final quill.Attribute attribute;
-  final quill.QuillController controller;
-
-  void _toggle() {
-    final style = controller.getSelectionStyle();
-    final existing = style.attributes[attribute.key];
-    final shouldRemove = existing != null && existing.value == attribute.value;
-    if (shouldRemove) {
-      controller.formatSelection(quill.Attribute(attribute.key, attribute.scope, null));
-    } else {
-      controller.formatSelection(attribute);
+    switch (action) {
+      case 'ordered':
+        _toggleList(quill.Attribute.ol);
+        break;
+      case 'quote':
+        _toggleAttribute(quill.Attribute.blockQuote);
+        break;
+      case 'code':
+        _toggleAttribute(quill.Attribute.codeBlock);
+        break;
     }
   }
-
-  @override
-  Widget build(BuildContext context) {
-    final isActive = controller.getSelectionStyle().attributes[attribute.key]?.value == attribute.value;
-
-    return FilledButton.tonalIcon(
-      onPressed: _toggle,
-      style: isActive
-          ? FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.24),
-            )
-          : null,
-      icon: Icon(icon, size: 18),
-      label: Text(label),
-    );
-  }
 }
+
 
 class _MetaChip extends StatelessWidget {
   const _MetaChip({required this.label});
@@ -692,64 +606,6 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
-class _SaveIndicator extends StatelessWidget {
-  const _SaveIndicator({required this.isSaving});
-
-  final bool isSaving;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 250),
-      child: isSaving
-          ? Row(
-              key: const ValueKey('saving'),
-              children: const [
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                SizedBox(width: 8),
-                Text('Сохраняем...'),
-              ],
-            )
-          : Row(
-              key: const ValueKey('saved'),
-              children: const [
-                Icon(Icons.check_circle, color: Colors.greenAccent, size: 18),
-                SizedBox(width: 8),
-                Text('Сохранено'),
-              ],
-            ),
-    );
-  }
-}
-
-class _WordCountChip extends StatelessWidget {
-  const _WordCountChip({required this.count});
-
-  final String count;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(999),
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.speed, size: 16),
-          const SizedBox(width: 6),
-          Text('$count слов'),
-        ],
-      ),
-    );
-  }
-}
 
 class _AiHintCard extends StatelessWidget {
   const _AiHintCard({required this.onAction, required this.onClose});
