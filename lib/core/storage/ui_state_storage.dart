@@ -6,6 +6,8 @@ class UiStateStorage {
   static const _boxName = 'ui_state';
   static const _rulerPrefix = 'chapterRulerScrollOffset::';
   static const _activeChapterPrefix = 'activeChapter::';
+  static const _editorGatePrefix = 'gateOpened::';
+  static const _modePrefix = 'lastMode::';
 
   final Box<dynamic> _box;
 
@@ -36,5 +38,29 @@ class UiStateStorage {
 
   Future<void> writeActiveChapterId(String bookId, String chapterId) {
     return _box.put('$_activeChapterPrefix$bookId', chapterId);
+  }
+
+  bool readEditorGateOpened(String bookId, String chapterId) {
+    final value = _box.get('$_editorGatePrefix$bookId::$chapterId');
+    if (value is bool) {
+      return value;
+    }
+    return false;
+  }
+
+  Future<void> writeEditorGateOpened(String bookId, String chapterId, bool opened) {
+    return _box.put('$_editorGatePrefix$bookId::$chapterId', opened);
+  }
+
+  String? readWorkspaceMode(String bookId) {
+    final value = _box.get('$_modePrefix$bookId');
+    if (value is String) {
+      return value;
+    }
+    return null;
+  }
+
+  Future<void> writeWorkspaceMode(String bookId, String mode) {
+    return _box.put('$_modePrefix$bookId', mode);
   }
 }
