@@ -242,7 +242,7 @@ class _ChapterRulerState extends State<ChapterRuler> with SingleTickerProviderSt
     final rulerWidth = widget.width;
 
     return SizedBox(
-      width: rulerWidth,
+      width: compact ? double.infinity : rulerWidth,
       child: ClipRRect(
         borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
         child: DecoratedBox(
