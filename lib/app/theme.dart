@@ -26,7 +26,26 @@ class AppTheme {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
-      textTheme: AppTypography.textTheme,
+      textTheme: AppTypography.textTheme.copyWith(
+        headlineSmall: AppTypography.textTheme.headlineLarge?.copyWith(fontSize: 26, fontWeight: FontWeight.w600),
+        bodyMedium: AppTypography.textTheme.bodyLarge?.copyWith(fontSize: 16, height: 1.6),
+        labelLarge: AppTypography.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
+      cardTheme: CardTheme(
+        color: Colors.white.withOpacity(0.65),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+          side: const BorderSide(color: AppColors.border),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 3,
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusMedium)),
+        ),
+      ),
       chipTheme: base.chipTheme.copyWith(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
@@ -45,11 +64,13 @@ class AppTheme {
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         shape: StadiumBorder(),
       ),
+      shadowColor: Colors.black.withOpacity(0.12),
     );
   }
 
   ThemeData get darkTheme {
     final base = ThemeData.dark(useMaterial3: true);
+    final textTheme = AppTypography.textTheme.apply(bodyColor: Colors.white);
     return base.copyWith(
       colorScheme: ColorScheme.fromSeed(
         brightness: Brightness.dark,
@@ -65,7 +86,11 @@ class AppTheme {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
-      textTheme: AppTypography.textTheme.apply(bodyColor: Colors.white),
+      textTheme: textTheme.copyWith(
+        headlineSmall: textTheme.headlineLarge?.copyWith(fontSize: 26, fontWeight: FontWeight.w600),
+        bodyMedium: textTheme.bodyLarge?.copyWith(fontSize: 16, height: 1.6),
+        labelLarge: textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+      ),
       chipTheme: base.chipTheme.copyWith(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),

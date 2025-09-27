@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:voicebook/core/models/models.dart';
 import 'package:voicebook/core/providers/app_providers.dart';
 import 'package:voicebook/core/providers/dictation_controller.dart';
+import 'package:voicebook/core/storage/ui_state_storage.dart';
 import 'package:voicebook/shared/tokens/design_tokens.dart';
 import 'widgets/chapter_ruler/chapter_ruler.dart';
 import 'widgets/editor/chapter_editor.dart';
@@ -27,11 +29,67 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
   static const Duration _panelAnimationDuration = Duration(milliseconds: 280);
 
   bool _isRulerCollapsed = false;
+  UiStateStorage? _uiStateStorage;
+  bool _restoredChapter = false;
+  Timer? _recordingTicker;
+  Duration? _recordingElapsed;
+  DateTime? _recordingStartedAt;
 
   void _toggleRuler() {
     setState(() {
       _isRulerCollapsed = !_isRulerCollapsed;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    UiStateStorage.open().then((storage) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _uiStateStorage = storage);
+    });
+  }
+
+  @override
+  void dispose() {
+    _recordingTicker?.cancel();
+    super.dispose();
+  }
+
+  void _updateActiveChapter(String bookId, String chapterId) {
+    ref.read(currentChapterIdProvider(bookId).notifier).state = chapterId;
+    _uiStateStorage?.writeActiveChapterId(bookId, chapterId);
+    _restoredChapter = true;
+  }
+
+  void _startRecordingTimer() {
+    _recordingTicker?.cancel();
+    final startedAt = DateTime.now();
+    setState(() {
+      _recordingStartedAt = startedAt;
+      _recordingElapsed = Duration.zero;
+    });
+    _recordingTicker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted || _recordingStartedAt == null) {
+        return;
+      }
+      setState(() {
+        _recordingElapsed = DateTime.now().difference(_recordingStartedAt!);
+      });
+    });
+  }
+
+  void _stopRecordingTimer() {
+    _recordingTicker?.cancel();
+    _recordingTicker = null;
+    if (mounted) {
+      setState(() {
+        _recordingStartedAt = null;
+        _recordingElapsed = null;
+      });
+    }
   }
 
   @override
@@ -42,6 +100,15 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Ошибка надиктовки: ${next.error}')),
         );
+      }
+      final wasListening = previous?.isListening ?? false;
+      final isListening = next.isListening;
+      if (isListening && !wasListening) {
+        _startRecordingTimer();
+      } else if (!isListening && wasListening) {
+        _stopRecordingTimer();
+      } else if (!next.isListening && !next.isConnecting) {
+        _stopRecordingTimer();
       }
     });
     final storeState = ref.watch(voicebookStoreProvider);
@@ -82,11 +149,34 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
       );
     }
 
-    if (chapters.isNotEmpty && (currentChapter == null ||
-        !chapters.any((chapter) => chapter.id == currentChapter.id))) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(currentChapterIdProvider(bookId).notifier).state = chapters.first.id;
-      });
+    if (chapters.isNotEmpty) {
+      if (currentChapter == null) {
+        if (!_restoredChapter) {
+          _restoredChapter = true;
+          final storedId = _uiStateStorage?.readActiveChapterId(bookId);
+          final targetId = storedId != null && chapters.any((chapter) => chapter.id == storedId)
+              ? storedId
+              : chapters.first.id;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _updateActiveChapter(bookId, targetId);
+          });
+        }
+      } else if (!chapters.any((chapter) => chapter.id == currentChapter.id)) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _updateActiveChapter(bookId, chapters.first.id);
+        });
+      } else {
+        final storedId = _uiStateStorage?.readActiveChapterId(bookId);
+        if (!_restoredChapter && storedId != null && storedId != currentChapter.id &&
+            chapters.any((chapter) => chapter.id == storedId)) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _updateActiveChapter(bookId, storedId);
+          });
+        } else {
+          _uiStateStorage?.writeActiveChapterId(bookId, currentChapter.id);
+          _restoredChapter = true;
+        }
+      }
     }
 
     if (book == null || currentChapter == null || voiceProfile == null) {
@@ -114,14 +204,14 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
           chapters: summaries,
           activeChapterId: currentChapter.id,
           onSelect: (chapterId) {
-            ref.read(currentChapterIdProvider(bookId).notifier).state = chapterId;
+            _updateActiveChapter(bookId, chapterId);
           },
           onAddChapter: () async {
             final notifier = ref.read(voicebookStoreProvider.notifier);
             try {
               final chapter = await notifier.createChapter(bookId);
               if (context.mounted) {
-                ref.read(currentChapterIdProvider(bookId).notifier).state = chapter.id;
+                _updateActiveChapter(bookId, chapter.id);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Глава «${chapter.title}» добавлена.')),
                 );
@@ -167,6 +257,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
               },
               isRecording: dictationState.isListening,
               isConnecting: dictationState.isConnecting,
+              elapsed: _recordingElapsed,
             ),
           ),
         );
@@ -286,6 +377,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
             },
             isRecording: dictationState.isListening,
             isConnecting: dictationState.isConnecting,
+            elapsed: _recordingElapsed,
           ),
         );
       },
