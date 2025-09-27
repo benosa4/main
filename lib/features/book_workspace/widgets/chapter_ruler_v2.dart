@@ -436,12 +436,13 @@ class _AddChapterButton extends StatelessWidget {
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF6366F1),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        minimumSize: const Size(0, 0),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         elevation: 8,
         shadowColor: const Color(0xFF4338CA).withOpacity(0.42),
       ),
-      icon: const Icon(Icons.add_circle_outline),
+      icon: const Icon(Icons.add_circle_outline, size: 20),
       label: const Text(
         'Глава',
         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
