@@ -175,7 +175,7 @@ class _ChapterRulerV2State extends State<ChapterRulerV2> {
                     child: Padding(
                       padding: const EdgeInsets.only(top: 24, bottom: 104),
                       child: ReorderableListView.builder(
-                        controller: _scrollController,
+                        scrollController: _scrollController,
                         buildDefaultDragHandles: false,
                         padding: EdgeInsets.only(
                           left: 16,
