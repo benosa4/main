@@ -244,54 +244,53 @@ class _ChapterRulerState extends State<ChapterRuler> with SingleTickerProviderSt
     return SizedBox(
       width: rulerWidth,
       child: ClipRRect(
-          borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColors.primary, AppColors.secondary],
+        borderRadius: const BorderRadius.horizontal(right: Radius.circular(16)),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [AppColors.primary, AppColors.secondary],
+            ),
+            border: Border.all(color: AppColors.border.withOpacity(0.18)),
+            boxShadow: const [
+              BoxShadow(color: Colors.black12, blurRadius: 12, offset: Offset(0, 6)),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                  child: const SizedBox(),
+                ),
               ),
-              border: Border.all(color: AppColors.border.withOpacity(0.18)),
-              boxShadow: const [
-                BoxShadow(color: Colors.black12, blurRadius: 12, offset: Offset(0, 6)),
-              ],
-            ),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-                    child: const SizedBox(),
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _RulerTickPainter(
+                    offset: _scrollOffset,
+                    spacing: _tickSpacing,
+                    parallaxFactor: _tickParallaxFactor,
+                    color: Colors.white.withOpacity(0.1),
                   ),
                 ),
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _RulerTickPainter(
-                      offset: _scrollOffset,
-                      spacing: _tickSpacing,
-                      parallaxFactor: _tickParallaxFactor,
-                      color: Colors.white.withOpacity(0.1),
-                    ),
-                  ),
+              ),
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: _buildList(context, compact),
                 ),
-                Positioned.fill(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: _buildList(context, compact),
-                  ),
+              ),
+              Positioned(
+                bottom: compact ? 12 : 16,
+                left: 0,
+                right: 0,
+                child: _AddChapterButton(
+                  onPressed: widget.onAddChapter,
+                  compact: compact,
                 ),
-                Positioned(
-                  bottom: compact ? 12 : 16,
-                  left: 0,
-                  right: 0,
-                  child: _AddChapterButton(
-                    onPressed: widget.onAddChapter,
-                    compact: compact,
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -306,7 +305,7 @@ class _ChapterRulerState extends State<ChapterRuler> with SingleTickerProviderSt
         onKey: _handleKey,
         child: ReorderableListView.builder(
           padding: EdgeInsets.only(top: compact ? 16 : 24, bottom: compact ? 16 : 24),
-          controller: _scrollController,
+          scrollController: _scrollController,
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           itemCount: widget.chapters.length,
           buildDefaultDragHandles: false,
@@ -573,7 +572,8 @@ class _AddChapterButtonState extends State<_AddChapterButton> with SingleTickerP
         child: AnimatedBuilder(
           animation: _pulseController,
           builder: (context, child) {
-            final scale = 1 + (_pulseController.isAnimating ? (0.04 * (1 - _pulseController.value)) : 0);
+            final double scale =
+                1 + (_pulseController.isAnimating ? (0.04 * (1 - _pulseController.value)) : 0);
             return Transform.scale(
               scale: scale,
               child: child,
