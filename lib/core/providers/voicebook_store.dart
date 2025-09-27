@@ -247,6 +247,64 @@ class VoicebookStore extends StateNotifier<VoicebookStoreState> {
     }
   }
 
+  Future<Chapter> createChapter(String bookId) async {
+    final chapters = List<Chapter>.from(getChapters(bookId));
+    final order = chapters.length + 1;
+    final chapter = Chapter(
+      id: _generateId('chapter'),
+      bookId: bookId,
+      title: 'Новая глава $order',
+      subtitle: 'Черновик',
+      status: ChapterStatus.draft,
+      meta: const {
+        'genre': 'Не указан',
+        'audience': 'Не указана',
+        'wordCount': '0',
+      },
+      structure: const [],
+      body: 'Начните диктовку или нажмите «Сформировать текст», чтобы получить подсказку.',
+    );
+
+    try {
+      chapters.add(chapter);
+      await _replaceChapters(bookId, chapters);
+      return chapter;
+    } catch (error, stackTrace) {
+      state = state.copyWith(error: error, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
+  Future<void> reorderChapters({
+    required String bookId,
+    required int oldIndex,
+    required int newIndex,
+  }) async {
+    final chapters = List<Chapter>.from(getChapters(bookId));
+    if (oldIndex < 0 || oldIndex >= chapters.length) {
+      return;
+    }
+    var targetIndex = newIndex;
+    if (targetIndex > chapters.length) {
+      targetIndex = chapters.length;
+    }
+    if (oldIndex < targetIndex) {
+      targetIndex -= 1;
+    }
+    if (targetIndex < 0 || targetIndex >= chapters.length) {
+      targetIndex = chapters.length - 1;
+    }
+
+    final chapter = chapters.removeAt(oldIndex);
+    chapters.insert(targetIndex, chapter);
+
+    try {
+      await _replaceChapters(bookId, chapters);
+    } catch (error, stackTrace) {
+      state = state.copyWith(error: error, stackTrace: stackTrace);
+    }
+  }
+
   Future<void> appendDictationResult({
     required String bookId,
     required String chapterId,

@@ -91,15 +91,30 @@ class BookWorkspaceScreen extends ConsumerWidget {
             onSelect: (chapterId) {
               ref.read(currentChapterIdProvider(bookId).notifier).state = chapterId;
             },
-            onAdd: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Добавление новых глав включится в полной версии.')),
-              );
+            onAdd: () async {
+              final notifier = ref.read(voicebookStoreProvider.notifier);
+              try {
+                final chapter = await notifier.createChapter(bookId);
+                if (context.mounted) {
+                  ref.read(currentChapterIdProvider(bookId).notifier).state = chapter.id;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Глава «${chapter.title}» добавлена.')), 
+                  );
+                }
+              } catch (error) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Не удалось добавить главу. Попробуйте ещё раз.')),
+                  );
+                }
+              }
             },
             onReorder: (oldIndex, newIndex) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Перестановка глав сохранится при подключении хранилища.')),
-              );
+              ref.read(voicebookStoreProvider.notifier).reorderChapters(
+                    bookId: bookId,
+                    oldIndex: oldIndex,
+                    newIndex: newIndex,
+                  );
             },
           ),
         );

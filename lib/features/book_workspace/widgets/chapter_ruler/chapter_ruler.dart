@@ -21,10 +21,10 @@ class ChapterRuler extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
-      child: Container(
-        decoration: BoxDecoration(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useVertical = !constraints.hasBoundedHeight || constraints.maxHeight > constraints.maxWidth;
+        final decoration = BoxDecoration(
           gradient: const LinearGradient(
             colors: [AppColors.primary, AppColors.secondary],
             begin: Alignment.topCenter,
@@ -37,49 +37,84 @@ class ChapterRuler extends StatelessWidget {
               offset: const Offset(0, 12),
             ),
           ],
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              child: ReorderableListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                itemCount: chapters.length,
-                buildDefaultDragHandles: false,
-                onReorder: onReorder,
-                itemBuilder: (context, index) {
-                  final chapter = chapters[index];
-                  final isActive = chapter.id == activeChapterId;
-                  return Padding(
-                    key: ValueKey(chapter.id),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    child: _ChapterPill(
-                      chapter: chapter,
-                      index: index,
-                      isActive: isActive,
-                      onTap: () => onSelect(chapter.id),
+        );
+
+        if (useVertical) {
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
+            child: Container(
+              decoration: decoration,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ReorderableListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      itemCount: chapters.length,
+                      buildDefaultDragHandles: false,
+                      onReorder: onReorder,
+                      itemBuilder: (context, index) {
+                        final chapter = chapters[index];
+                        final isActive = chapter.id == activeChapterId;
+                        return Padding(
+                          key: ValueKey(chapter.id),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          child: _ChapterPill(
+                            chapter: chapter,
+                            index: index,
+                            isActive: isActive,
+                            onTap: () => onSelect(chapter.id),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: _AddChapterButton(onPressed: onAdd, compact: false),
+                  ),
+                ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Colors.white.withOpacity(0.16),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+          );
+        }
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLarge),
+          child: Container(
+            decoration: decoration,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ReorderableListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    buildDefaultDragHandles: false,
+                    itemCount: chapters.length,
+                    onReorder: onReorder,
+                    itemBuilder: (context, index) {
+                      final chapter = chapters[index];
+                      final isActive = chapter.id == activeChapterId;
+                      return Padding(
+                        key: ValueKey(chapter.id),
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                        child: _CompactChapterPill(
+                          chapter: chapter,
+                          index: index,
+                          isActive: isActive,
+                          onTap: () => onSelect(chapter.id),
+                        ),
+                      );
+                    },
                   ),
                 ),
-                onPressed: onAdd,
-                icon: const Icon(Icons.add),
-                label: const Text('Новая глава'),
-              ),
+                const SizedBox(width: 8),
+                _AddChapterButton(onPressed: onAdd, compact: true),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
@@ -150,6 +185,130 @@ class _ChapterPill extends StatelessWidget {
               Icon(Icons.bookmark_add_outlined, color: Colors.white70, size: 18),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CompactChapterPill extends StatelessWidget {
+  const _CompactChapterPill({
+    required this.chapter,
+    required this.index,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final ChapterSummary chapter;
+  final int index;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+        child: Ink(
+          width: 160,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+            color: isActive ? Colors.white.withOpacity(0.26) : Colors.white.withOpacity(0.14),
+            border: Border.all(color: isActive ? Colors.white : Colors.white24, width: 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Глава ${index + 1}',
+                      style: theme.textTheme.labelSmall?.copyWith(color: Colors.white70),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ReorderableDelayedDragStartListener(
+                    index: index,
+                    child: const Icon(Icons.drag_handle, size: 16, color: Colors.white54),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                chapter.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleSmall?.copyWith(color: Colors.white),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${chapter.wordCount} слов',
+                style: theme.textTheme.bodySmall?.copyWith(color: Colors.white60),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AddChapterButton extends StatelessWidget {
+  const _AddChapterButton({required this.onPressed, required this.compact});
+
+  final VoidCallback onPressed;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = Colors.white;
+    final background = Colors.white.withOpacity(0.16);
+
+    if (compact) {
+      return Tooltip(
+        message: 'Новая глава',
+        child: Container(
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMedium),
+            border: Border.all(color: Colors.white24),
+          ),
+          child: IconButton(
+            onPressed: onPressed,
+            color: foreground,
+            icon: const Icon(Icons.add),
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton(
+        style: FilledButton.styleFrom(
+          backgroundColor: background,
+          foregroundColor: foreground,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusMedium)),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        ),
+        onPressed: onPressed,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.add),
+            SizedBox(height: 6),
+            Text(
+              'Новая глава',
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

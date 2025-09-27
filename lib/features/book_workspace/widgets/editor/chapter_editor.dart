@@ -31,6 +31,8 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
   bool _saving = false;
   _AiActionState _aiActionState = _AiActionState.idle;
   String _aiStatusMessage = '';
+  bool _dictationPanelCollapsed = false;
+  bool _aiPanelExpanded = false;
 
   @override
   void initState() {
@@ -47,6 +49,14 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
           _appendDictation(next.lastCommittedText!);
           ref.read(dictationControllerProvider.notifier).acknowledgeCommit();
         }
+        final hadActivity =
+            (previous?.isConnecting ?? false) || (previous?.isListening ?? false) || (previous?.phrases.isNotEmpty ?? false);
+        final hasActivity = next.isConnecting || next.isListening || next.phrases.isNotEmpty;
+        if (hasActivity && _dictationPanelCollapsed && mounted) {
+          setState(() => _dictationPanelCollapsed = false);
+        } else if (!hasActivity && hadActivity && mounted) {
+          setState(() {});
+        }
       },
     );
   }
@@ -60,6 +70,8 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
       _initController();
       _titleController.text = widget.chapter.title;
       _subtitleController.text = widget.chapter.subtitle ?? '';
+      _dictationPanelCollapsed = false;
+      _aiPanelExpanded = false;
     }
   }
 
@@ -168,6 +180,9 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final dictationState = ref.watch(dictationControllerProvider);
+    final hasDictationActivity =
+        dictationState.isConnecting || dictationState.isListening || dictationState.phrases.isNotEmpty;
+    final showDictationPanel = hasDictationActivity && !_dictationPanelCollapsed;
     final editorTextStyle = (theme.textTheme.bodyMedium ?? const TextStyle()).copyWith(
       color: (theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface),
     );
@@ -271,7 +286,11 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
               Positioned(
                 top: 24,
                 right: 24,
-                child: _AiHintCard(
+                child: _AiHintDrawer(
+                  expanded: _aiPanelExpanded,
+                  onToggle: () {
+                    setState(() => _aiPanelExpanded = !_aiPanelExpanded);
+                  },
                   onAction: (action) {
                     if (action == 'expand' || action == 'rephrase' || action == 'simplify') {
                       _runAiAction(action);
@@ -281,12 +300,41 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
                   },
                 ),
               ),
-              Positioned(
-                left: 20,
-                right: 20,
-                bottom: 20,
-                child: _DictationStreamView(state: dictationState),
-              ),
+              if (hasDictationActivity)
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                    child: IgnorePointer(
+                      ignoring: !showDictationPanel,
+                      child: AnimatedSlide(
+                        duration: const Duration(milliseconds: 260),
+                        curve: Curves.easeOutCubic,
+                        offset: showDictationPanel ? Offset.zero : const Offset(0, 0.12),
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 260),
+                          opacity: showDictationPanel ? 1 : 0,
+                          child: _DictationStreamView(
+                            state: dictationState,
+                            onDismiss: () {
+                              setState(() => _dictationPanelCollapsed = true);
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              if (!showDictationPanel && hasDictationActivity)
+                Positioned(
+                  bottom: 24,
+                  right: 24,
+                  child: _DictationPanelHandle(
+                    onPressed: () {
+                      setState(() => _dictationPanelCollapsed = false);
+                    },
+                  ),
+                ),
               if (_aiActionState != _AiActionState.idle)
                 Positioned.fill(
                   child: IgnorePointer(
@@ -358,7 +406,11 @@ class _EditorToolbar extends StatelessWidget {
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: Row(children: buttons.map((b) => Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: b)).toList()),
+        child: Row(
+          children: buttons
+              .map((b) => Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: b))
+              .toList(),
+        ),
       ),
     );
   }
@@ -482,9 +534,10 @@ class _WordCountChip extends StatelessWidget {
 }
 
 class _AiHintCard extends StatelessWidget {
-  const _AiHintCard({required this.onAction});
+  const _AiHintCard({required this.onAction, required this.onClose});
 
   final ValueChanged<String> onAction;
+  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -499,7 +552,16 @@ class _AiHintCard extends StatelessWidget {
             children: [
               Icon(Icons.auto_awesome, color: theme.colorScheme.primary),
               const SizedBox(width: 8),
-              Text('AI подсказки', style: theme.textTheme.titleMedium),
+              Expanded(child: Text('AI подсказки', style: theme.textTheme.titleMedium)),
+              IconButton(
+                tooltip: 'Свернуть',
+                onPressed: onClose,
+                icon: const Icon(Icons.close),
+                style: IconButton.styleFrom(
+                  foregroundColor: theme.colorScheme.primary,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -517,10 +579,60 @@ class _AiHintCard extends StatelessWidget {
   }
 }
 
+class _AiHintDrawer extends StatelessWidget {
+  const _AiHintDrawer({
+    required this.expanded,
+    required this.onToggle,
+    required this.onAction,
+  });
+
+  final bool expanded;
+  final VoidCallback onToggle;
+  final ValueChanged<String> onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 260),
+          transitionBuilder: (child, animation) {
+            final slideAnimation = Tween<Offset>(begin: const Offset(0.2, 0), end: Offset.zero)
+                .chain(CurveTween(curve: Curves.easeOutCubic))
+                .animate(animation);
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(position: slideAnimation, child: child),
+            );
+          },
+          child: expanded
+              ? Padding(
+                  key: const ValueKey('ai-expanded'),
+                  padding: const EdgeInsets.only(right: 12),
+                  child: _AiHintCard(
+                    onAction: onAction,
+                    onClose: onToggle,
+                  ),
+                )
+              : const SizedBox(key: ValueKey('ai-collapsed')),
+        ),
+        FloatingActionButton.small(
+          heroTag: null,
+          tooltip: expanded ? 'Скрыть подсказки' : 'Показать подсказки',
+          onPressed: onToggle,
+          child: Icon(expanded ? Icons.close : Icons.auto_awesome),
+        ),
+      ],
+    );
+  }
+}
+
 class _DictationStreamView extends StatelessWidget {
-  const _DictationStreamView({required this.state});
+  const _DictationStreamView({required this.state, required this.onDismiss});
 
   final DictationState state;
+  final VoidCallback onDismiss;
 
   @override
   Widget build(BuildContext context) {
@@ -547,59 +659,91 @@ class _DictationStreamView extends StatelessWidget {
               Icon(state.isListening ? Icons.mic : Icons.graphic_eq,
                   color: theme.colorScheme.primary),
               const SizedBox(width: 8),
-              Text(
-                state.isConnecting
-                    ? 'Подключаемся к надиктовке...'
-                    : state.isListening
-                        ? 'Идёт надиктовка'
-                        : 'Последние результаты',
-                style: theme.textTheme.titleSmall,
+              Expanded(
+                child: Text(
+                  state.isConnecting
+                      ? 'Подключаемся к надиктовке...'
+                      : state.isListening
+                          ? 'Идёт надиктовка'
+                          : 'Последние результаты',
+                  style: theme.textTheme.titleSmall,
+                ),
               ),
-              const Spacer(),
               if (state.isListening)
                 const SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
+              const SizedBox(width: 8),
+              IconButton(
+                tooltip: 'Скрыть панель',
+                onPressed: onDismiss,
+                icon: const Icon(Icons.expand_more),
+                style: IconButton.styleFrom(
+                  foregroundColor: theme.colorScheme.primary,
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
-          ...state.phrases.take(3).map(
-            (phrase) => Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    switch (phrase.status) {
-                      DictationPhraseStatus.streaming => Icons.circle,
-                      DictationPhraseStatus.committing => Icons.sync,
-                      DictationPhraseStatus.committed => Icons.check_circle,
-                    },
-                    size: 16,
-                    color: switch (phrase.status) {
-                      DictationPhraseStatus.streaming => theme.colorScheme.primary,
-                      DictationPhraseStatus.committing => AppColors.accent,
-                      DictationPhraseStatus.committed => Colors.greenAccent,
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      style: theme.textTheme.bodyMedium!.copyWith(
-                        fontStyle: phrase.status == DictationPhraseStatus.streaming ? FontStyle.italic : null,
-                      ),
-                      child: Text(phrase.text),
+          if (state.phrases.isEmpty)
+            Text(
+              'Результаты появятся после первых фраз.',
+              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            )
+          else
+            ...state.phrases.take(3).map(
+              (phrase) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      switch (phrase.status) {
+                        DictationPhraseStatus.streaming => Icons.circle,
+                        DictationPhraseStatus.committing => Icons.sync,
+                        DictationPhraseStatus.committed => Icons.check_circle,
+                      },
+                      size: 16,
+                      color: switch (phrase.status) {
+                        DictationPhraseStatus.streaming => theme.colorScheme.primary,
+                        DictationPhraseStatus.committing => AppColors.accent,
+                        DictationPhraseStatus.committed => Colors.greenAccent,
+                      },
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 200),
+                        style: theme.textTheme.bodyMedium!.copyWith(
+                          fontStyle: phrase.status == DictationPhraseStatus.streaming ? FontStyle.italic : null,
+                        ),
+                        child: Text(phrase.text),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
         ],
       ),
+    );
+  }
+}
+
+class _DictationPanelHandle extends StatelessWidget {
+  const _DictationPanelHandle({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton.tonalIcon(
+      onPressed: onPressed,
+      icon: const Icon(Icons.graphic_eq),
+      label: const Text('Последние результаты'),
     );
   }
 }
