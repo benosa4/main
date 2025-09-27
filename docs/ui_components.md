@@ -66,10 +66,12 @@
 
 **B. ChapterEditor**
 - `ChapterHeaderBar`: `TitleField`, `SubtitleField`, `MetaChips`, `StructureButton`, `SaveIndicator`.
-- `RichTextEditor` на `flutter_quill` + `InlineToolbar`.
+- `RichTextEditor` на базе готового пакета `flutter_quill`, расширенного темизацией, хоткеями и синхронизацией курсора.
 - `AIPromptHintsPopover` — плавающие AI-подсказки.
 - `WordCountChip` — слова/символы.
 - Состояния: autosave pending/done, selection active, ASR insert (highlight wave).
+
+> ℹ️ **Почему не пишем редактор с нуля?** В Flutter есть зрелые rich-text-библиотеки (`flutter_quill`, `super_editor`), поэтому мы используем готовый компонент и дополняем его собственными слоями (панель инструментов, горячие клавиши, интеграция с AI/ASR). Это позволяет сфокусироваться на бизнес-логике вместо повторного изобретения базового редактора.
 
 **C. FabActionCluster**
 - `MicButton` — центральная красная кнопка, уровни сигнала, состояния `idle → connecting → recording → finalizing → error`.
