@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,13 +12,31 @@ import 'widgets/chapter_ruler/chapter_ruler.dart';
 import 'widgets/editor/chapter_editor.dart';
 import 'widgets/fab_panel/fab_action_cluster.dart';
 
-class BookWorkspaceScreen extends ConsumerWidget {
+class BookWorkspaceScreen extends ConsumerStatefulWidget {
   const BookWorkspaceScreen({super.key, required this.bookId});
 
   final String bookId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BookWorkspaceScreen> createState() => _BookWorkspaceScreenState();
+}
+
+class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
+  static const double _collapsedPeek = 16.0;
+  static const double _toggleButtonSize = 40.0;
+  static const Duration _panelAnimationDuration = Duration(milliseconds: 280);
+
+  bool _isRulerCollapsed = false;
+
+  void _toggleRuler() {
+    setState(() {
+      _isRulerCollapsed = !_isRulerCollapsed;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bookId = widget.bookId;
     ref.listen<DictationState>(dictationControllerProvider, (previous, next) {
       if (next.error != null && next.error != previous?.error) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -81,11 +101,15 @@ class BookWorkspaceScreen extends ConsumerWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= 1024;
-        final isTablet = constraints.maxWidth >= 600 && constraints.maxWidth < 1024;
+        final rulerWidth = isDesktop ? 72.0 : 64.0;
+        final isCollapsed = _isRulerCollapsed;
+        final rulerLeft = isCollapsed ? -rulerWidth + _collapsedPeek : 0.0;
+        final contentPaddingLeft = isCollapsed ? _collapsedPeek : rulerWidth;
+        final toggleLeft = math.max(0.0, rulerLeft + rulerWidth - _toggleButtonSize / 2);
 
         final ruler = ChapterRuler(
           bookId: bookId,
-          width: isDesktop ? 72 : 64,
+          width: rulerWidth,
           compact: !isDesktop,
           chapters: summaries,
           activeChapterId: currentChapter.id,
@@ -98,24 +122,24 @@ class BookWorkspaceScreen extends ConsumerWidget {
               final chapter = await notifier.createChapter(bookId);
               if (context.mounted) {
                 ref.read(currentChapterIdProvider(bookId).notifier).state = chapter.id;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Глава «${chapter.title}» добавлена.')), 
-                  );
-                }
-              } catch (error) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Не удалось добавить главу. Попробуйте ещё раз.')),
-                  );
-                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Глава «${chapter.title}» добавлена.')),
+                );
               }
-            },
+            } catch (error) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Не удалось добавить главу. Попробуйте ещё раз.')),
+                );
+              }
+            }
+          },
           onReorder: (oldIndex, newIndex) {
             ref.read(voicebookStoreProvider.notifier).reorderChapters(
-                  bookId: bookId,
-                  oldIndex: oldIndex,
-                  newIndex: newIndex,
-                );
+              bookId: bookId,
+              oldIndex: oldIndex,
+              newIndex: newIndex,
+            );
           },
         );
 
@@ -175,14 +199,10 @@ class BookWorkspaceScreen extends ConsumerWidget {
           ],
         );
 
-        if (isDesktop) {
-          return Scaffold(
-            appBar: appBar,
-            body: SafeArea(
-              child: Row(
+        final baseContent = isDesktop
+            ? Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ruler,
                   Expanded(child: editor),
                   Expanded(
                     child: Stack(
@@ -193,21 +213,63 @@ class BookWorkspaceScreen extends ConsumerWidget {
                     ),
                   ),
                 ],
+              )
+            : Column(
+                children: [
+                  Expanded(child: editor),
+                ],
+              );
+
+        final body = SafeArea(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: AnimatedPadding(
+                  duration: _panelAnimationDuration,
+                  curve: Curves.easeOutCubic,
+                  padding: EdgeInsets.only(left: contentPaddingLeft),
+                  child: baseContent,
+                ),
               ),
-            ),
+              AnimatedPositioned(
+                duration: _panelAnimationDuration,
+                curve: Curves.easeOutCubic,
+                top: 0,
+                bottom: 0,
+                left: rulerLeft,
+                child: SizedBox(
+                  width: rulerWidth,
+                  child: IgnorePointer(
+                    ignoring: isCollapsed,
+                    child: ruler,
+                  ),
+                ),
+              ),
+              AnimatedPositioned(
+                duration: _panelAnimationDuration,
+                curve: Curves.easeOutCubic,
+                top: 16,
+                left: toggleLeft,
+                child: _RulerToggleButton(
+                  collapsed: isCollapsed,
+                  size: _toggleButtonSize,
+                  onPressed: _toggleRuler,
+                ),
+              ),
+            ],
+          ),
+        );
+
+        if (isDesktop) {
+          return Scaffold(
+            appBar: appBar,
+            body: body,
           );
         }
 
         return Scaffold(
           appBar: appBar,
-          body: SafeArea(
-            child: Column(
-              children: [
-                SizedBox(height: isTablet ? 96 : 82, child: ruler),
-                Expanded(child: editor),
-              ],
-            ),
-          ),
+          body: body,
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           floatingActionButton: FabActionCluster(
             onToggleRecording: () =>
@@ -227,6 +289,46 @@ class BookWorkspaceScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _RulerToggleButton extends StatelessWidget {
+  const _RulerToggleButton({
+    required this.collapsed,
+    required this.size,
+    required this.onPressed,
+  });
+
+  final bool collapsed;
+  final double size;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final message = collapsed ? 'Показать переплёт' : 'Скрыть переплёт';
+
+    return Tooltip(
+      message: message,
+      waitDuration: const Duration(milliseconds: 400),
+      child: Material(
+        color: colorScheme.surface,
+        elevation: 4,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onPressed,
+          child: SizedBox(
+            width: size,
+            height: size,
+            child: Icon(
+              collapsed ? Icons.chevron_right : Icons.chevron_left,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
