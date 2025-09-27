@@ -187,8 +187,9 @@ class _ChapterRulerV2State extends State<ChapterRulerV2> {
                           final active = chapter.id == widget.activeChapterId;
                           final accent = _chapterAccentColor(chapter.id);
                           final canDrag = kIsWeb || Theme.of(context).platform != TargetPlatform.android;
+                          final itemKey = ValueKey(chapter.id);
                           final tile = _ChapterTab(
-                            key: ValueKey(chapter.id),
+                            key: canDrag ? null : itemKey,
                             id: chapter.id,
                             title: chapter.title,
                             active: active,
@@ -200,6 +201,7 @@ class _ChapterRulerV2State extends State<ChapterRulerV2> {
                             return tile;
                           }
                           return ReorderableDragStartListener(
+                            key: itemKey,
                             index: index,
                             child: tile,
                           );
