@@ -219,7 +219,7 @@ class _ChapterRulerState extends State<ChapterRuler> {
       primary: false,
       buildDefaultDragHandles: false,
       itemCount: widget.chapters.length,
-      proxyDecorator: (context, child, animation) {
+      proxyDecorator: (child, index, animation) {
         return AnimatedBuilder(
           animation: animation,
           builder: (context, _) {
