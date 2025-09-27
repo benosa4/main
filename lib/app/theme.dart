@@ -31,7 +31,7 @@ class AppTheme {
         bodyMedium: AppTypography.textTheme.bodyLarge?.copyWith(fontSize: 16, height: 1.6),
         labelLarge: AppTypography.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w600),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: Colors.white.withOpacity(0.65),
         elevation: 0,
         shape: RoundedRectangleBorder(

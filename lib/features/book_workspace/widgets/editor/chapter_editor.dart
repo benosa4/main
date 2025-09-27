@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -299,13 +300,10 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
 
   int? _resolveWordCount() {
     final value = widget.chapter.meta['wordCount'];
-    if (value is num) {
-      return value.toInt();
+    if (value == null) {
+      return null;
     }
-    if (value is String) {
-      return int.tryParse(value);
-    }
-    return null;
+    return int.tryParse(value);
   }
 
   Widget _buildEditorSurface({
@@ -504,10 +502,10 @@ class _ChapterEditorState extends ConsumerState<ChapterEditor> {
   }
 
   void _toggleHeading(int level) {
-    final heading = _controller.getSelectionStyle().attributes[quill.Attribute.heading.key];
+    final heading = _controller.getSelectionStyle().attributes[quill.Attribute.header.key];
     final target = level == 1 ? quill.Attribute.h1 : quill.Attribute.h2;
     final shouldUnset = heading?.value == level;
-    _controller.formatSelection(shouldUnset ? quill.Attribute.clone(quill.Attribute.heading, null) : target);
+    _controller.formatSelection(shouldUnset ? quill.Attribute.clone(quill.Attribute.header, null) : target);
   }
 
   void _toggleList(quill.Attribute attribute) {
