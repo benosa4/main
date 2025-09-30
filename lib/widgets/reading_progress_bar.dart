@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/reading_prefs.dart';
-import '../shared/tokens/design_tokens.dart'; // если нужно AppColors в тексте—оставляем
+// design_tokens не нужен здесь
 
 class ReadingProgressBar extends StatelessWidget {
   final double progress;
@@ -36,7 +36,7 @@ class ReadingProgressBar extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          _PaintedProgress(value: progress.clamp(0, 1).toDouble(), prefs: prefs),
+          _PaintedProgress(value: progress.clamp(0, 1), prefs: prefs),
           const SizedBox(height: 6),
           Text('${_fmt(words)} слов', style: TextStyle(color: subColor)),
         ],
@@ -86,6 +86,7 @@ class _ProgressPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final r = Radius.circular(size.height / 2);
+    // Трек: мягкий и контрастный к фону текста
     final trackPaint = Paint()
       ..color = prefs.isDark
           ? Colors.white.withOpacity(.18)
@@ -101,6 +102,7 @@ class _ProgressPainter extends CustomPainter {
 
     if (value <= 0) return;
 
+    // Минимальная видимая ширина, чтобы полоса не исчезала на малых значениях
     final w = (size.width * value).clamp(2.0, size.width);
     final fillRect = Rect.fromLTWH(0, 0, w, size.height);
     final fillPaint = Paint()
@@ -128,7 +130,7 @@ LinearGradient _valueGradient(ReadingPrefs p) {
       return const LinearGradient(
         begin: Alignment.centerLeft,
         end: Alignment.centerRight,
-        colors: [AppColors.primary, AppColors.accent],
+        colors: [Color(0xFF7C3AED), Color(0xFF06B6D4)],
       );
     case ReadingTheme.sepia:
       return const LinearGradient(
