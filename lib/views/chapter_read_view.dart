@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
 import '../models/chapter.dart';
 import '../models/reading_prefs.dart';
 import '../shared/tokens/design_tokens.dart';
 import '../widgets/billing_bar.dart';
 import '../widgets/compact_text_settings_bar.dart';
 import '../widgets/measure_size.dart';
+import '../widgets/reading_chrome_app_bar.dart';
 import '../widgets/reading_progress_bar.dart';
 
 class ChapterReadView extends StatefulWidget {
@@ -94,38 +93,14 @@ class _ChapterReadViewState extends State<ChapterReadView> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        // ВАЖНО: отключаем tint/overlay у M3 и красим градиентом из prefs
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        elevation: 2,
-        scrolledUnderElevation: 0,
-        shadowColor: Colors.transparent,
-        foregroundColor: prefs.chromeForeground,
-        systemOverlayStyle:
-            prefs.isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-        flexibleSpace: DecoratedBox(
-          decoration: BoxDecoration(gradient: prefs.chromeGradient),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Назад',
-          onPressed: () {
-            Navigator.of(context).maybePop();
-          },
-        ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.auto_stories, size: 22),
-            SizedBox(width: 8),
-            Text('VoxBook Studio'),
-          ],
-        ),
-        actions: [
-          IconButton(onPressed: () {}, tooltip: 'Поиск', icon: const Icon(Icons.search)),
-          IconButton(onPressed: () {}, tooltip: 'Уведомления', icon: const Icon(Icons.notifications_none)),
-          IconButton(onPressed: () {}, tooltip: 'Настройки', icon: const Icon(Icons.settings_outlined)),
+      appBar: ReadingChromeAppBar(
+        prefs: prefs,
+        onBack: () => Navigator.pop(context),
+        title: const Text('VoxBook Studio'),
+        actions: const [
+          IconButton(onPressed: null, icon: Icon(Icons.search), tooltip: 'Поиск'),
+          IconButton(onPressed: null, icon: Icon(Icons.notifications_none), tooltip: 'Уведомления'),
+          IconButton(onPressed: null, icon: Icon(Icons.settings_outlined), tooltip: 'Настройки'),
         ],
       ),
       body: Stack(
@@ -133,7 +108,11 @@ class _ChapterReadViewState extends State<ChapterReadView> {
           Column(
             children: [
               const BillingBar(credits: 2450, micTime: Duration(minutes: 45), requests: 120),
-              _ChapterHeader(title: widget.chapter.title, words: widget.chapter.words),
+              _ChapterHeader(
+                title: widget.chapter.title,
+                words: widget.chapter.words,
+                prefs: prefs,
+              ),
               ReadingProgressBar(progress: progress, words: widget.chapter.words),
               Expanded(
                 child: Container(
@@ -225,15 +204,26 @@ class _ChapterReadViewState extends State<ChapterReadView> {
 class _ChapterHeader extends StatelessWidget {
   final String title;
   final int words;
+  final ReadingPrefs prefs;
 
-  const _ChapterHeader({required this.title, required this.words});
+  const _ChapterHeader({
+    required this.title,
+    required this.words,
+    required this.prefs,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final captionColor = theme.colorScheme.onSurface.withOpacity(.55);
+    final gray = prefs.isDark
+        ? Colors.white.withOpacity(.7)
+        : const Color(0xFF111827).withOpacity(.55);
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 10, 8, 6),
+      decoration: BoxDecoration(
+        gradient: prefs.chromeGradient,
+        border: Border(bottom: BorderSide(color: prefs.chromeBorder)),
+      ),
       child: Row(
         children: [
           Expanded(
@@ -242,15 +232,22 @@ class _ChapterHeader extends StatelessWidget {
                 Text(
                   title,
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: prefs.chromeForeground,
+                      ),
                 ),
                 const SizedBox(height: 4),
-                Text('${_fmt(words)} слов', style: theme.textTheme.bodySmall?.copyWith(color: captionColor)),
+                Text(
+                  '${_fmt(words)} слов',
+                  style: theme.textTheme.bodySmall?.copyWith(color: gray),
+                ),
               ],
             ),
           ),
           PopupMenuButton<String>(
             tooltip: 'Ещё',
+            color: Theme.of(context).cardColor,
             itemBuilder: (_) => const [
               PopupMenuItem(value: 'bookmark', child: Text('Добавить закладку')),
               PopupMenuItem(value: 'share', child: Text('Поделиться')),
