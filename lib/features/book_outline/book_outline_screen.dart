@@ -23,9 +23,9 @@ class BookOutlineScreen extends ConsumerWidget {
     final chapters = ref.watch(bookChaptersProvider(bookId));
 
     if (notebook == null) {
-      return const Scaffold(
+      return Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text('Коллекция не найдена.')),
+        body: const Center(child: Text('Коллекция не найдена.')),
       );
     }
 
