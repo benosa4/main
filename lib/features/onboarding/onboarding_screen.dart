@@ -18,48 +18,109 @@ class OnboardingScreen extends ConsumerWidget {
         children: [
           const _AnimatedGradientBackground(),
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const _BrandHeader(),
-                  const SizedBox(height: 24),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        const Expanded(child: _HeroCarousel()),
-                        const SizedBox(height: 24),
-                        _PermissionRequestRow(
-                          state: permissions,
-                          onToggle: (permission) {
-                            ref.read(permissionsProvider.notifier).toggle(permission);
-                          },
-                        ),
-                      ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isCompact = constraints.maxHeight < 720;
+                void handleToggle(AppPermission permission) {
+                  ref.read(permissionsProvider.notifier).toggle(permission);
+                }
+
+                void handlePrimaryCta() {
+                  if (!permissions.allGranted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Разрешите доступ к микрофону, уведомлениям и файлам.')),
+                    );
+                    return;
+                  }
+                  context.go('/library');
+                }
+
+                final content = _OnboardingContent(
+                  permissions: permissions,
+                  onToggle: handleToggle,
+                  onPrimaryCta: handlePrimaryCta,
+                  isCompact: isCompact,
+                );
+
+                if (isCompact) {
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      child: content,
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  const _LanguageSelector(),
-                  const SizedBox(height: 24),
-                  _PrimaryCta(
-                    enabled: permissions.allGranted,
-                    onPressed: () {
-                      if (!permissions.allGranted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Разрешите доступ к микрофону, уведомлениям и файлам.')),
-                        );
-                        return;
-                      }
-                      context.go('/library');
-                    },
-                  ),
-                ],
-              ),
+                  );
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: content,
+                );
+              },
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _OnboardingContent extends StatelessWidget {
+  const _OnboardingContent({
+    required this.permissions,
+    required this.onToggle,
+    required this.onPrimaryCta,
+    required this.isCompact,
+  });
+
+  final PermissionState permissions;
+  final ValueChanged<AppPermission> onToggle;
+  final VoidCallback onPrimaryCta;
+  final bool isCompact;
+
+  @override
+  Widget build(BuildContext context) {
+    final heroSection = isCompact
+        ? Column(
+            children: [
+              SizedBox(
+                height: 320,
+                child: const _HeroCarousel(),
+              ),
+              const SizedBox(height: 24),
+              _PermissionRequestRow(
+                state: permissions,
+                onToggle: onToggle,
+              ),
+            ],
+          )
+        : Expanded(
+            child: Column(
+              children: [
+                const Expanded(child: _HeroCarousel()),
+                const SizedBox(height: 24),
+                _PermissionRequestRow(
+                  state: permissions,
+                  onToggle: onToggle,
+                ),
+              ],
+            ),
+          );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _BrandHeader(),
+        const SizedBox(height: 24),
+        heroSection,
+        const SizedBox(height: 16),
+        const _LanguageSelector(),
+        const SizedBox(height: 24),
+        _PrimaryCta(
+          enabled: permissions.allGranted,
+          onPressed: onPrimaryCta,
+        ),
+      ],
     );
   }
 }
