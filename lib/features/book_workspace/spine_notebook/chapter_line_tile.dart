@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'spine_constants.dart';
 import 'spine_tab.dart';
 
 class ChapterLineTile extends StatelessWidget {
@@ -13,6 +14,7 @@ class ChapterLineTile extends StatelessWidget {
     required this.active,
     required this.lineHeight,
     required this.spineWidth,
+    this.bandKey,
     required this.onTap,
   });
 
@@ -22,6 +24,7 @@ class ChapterLineTile extends StatelessWidget {
   final bool active;
   final double lineHeight;
   final double spineWidth;
+  final GlobalKey? bandKey;
   final VoidCallback onTap;
 
   @override
@@ -29,7 +32,11 @@ class ChapterLineTile extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
-        final textMaxWidth = availableWidth - spineWidth - 24 - 32;
+        const double horizontalPadding = 24.0;
+        final textMaxWidth = math.max(
+          0,
+          availableWidth - spineWidth - horizontalPadding * 2,
+        );
 
         int measureLines(double fontSize) {
           final painter = TextPainter(
@@ -38,29 +45,35 @@ class ChapterLineTile extends StatelessWidget {
               style: TextStyle(
                 fontSize: fontSize,
                 fontWeight: FontWeight.w700,
-                height: 1.25,
+                height: 1.2,
                 color: const Color(0xFF0F172A),
               ),
             ),
             textDirection: TextDirection.ltr,
             maxLines: 999,
           );
-          painter.layout(maxWidth: textMaxWidth.clamp(0, double.infinity).toDouble());
+          painter.layout(maxWidth: textMaxWidth.toDouble());
           return painter.computeLineMetrics().length;
         }
 
-        double fontSize = 16;
+        double fontSize = kTitleBase;
         int linesNeeded = measureLines(fontSize);
         if (linesNeeded > 2) {
-          fontSize = math.max(13, 16 - 1.5 * (linesNeeded - 2));
-          linesNeeded = measureLines(fontSize);
+          while (fontSize > kTitleMin && linesNeeded > kTabMaxLines) {
+            fontSize = math.max(kTitleMin, fontSize - 1);
+            linesNeeded = measureLines(fontSize);
+          }
+          if (linesNeeded > kTabMaxLines) {
+            linesNeeded = kTabMaxLines;
+          }
         }
-        final int lines = linesNeeded.clamp(1, 4) as int;
+        final int lines = linesNeeded.clamp(kTabMinLines, kTabMaxLines);
         final rowHeight = lines * lineHeight;
 
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(vertical: 3),
           child: SizedBox(
+            key: bandKey,
             height: rowHeight,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -84,21 +97,24 @@ class ChapterLineTile extends StatelessWidget {
                     onTap: onTap,
                     borderRadius: BorderRadius.circular(8),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          title,
-                          maxLines: lines,
-                          overflow: TextOverflow.ellipsis,
-                          softWrap: true,
-                          style: TextStyle(
-                            fontSize: fontSize,
-                            fontWeight: FontWeight.w700,
-                            height: 1.25,
-                            color: const Color(0xFF0F172A),
+                      padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            maxLines: lines,
+                            overflow: TextOverflow.ellipsis,
+                            softWrap: true,
+                            style: TextStyle(
+                              fontSize: fontSize,
+                              fontWeight: FontWeight.w700,
+                              height: 1.2,
+                              color: const Color(0xFF0F172A),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
                   ),

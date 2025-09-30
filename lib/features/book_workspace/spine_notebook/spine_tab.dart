@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'spine_constants.dart';
+
 class SpineTab extends StatefulWidget {
   const SpineTab({
     super.key,
@@ -21,8 +23,8 @@ class SpineTab extends StatefulWidget {
   final bool active;
   final VoidCallback onTap;
 
-  static const double baseWidth = 104;
-  static const double hoverWidth = 132;
+  static const double baseWidth = kSpineWidth;
+  static const double hoverWidth = kSpineWidth;
 
   @override
   State<SpineTab> createState() => _SpineTabState();
@@ -45,7 +47,7 @@ class _SpineTabState extends State<SpineTab> {
   Widget build(BuildContext context) {
     final height = widget.lines * widget.lineHeight;
     final radius = Radius.circular(20);
-    final width = _hovered ? SpineTab.hoverWidth : SpineTab.baseWidth;
+    final width = SpineTab.baseWidth;
 
     final decoration = BoxDecoration(
       gradient: const LinearGradient(
@@ -68,7 +70,7 @@ class _SpineTabState extends State<SpineTab> {
     );
 
     final badge = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.36),
         borderRadius: BorderRadius.circular(12),
@@ -153,15 +155,7 @@ class _SpineTabState extends State<SpineTab> {
                   ),
               ),
             ),
-            Positioned.fill(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 16, right: 20),
-                child: Align(
-                  alignment: Alignment.center,
-                  child: badge,
-                ),
-              ),
-            ),
+            Center(child: badge),
           ],
         ),
       ),
