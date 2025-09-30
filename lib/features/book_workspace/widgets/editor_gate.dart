@@ -52,6 +52,13 @@ class _EditorGateState extends State<EditorGate> with SingleTickerProviderStateM
     widget.onOpen();
   }
 
+  void close() {
+    if (!_open) {
+      return;
+    }
+    setState(() => _open = false);
+  }
+
   @override
   void dispose() {
     widget.controller?._detach(this);
@@ -90,6 +97,10 @@ class EditorGateController {
 
   void open() {
     _state?.open();
+  }
+
+  void close() {
+    _state?.close();
   }
 
   void _attach(_EditorGateState state) {
