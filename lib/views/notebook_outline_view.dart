@@ -84,16 +84,18 @@ class _NotebookOutlineViewState extends State<NotebookOutlineView> {
     return Scaffold(
       appBar: AppBar(
         title: Row(
-          children: [
-            const Icon(Icons.auto_stories, size: 22),
-            const SizedBox(width: 8),
-            const Text('VoxBook Studio'),
-            const Spacer(),
-            IconButton(onPressed: () {}, tooltip: 'Поиск', icon: const Icon(Icons.search)),
-            IconButton(onPressed: () {}, tooltip: 'Уведомления', icon: const Icon(Icons.notifications_none)),
-            IconButton(onPressed: () {}, tooltip: 'Настройки', icon: const Icon(Icons.settings_outlined)),
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.auto_stories, size: 22),
+            SizedBox(width: 8),
+            Text('VoxBook Studio'),
           ],
         ),
+        actions: [
+          IconButton(onPressed: () {}, tooltip: 'Поиск', icon: const Icon(Icons.search)),
+          IconButton(onPressed: () {}, tooltip: 'Уведомления', icon: const Icon(Icons.notifications_none)),
+          IconButton(onPressed: () {}, tooltip: 'Настройки', icon: const Icon(Icons.settings_outlined)),
+        ],
       ),
       body: Column(
         children: [
