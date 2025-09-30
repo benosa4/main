@@ -10,11 +10,11 @@ import 'package:voicebook/core/providers/app_providers.dart';
 import 'package:voicebook/core/providers/dictation_controller.dart';
 import 'package:voicebook/core/storage/ui_state_storage.dart';
 import 'package:voicebook/shared/tokens/design_tokens.dart';
-import 'widgets/chapter_ruler_v2.dart';
+import 'widgets/chapter_ruler_v3.dart';
 import 'widgets/editor/chapter_editor.dart';
 import 'widgets/fab_panel/fab_action_cluster.dart';
 import 'widgets/editor_gate.dart';
-import 'widgets/notebook_intro_sheet.dart';
+import 'widgets/notebook_intro_sheet_v2.dart';
 
 class BookWorkspaceScreen extends ConsumerStatefulWidget {
   const BookWorkspaceScreen({super.key, required this.bookId});
@@ -372,7 +372,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
         final editingChapter = currentChapter;
         final activeChapterId = editingChapter?.id ?? (summaries.isNotEmpty ? summaries.first.id : '');
 
-        final ruler = ChapterRulerV2(
+        final ruler = ChapterRulerV3(
           bookId: bookId,
           chapters: summaries,
           activeChapterId: activeChapterId,
@@ -468,7 +468,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
                 ],
               );
 
-        final overview = NotebookIntroSheet(
+        final overview = NotebookIntroSheetV2(
           key: const ValueKey('notebook_overview'),
           bookTitle: book.title,
           chapters: summaries,

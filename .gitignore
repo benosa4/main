@@ -16,3 +16,5 @@ linux/
 **/*.iml
 *.lock
 pubspec.lock
+
+assets/noise.png
