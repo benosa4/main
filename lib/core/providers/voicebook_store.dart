@@ -51,7 +51,8 @@ class VoicebookStoreState {
       settings: settings ?? this.settings,
       userId: userId ?? this.userId,
       error: error is _NoUpdate ? this.error : error,
-      stackTrace: stackTrace is _NoUpdate ? this.stackTrace : stackTrace as StackTrace?,
+      stackTrace:
+          stackTrace is _NoUpdate ? this.stackTrace : stackTrace as StackTrace?,
     );
   }
 }
@@ -74,8 +75,10 @@ class VoicebookStore extends StateNotifier<VoicebookStoreState> {
       final localChapterMap = await _storage.loadChapterMap();
       final localVoiceProfile = await _storage.loadVoiceProfile();
       final localSettings = await _storage.loadSettings(userId);
-      final hasLocalData =
-          localNotebooks.isNotEmpty || localChapterMap.isNotEmpty || localVoiceProfile != null || localSettings != null;
+      final hasLocalData = localNotebooks.isNotEmpty ||
+          localChapterMap.isNotEmpty ||
+          localVoiceProfile != null ||
+          localSettings != null;
 
       if (hasLocalData) {
         state = state.copyWith(
@@ -104,7 +107,8 @@ class VoicebookStore extends StateNotifier<VoicebookStoreState> {
     }
   }
 
-  Future<void> _refreshFromRemote({required String userId, required bool hasLocalData}) async {
+  Future<void> _refreshFromRemote(
+      {required String userId, required bool hasLocalData}) async {
     try {
       state = state.copyWith(isSyncing: true, userId: userId);
       final notebooks = await _api.getNotebooks();
@@ -149,6 +153,114 @@ class VoicebookStore extends StateNotifier<VoicebookStoreState> {
         rethrow;
       }
     }
+  }
+
+  Future<void> refresh() async {
+    final userId = state.userId ?? await _storage.ensureUserId();
+    await _refreshFromRemote(
+        userId: userId, hasLocalData: state.notebooks.isNotEmpty);
+  }
+
+  Future<void> renameNotebook(
+      {required String id, required String title}) async {
+    final trimmed = title.trim();
+    if (trimmed.isEmpty) {
+      return;
+    }
+    final notebooks = <Notebook>[];
+    Notebook? updated;
+    for (final notebook in state.notebooks) {
+      if (notebook.id == id) {
+        updated = notebook.copyWith(title: trimmed, updatedAt: DateTime.now());
+        notebooks.add(updated);
+      } else {
+        notebooks.add(notebook);
+      }
+    }
+    if (updated == null) {
+      return;
+    }
+    state = state.copyWith(
+      notebooks: List.unmodifiable(notebooks),
+      error: null,
+      stackTrace: null,
+    );
+    await _storage.saveNotebook(updated);
+    await _api.syncNotebook(updated);
+  }
+
+  Future<Notebook> duplicateNotebook(String id) async {
+    final original = findNotebook(id);
+    if (original == null) {
+      throw ArgumentError.value(id, 'id', 'Notebook not found');
+    }
+    final newId = _generateId('book');
+    final copy = Notebook(
+      id: newId,
+      title: '${original.title} (копия)',
+      coverUrl: original.coverUrl,
+      tags: List<String>.from(original.tags),
+      updatedAt: DateTime.now(),
+      chapters: original.chapters,
+      words: original.words,
+      audioMinutes: original.audioMinutes,
+    );
+    final notebooks = [copy, ...state.notebooks];
+
+    final originalChapters = getChapters(id);
+    final clonedChapters = <Chapter>[];
+    for (final chapter in originalChapters) {
+      clonedChapters.add(
+        Chapter(
+          id: _generateId('chapter'),
+          bookId: newId,
+          title: chapter.title,
+          subtitle: chapter.subtitle,
+          status: chapter.status,
+          meta: Map<String, String?>.from(chapter.meta),
+          structure: [
+            for (final node in chapter.structure) _cloneSceneNode(node)
+          ],
+          blocks: [for (final block in chapter.blocks) _cloneRichBlock(block)],
+          body: chapter.body,
+        ),
+      );
+    }
+
+    final chapterMap = Map<String, List<Chapter>>.from(state.chaptersByBook);
+    chapterMap[newId] = List<Chapter>.unmodifiable(clonedChapters);
+
+    state = state.copyWith(
+      notebooks: List.unmodifiable(notebooks),
+      chaptersByBook: Map.unmodifiable(chapterMap),
+      error: null,
+      stackTrace: null,
+    );
+
+    await _storage.saveNotebook(copy);
+    await _storage.saveChapters(newId, clonedChapters);
+    await _api.syncNotebook(copy);
+    await _api.syncChapters(newId, clonedChapters);
+    return copy;
+  }
+
+  Future<void> deleteNotebook(String id) async {
+    final notebooks = List<Notebook>.from(state.notebooks);
+    final initialLength = notebooks.length;
+    notebooks.removeWhere((notebook) => notebook.id == id);
+    if (notebooks.length == initialLength) {
+      return;
+    }
+    final chapterMap = Map<String, List<Chapter>>.from(state.chaptersByBook);
+    chapterMap.remove(id);
+    state = state.copyWith(
+      notebooks: List.unmodifiable(notebooks),
+      chaptersByBook: Map.unmodifiable(chapterMap),
+      error: null,
+      stackTrace: null,
+    );
+    await _storage.removeNotebook(id);
+    await _api.deleteNotebook(id);
   }
 
   Notebook? findNotebook(String bookId) {
@@ -205,7 +317,8 @@ class VoicebookStore extends StateNotifier<VoicebookStoreState> {
       status: ChapterStatus.draft,
       meta: const {'genre': 'Не указан', 'wordCount': '0'},
       structure: const [],
-      body: 'Начните диктовку или нажмите «Сформировать текст», чтобы получить подсказку.',
+      body:
+          'Начните диктовку или нажмите «Сформировать текст», чтобы получить подсказку.',
     );
 
     try {
@@ -262,7 +375,8 @@ class VoicebookStore extends StateNotifier<VoicebookStoreState> {
         'wordCount': '0',
       },
       structure: const [],
-      body: 'Начните диктовку или нажмите «Сформировать текст», чтобы получить подсказку.',
+      body:
+          'Начните диктовку или нажмите «Сформировать текст», чтобы получить подсказку.',
     );
 
     try {
@@ -351,7 +465,8 @@ class VoicebookStore extends StateNotifier<VoicebookStoreState> {
     final chapterMap = Map<String, List<Chapter>>.from(state.chaptersByBook);
     chapterMap[bookId] = List<Chapter>.unmodifiable(normalized);
 
-    final words = normalized.fold<int>(0, (value, chapter) => value + _countWords(chapter.body));
+    final words = normalized.fold<int>(
+        0, (value, chapter) => value + _countWords(chapter.body));
     final notebooks = [
       for (final notebook in state.notebooks)
         if (notebook.id == bookId)
@@ -364,7 +479,8 @@ class VoicebookStore extends StateNotifier<VoicebookStoreState> {
           notebook,
     ];
 
-    final updatedNotebook = notebooks.firstWhere((notebook) => notebook.id == bookId);
+    final updatedNotebook =
+        notebooks.firstWhere((notebook) => notebook.id == bookId);
 
     state = state.copyWith(
       notebooks: List.unmodifiable(notebooks),
@@ -381,8 +497,26 @@ class VoicebookStore extends StateNotifier<VoicebookStoreState> {
 
   String _generateId(String prefix) {
     final millis = DateTime.now().millisecondsSinceEpoch;
-    final randomPart = _random.nextInt(0xFFFFFF).toRadixString(16).padLeft(6, '0');
+    final randomPart =
+        _random.nextInt(0xFFFFFF).toRadixString(16).padLeft(6, '0');
     return '$prefix-$millis-$randomPart';
+  }
+
+  SceneNode _cloneSceneNode(SceneNode node) {
+    return SceneNode(
+      id: _generateId('scene'),
+      title: node.title,
+      children: [for (final child in node.children) _cloneSceneNode(child)],
+    );
+  }
+
+  RichBlock _cloneRichBlock(RichBlock block) {
+    return RichBlock(
+      id: _generateId('block'),
+      type: block.type,
+      text: block.text,
+      marks: List<String>.from(block.marks),
+    );
   }
 
   int _countWords(String text) {

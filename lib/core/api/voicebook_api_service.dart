@@ -35,6 +35,9 @@ abstract class VoicebookApiService {
   /// Persists the provided chapters snapshot for the notebook.
   Future<void> syncChapters(String notebookId, List<Chapter> chapters);
 
+  /// Removes the notebook and associated chapters.
+  Future<void> deleteNotebook(String notebookId);
+
   /// Updates the settings for the given user identifier.
   Future<void> syncSettings(String userId, AppSettings settings);
 
@@ -134,6 +137,14 @@ class MockVoicebookApiService implements VoicebookApiService {
   Future<void> syncChapters(String notebookId, List<Chapter> chapters) {
     return _withLatency(() {
       _chapterMap[notebookId] = List<Chapter>.from(chapters);
+    });
+  }
+
+  @override
+  Future<void> deleteNotebook(String notebookId) {
+    return _withLatency(() {
+      _notebooks.removeWhere((notebook) => notebook.id == notebookId);
+      _chapterMap.remove(notebookId);
     });
   }
 
