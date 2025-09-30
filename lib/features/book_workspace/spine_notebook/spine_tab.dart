@@ -1,9 +1,8 @@
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-class SpineTab extends StatefulWidget {
+class SpineTab extends StatelessWidget {
   const SpineTab({
     super.key,
     required this.index,
@@ -12,6 +11,10 @@ class SpineTab extends StatefulWidget {
     required this.color,
     required this.active,
     required this.onTap,
+    required this.spineWidth,
+    this.collapsed = false,
+    this.isEmpty = false,
+    this.onCreate,
   });
 
   final int index;
@@ -20,145 +23,77 @@ class SpineTab extends StatefulWidget {
   final Color color;
   final bool active;
   final VoidCallback onTap;
+  final double spineWidth;
+  final bool collapsed;
+  final bool isEmpty;
+  final VoidCallback? onCreate;
 
-  static const double baseWidth = 104;
-  static const double hoverWidth = 132;
-
-  @override
-  State<SpineTab> createState() => _SpineTabState();
-}
-
-class _SpineTabState extends State<SpineTab> {
-  bool _hovered = false;
-  bool get _isHoverEnabled => kIsWeb || defaultTargetPlatform == TargetPlatform.macOS || defaultTargetPlatform == TargetPlatform.windows || defaultTargetPlatform == TargetPlatform.linux;
-
-  void _setHovered(bool value) {
-    if (!_isHoverEnabled) {
-      return;
-    }
-    if (_hovered != value) {
-      setState(() => _hovered = value);
-    }
-  }
+  static const double collapsedWidth = 24;
 
   @override
   Widget build(BuildContext context) {
-    final height = widget.lines * widget.lineHeight;
-    final radius = Radius.circular(20);
-    final width = _hovered ? SpineTab.hoverWidth : SpineTab.baseWidth;
+    final height = lines * lineHeight;
+    final width = collapsed ? collapsedWidth : spineWidth;
+    final radius = const Radius.circular(18);
 
-    final decoration = BoxDecoration(
-      gradient: const LinearGradient(
-        colors: [Color(0xFF312E81), Color(0xFF5B21B6)],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ),
-      borderRadius: BorderRadius.only(topRight: radius, bottomRight: radius),
-      boxShadow: [
-        if (widget.active)
-          BoxShadow(color: const Color(0xFF06B6D4).withOpacity(0.38), blurRadius: 18, spreadRadius: 1)
-        else
-          BoxShadow(color: Colors.black.withOpacity(0.18), blurRadius: 14, offset: const Offset(0, 8)),
-      ],
-    );
+    final tapHandler = isEmpty ? (onCreate ?? onTap) : onTap;
 
-    final bookmark = _ChapterBookmark(
-      color: widget.color,
-      radius: radius,
-    );
-
-    final badge = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.36),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.35), width: 1),
-        boxShadow: const [
-          BoxShadow(color: Color(0x26000000), blurRadius: 10, spreadRadius: 1),
-        ],
-      ),
-      child: Text(
-        widget.index.toString().padLeft(2, '0'),
-        style: const TextStyle(
-          fontFeatures: [FontFeature.tabularFigures()],
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.6,
-          color: Colors.white,
-        ),
-      ),
-    );
-
-    final content = GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: widget.onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
+    if (isEmpty) {
+      return _SpineTabShell(
         width: width,
         height: height,
-        decoration: decoration,
-        clipBehavior: Clip.antiAlias,
+        collapsed: collapsed,
+        child: _DashedSlot(index: index, collapsed: collapsed, onTap: tapHandler),
+      );
+    }
+
+    final tabContent = ClipPath(
+      clipper: _SpineClipper(radius: radius),
+      child: Container(
+        decoration: BoxDecoration(
+          color: color,
+          boxShadow: [
+            if (active)
+              BoxShadow(
+                color: const Color(0x4706B6D4),
+                blurRadius: 14,
+                spreadRadius: 1,
+              )
+            else
+              const BoxShadow(
+                color: Color(0x140F172A),
+                blurRadius: 12,
+                offset: Offset(0, 6),
+              ),
+          ],
+        ),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                child: const SizedBox(),
-              ),
-            ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.white.withOpacity(0.18),
-                      Colors.white.withOpacity(0.04),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-              ),
-            ),
-            Positioned.fill(child: bookmark),
-            const _SpineGrooves(),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Container(
-                width: 18,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [Color(0x00FFFFFF), Color(0x66FFFFFF)],
-                  ),
-                ),
-              ),
-            ),
-            if (widget.active)
-              Positioned(
+            if (active)
+              const Positioned(
                 left: 0,
                 top: 0,
                 bottom: 0,
-                child: Container(
-                  width: 2.5,
-                  decoration: const BoxDecoration(
+                width: 2.5,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Color(0xFF22D3EE), Color(0xFF67E8F9)],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
+                      colors: [Color(0xFF22D3EE), Color(0xFF67E8F9)],
                     ),
                   ),
+                ),
               ),
-            ),
-            Positioned.fill(
-              child: Padding(
-                padding: const EdgeInsets.only(left: 16, right: 20),
-                child: Align(
-                  alignment: Alignment.center,
-                  child: badge,
+            Center(
+              child: Text(
+                index.toString().padLeft(2, '0'),
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                  color: Color(0xFF0F172A),
                 ),
               ),
             ),
@@ -167,67 +102,101 @@ class _SpineTabState extends State<SpineTab> {
       ),
     );
 
-    if (_isHoverEnabled) {
-      return MouseRegion(
-        onEnter: (_) => _setHovered(true),
-        onExit: (_) => _setHovered(false),
-        child: content,
-      );
-    }
-    return content;
-  }
-}
-
-class _SpineGrooves extends StatelessWidget {
-  const _SpineGrooves();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _SpineGroovesPainter(),
+    return _SpineTabShell(
+      width: width,
+      height: height,
+      collapsed: collapsed,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: tapHandler,
+        child: tabContent,
+      ),
     );
   }
 }
 
-class _SpineGroovesPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0x33111B4B)
-      ..strokeWidth = 1;
-    final spacing = 14.0;
-    for (double x = 18; x < size.width - 16; x += spacing) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-  }
+class _SpineTabShell extends StatelessWidget {
+  const _SpineTabShell({
+    required this.width,
+    required this.height,
+    required this.collapsed,
+    required this.child,
+  });
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _ChapterBookmark extends StatelessWidget {
-  const _ChapterBookmark({required this.color, required this.radius});
-
-  final Color color;
-  final Radius radius;
+  final double width;
+  final double height;
+  final bool collapsed;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: ClipPath(
-        clipper: _BookmarkClipper(),
-        child: Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.92),
-            borderRadius: BorderRadius.only(
-              topRight: radius,
-              bottomRight: radius,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      width: width,
+      height: height,
+      padding: EdgeInsets.symmetric(horizontal: collapsed ? 0 : 4),
+      child: child,
+    );
+  }
+}
+
+class _SpineClipper extends CustomClipper<Path> {
+  const _SpineClipper({required this.radius});
+
+  final Radius radius;
+
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(0, 6);
+    path.lineTo(8, 0);
+    path.lineTo(size.width - radius.x, 0);
+    path.quadraticBezierTo(size.width, 0, size.width, radius.y);
+    path.lineTo(size.width, size.height - radius.y);
+    path.quadraticBezierTo(
+      size.width,
+      size.height,
+      size.width - radius.x,
+      size.height,
+    );
+    path.lineTo(8, size.height);
+    path.lineTo(0, size.height - 6);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class _DashedSlot extends StatelessWidget {
+  const _DashedSlot({
+    required this.index,
+    required this.collapsed,
+    required this.onTap,
+  });
+
+  final int index;
+  final bool collapsed;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: CustomPaint(
+        painter: _DashedRectPainter(color: const Color(0xFF94A3B8)),
+        child: Center(
+          child: Text(
+            index.toString().padLeft(2, '0'),
+            style: TextStyle(
+              fontSize: collapsed ? 11 : 13,
+              fontWeight: FontWeight.w600,
+              fontFeatures: const [FontFeature.tabularFigures()],
+              color: const Color(0xFF64748B),
             ),
-            boxShadow: const [
-              BoxShadow(color: Color(0x22000000), blurRadius: 12, offset: Offset(2, 6)),
-            ],
           ),
         ),
       ),
@@ -235,20 +204,40 @@ class _ChapterBookmark extends StatelessWidget {
   }
 }
 
-class _BookmarkClipper extends CustomClipper<Path> {
+class _DashedRectPainter extends CustomPainter {
+  const _DashedRectPainter({required this.color});
+
+  final Color color;
+
   @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.moveTo(0, 4);
-    path.lineTo(size.width - 8, 0);
-    path.lineTo(size.width, size.height * 0.12);
-    path.lineTo(size.width, size.height * 0.88);
-    path.lineTo(size.width - 8, size.height);
-    path.lineTo(0, size.height - 4);
-    path.close();
-    return path;
+  void paint(Canvas canvas, Size size) {
+    const dashWidth = 6.0;
+    const dashSpace = 4.0;
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.3
+      ..style = PaintingStyle.stroke;
+    final rect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(1, 1, size.width - 2, size.height - 2),
+      const Radius.circular(14),
+    );
+    _dashRRect(canvas, rect, paint, dashWidth, dashSpace);
+  }
+
+  void _dashRRect(Canvas canvas, RRect rrect, Paint paint, double dashWidth, double dashSpace) {
+    final path = Path()..addRRect(rrect);
+    final metrics = path.computeMetrics();
+    for (final metric in metrics) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final next = distance + dashWidth;
+        final extract = metric.extractPath(distance, next);
+        canvas.drawPath(extract, paint);
+        distance = next + dashSpace;
+      }
+    }
   }
 
   @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'spine_tab.dart';
 
-class ChapterLineTile extends StatelessWidget {
+class ChapterLineTile extends StatefulWidget {
   const ChapterLineTile({
     super.key,
     required this.index,
@@ -14,6 +14,8 @@ class ChapterLineTile extends StatelessWidget {
     required this.lineHeight,
     required this.spineWidth,
     required this.onTap,
+    required this.registerTextBand,
+    this.collapsed = false,
   });
 
   final int index;
@@ -23,91 +25,163 @@ class ChapterLineTile extends StatelessWidget {
   final double lineHeight;
   final double spineWidth;
   final VoidCallback onTap;
+  final void Function(Rect textBandRect) registerTextBand;
+  final bool collapsed;
+
+  static const double _verticalPadding = 8;
+  static const double _horizontalPadding = 16;
+  static const int _maxLines = 4;
+
+  @override
+  State<ChapterLineTile> createState() => _ChapterLineTileState();
+}
+
+class _ChapterLineTileState extends State<ChapterLineTile> {
+  Rect? _lastReportedRect;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final availableWidth = constraints.maxWidth;
-        final textMaxWidth = availableWidth - spineWidth - 24 - 32;
-
-        int measureLines(double fontSize) {
-          final painter = TextPainter(
-            text: TextSpan(
-              text: title,
-              style: TextStyle(
-                fontSize: fontSize,
-                fontWeight: FontWeight.w700,
-                height: 1.25,
-                color: const Color(0xFF0F172A),
-              ),
-            ),
-            textDirection: TextDirection.ltr,
-            maxLines: 999,
-          );
-          painter.layout(maxWidth: textMaxWidth.clamp(0, double.infinity).toDouble());
-          return painter.computeLineMetrics().length;
-        }
-
-        double fontSize = 16;
-        int linesNeeded = measureLines(fontSize);
-        if (linesNeeded > 2) {
-          fontSize = math.max(13, 16 - 1.5 * (linesNeeded - 2));
-          linesNeeded = measureLines(fontSize);
-        }
-        final int lines = linesNeeded.clamp(1, 4) as int;
-        final rowHeight = lines * lineHeight;
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: SizedBox(
+        if (widget.collapsed) {
+          const lines = 2;
+          final rowHeight = lines * widget.lineHeight + ChapterLineTile._verticalPadding;
+          return SizedBox(
             height: rowHeight,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minWidth: SpineTab.baseWidth,
-                    maxWidth: SpineTab.hoverWidth,
-                  ),
-                  child: SpineTab(
-                    index: index,
-                    lines: lines,
-                    lineHeight: lineHeight,
-                    color: color,
-                    active: active,
-                    onTap: onTap,
-                  ),
+                SpineTab(
+                  index: widget.index,
+                  lines: lines,
+                  lineHeight: widget.lineHeight,
+                  color: widget.color,
+                  active: widget.active,
+                  onTap: widget.onTap,
+                  spineWidth: widget.spineWidth,
+                  collapsed: true,
                 ),
-                Expanded(
-                  child: InkWell(
-                    onTap: onTap,
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          title,
-                          maxLines: lines,
-                          overflow: TextOverflow.ellipsis,
-                          softWrap: true,
-                          style: TextStyle(
-                            fontSize: fontSize,
-                            fontWeight: FontWeight.w700,
-                            height: 1.25,
-                            color: const Color(0xFF0F172A),
+                const Expanded(child: SizedBox.shrink()),
+              ],
+            ),
+          );
+        }
+
+        final textAreaWidth = math.max(
+          0,
+          constraints.maxWidth - widget.spineWidth - ChapterLineTile._horizontalPadding * 2,
+        );
+
+        double fontSize = 18;
+        int linesNeeded = _measureLines(fontSize, textAreaWidth);
+        if (linesNeeded > 2) {
+          fontSize = math.max(14, 18 - 1.5 * (linesNeeded - 2));
+          linesNeeded = _measureLines(fontSize, textAreaWidth);
+        }
+        final lines = math.min(ChapterLineTile._maxLines, math.max(1, linesNeeded));
+        final rowHeight = lines * widget.lineHeight + ChapterLineTile._verticalPadding;
+        final paddingTop = ChapterLineTile._verticalPadding / 2;
+
+        if (!widget.collapsed) {
+          _scheduleBandRegistration(
+            lines: lines,
+            paddingTop: paddingTop,
+            textAreaWidth: textAreaWidth,
+          );
+        }
+
+        return SizedBox(
+          height: rowHeight,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SpineTab(
+                index: widget.index,
+                lines: lines,
+                lineHeight: widget.lineHeight,
+                color: widget.color,
+                active: widget.active,
+                onTap: widget.onTap,
+                spineWidth: widget.spineWidth,
+                collapsed: widget.collapsed,
+              ),
+              Expanded(
+                child: widget.collapsed
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: ChapterLineTile._horizontalPadding,
+                        ),
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: Padding(
+                            padding: EdgeInsets.only(top: paddingTop),
+                            child: Text(
+                              widget.title,
+                              maxLines: lines,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: fontSize,
+                                fontWeight: FontWeight.w700,
+                                height: widget.lineHeight / fontSize,
+                                color: const Color(0xFF0F172A),
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
     );
+  }
+
+  int _measureLines(double fontSize, double maxWidth) {
+    if (maxWidth <= 0) {
+      return 1;
+    }
+    final painter = TextPainter(
+      text: TextSpan(
+        text: widget.title,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.w700,
+          height: widget.lineHeight / fontSize,
+        ),
+      ),
+      maxLines: ChapterLineTile._maxLines,
+      textDirection: TextDirection.ltr,
+    )
+      ..layout(maxWidth: maxWidth);
+    return math.max(1, painter.computeLineMetrics().length);
+  }
+
+  void _scheduleBandRegistration({
+    required int lines,
+    required double paddingTop,
+    required double textAreaWidth,
+  }) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final renderObject = context.findRenderObject();
+      if (renderObject is! RenderBox) {
+        return;
+      }
+      final offset = renderObject.localToGlobal(Offset.zero);
+      final rect = Rect.fromLTWH(
+        offset.dx + widget.spineWidth,
+        offset.dy + paddingTop,
+        textAreaWidth,
+        lines * widget.lineHeight,
+      );
+      if (_lastReportedRect != rect) {
+        _lastReportedRect = rect;
+        widget.registerTextBand(rect);
+      }
+    });
   }
 }

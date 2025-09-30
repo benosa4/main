@@ -16,152 +16,195 @@ class SpineNotebookView extends StatefulWidget {
     required this.activeId,
     required this.onOpen,
     required this.onAdd,
+    this.accentColor,
+    this.collapsed = false,
+    this.minVisibleSpineSlots = 20,
   });
 
   final String bookTitle;
   final List<ChapterSummary> chapters;
   final String? activeId;
   final ValueChanged<String> onOpen;
-  final VoidCallback onAdd;
+  final ValueChanged<int> onAdd;
+  final Color? accentColor;
+  final bool collapsed;
+  final int minVisibleSpineSlots;
+
+  static const double spineWidth = 112;
+  static const double collapsedSpineWidth = SpineTab.collapsedWidth;
+  static const double lineHeight = 28;
 
   @override
   State<SpineNotebookView> createState() => _SpineNotebookViewState();
 }
 
 class _SpineNotebookViewState extends State<SpineNotebookView> {
-  static const double _lineHeight = 28;
-  static const double _spineWidth = 104;
-
   final ScrollController _controller = ScrollController();
-  bool _showAddButton = false;
-  Timer? _revealTimer;
+  final GlobalKey _viewportKey = GlobalKey();
+
+  late double _spineWidth;
+  int _bandGeneration = 0;
+  final List<Rect> _pendingBands = <Rect>[];
+  List<Rect> _textBands = const <Rect>[];
+  bool _flushScheduled = false;
 
   @override
   void initState() {
     super.initState();
-    _controller.addListener(_handleScroll);
+    _spineWidth = widget.collapsed
+        ? SpineNotebookView.collapsedSpineWidth
+        : SpineNotebookView.spineWidth;
+  }
+
+  @override
+  void didUpdateWidget(covariant SpineNotebookView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.collapsed != widget.collapsed) {
+      setState(() {
+        _spineWidth = widget.collapsed
+            ? SpineNotebookView.collapsedSpineWidth
+            : SpineNotebookView.spineWidth;
+      });
+    }
   }
 
   @override
   void dispose() {
-    _revealTimer?.cancel();
-    _controller.removeListener(_handleScroll);
     _controller.dispose();
     super.dispose();
   }
 
-  void _handleScroll() {
-    _setAddVisibility(false);
-    _revealTimer?.cancel();
-    _revealTimer = Timer(const Duration(milliseconds: 360), () {
-      if (mounted) {
-        _setAddVisibility(true);
+  void _beginCollectBands() {
+    _bandGeneration++;
+    _pendingBands.clear();
+    _flushScheduled = false;
+  }
+
+  void _registerTextBand(Rect globalRect, int generation) {
+    if (generation != _bandGeneration) {
+      return;
+    }
+    final context = _viewportKey.currentContext;
+    if (context == null) {
+      return;
+    }
+    final renderBox = context.findRenderObject();
+    if (renderBox is! RenderBox) {
+      return;
+    }
+    final topLeft = renderBox.globalToLocal(globalRect.topLeft);
+    final bottomRight = renderBox.globalToLocal(globalRect.bottomRight);
+    final localRect = Rect.fromPoints(topLeft, bottomRight);
+    _pendingBands.add(localRect);
+    if (_flushScheduled) {
+      return;
+    }
+    _flushScheduled = true;
+    scheduleMicrotask(() {
+      if (!mounted || generation != _bandGeneration) {
+        return;
       }
+      setState(() {
+        _textBands = List<Rect>.unmodifiable(_pendingBands);
+        _flushScheduled = false;
+      });
     });
-  }
-
-  void _setAddVisibility(bool visible) {
-    if (_showAddButton != visible) {
-      setState(() => _showAddButton = visible);
-    }
-  }
-
-  void _handlePointerHover(bool hovering) {
-    if (hovering) {
-      _setAddVisibility(true);
-    } else {
-      _setAddVisibility(false);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     final chapters = widget.chapters;
+    final activeId = widget.activeId;
 
-    return Stack(
-      children: [
-        RuledViewport(
-          controller: _controller,
-          lineHeight: _lineHeight,
-          spineWidth: _spineWidth,
-          child: ListView.builder(
-            controller: _controller,
-            padding: const EdgeInsets.only(bottom: 120),
-            itemCount: chapters.length + 1,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return _NotebookHeader(
-                  title: widget.bookTitle,
-                  lineHeight: _lineHeight,
-                  spineWidth: _spineWidth,
-                );
-              }
-              final chapter = chapters[index - 1];
-              final isActive = chapter.id == widget.activeId;
-              return ChapterLineTile(
-                index: index,
-                title: chapter.title,
-                color: _colorFor(chapter.id),
-                active: isActive,
-                lineHeight: _lineHeight,
-                spineWidth: _spineWidth,
-                onTap: () => widget.onOpen(chapter.id),
-              );
-            },
-          ),
-        ),
-        Positioned(
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: _spineWidth,
-          child: MouseRegion(
-            onEnter: (_) => _handlePointerHover(true),
-            onExit: (_) => _handlePointerHover(false),
-            child: const SizedBox.expand(),
-          ),
-        ),
-        Positioned(
-          left: 12,
-          bottom: 12,
-          child: GestureDetector(
-            onTap: widget.onAdd,
-            onLongPressStart: (_) => _setAddVisibility(true),
-            onLongPressEnd: (_) => _setAddVisibility(false),
-            child: AnimatedOpacity(
-              opacity: _showAddButton ? 1 : 0,
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOutCubic,
-              child: IgnorePointer(
-                ignoring: !_showAddButton,
-                child: _GhostAddTab(lineHeight: _lineHeight),
+    _beginCollectBands();
+    final generation = _bandGeneration;
+
+    final items = <_ChapterSlot>[];
+    for (int i = 0; i < chapters.length; i++) {
+      items.add(_ChapterSlot.chapter(chapters[i]));
+    }
+    while (items.length < widget.minVisibleSpineSlots) {
+      items.add(_ChapterSlot.empty(index: items.length + 1));
+    }
+
+    final listView = ListView.builder(
+      controller: _controller,
+      padding: const EdgeInsets.only(bottom: 120),
+      itemCount: items.length + 1,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return _NotebookHeader(
+            title: widget.bookTitle,
+            lineHeight: SpineNotebookView.lineHeight,
+            spineWidth: _spineWidth,
+            collapsed: widget.collapsed,
+          );
+        }
+        final slot = items[index - 1];
+        return slot.map(
+          chapter: (chapter) {
+            final summary = chapter.summary;
+            final color = _colorFor(summary.id);
+            final isActive = summary.id == activeId;
+            return ChapterLineTile(
+              index: index,
+              title: summary.title,
+              color: color,
+              active: isActive,
+              lineHeight: SpineNotebookView.lineHeight,
+              spineWidth: _spineWidth,
+              onTap: () => widget.onOpen(summary.id),
+              registerTextBand: (rect) => _registerTextBand(rect, generation),
+              collapsed: widget.collapsed,
+            );
+          },
+          empty: (empty) {
+            return SizedBox(
+              height: SpineNotebookView.lineHeight * 2 + 8,
+              child: Row(
+                children: [
+                  SpineTab(
+                    index: empty.index,
+                    lines: 2,
+                    lineHeight: SpineNotebookView.lineHeight,
+                    color: Colors.transparent,
+                    active: false,
+                    onTap: () {},
+                    onCreate: () => widget.onAdd(empty.index),
+                    spineWidth: _spineWidth,
+                    collapsed: widget.collapsed,
+                    isEmpty: true,
+                  ),
+                  const Spacer(),
+                ],
               ),
-            ),
-          ),
-        ),
-      ],
+            );
+          },
+        );
+      },
     );
-  }
-}
 
-class _GhostAddTab extends StatelessWidget {
-  const _GhostAddTab({required this.lineHeight});
+    final padding = widget.collapsed
+        ? const EdgeInsets.only(left: 12, right: 24)
+        : EdgeInsets.zero;
 
-  final double lineHeight;
-
-  @override
-  Widget build(BuildContext context) {
-    final height = lineHeight * 2;
-    return Container(
-      height: height,
-      width: SpineTab.baseWidth,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.32),
-        borderRadius: const BorderRadius.horizontal(right: Radius.circular(18)),
-        border: Border.all(color: const Color(0xFF2563EB).withOpacity(0.4), width: 1),
-      ),
-      child: const Center(
-        child: Icon(Icons.add, color: Color(0xFF1D4ED8), size: 24),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      padding: padding,
+      child: Stack(
+        children: [
+          RuledViewport(
+            key: _viewportKey,
+            controller: _controller,
+            lineHeight: SpineNotebookView.lineHeight,
+            spineWidth: _spineWidth,
+            actionZoneWidth: 40,
+            accentColor: widget.accentColor,
+            textBands: _textBands,
+            child: listView,
+          ),
+        ],
       ),
     );
   }
@@ -172,16 +215,19 @@ class _NotebookHeader extends StatelessWidget {
     required this.title,
     required this.lineHeight,
     required this.spineWidth,
+    required this.collapsed,
   });
 
   final String title;
   final double lineHeight;
   final double spineWidth;
+  final bool collapsed;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final height = lineHeight * 2;
+    final horizontalInset = collapsed ? 20.0 : 16.0;
     return SizedBox(
       height: height,
       child: Row(
@@ -189,7 +235,7 @@ class _NotebookHeader extends StatelessWidget {
           SizedBox(width: spineWidth),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.only(left: horizontalInset, right: 16),
               child: Align(
                 alignment: Alignment.bottomLeft,
                 child: Text(
@@ -208,6 +254,34 @@ class _NotebookHeader extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ChapterSlot {
+  const _ChapterSlot._({this.summary, this.index});
+
+  factory _ChapterSlot.chapter(ChapterSummary summary) =>
+      _ChapterSlot._(summary: summary);
+  factory _ChapterSlot.empty({required int index}) => _ChapterSlot._(index: index);
+
+  final ChapterSummary? summary;
+  final int? index;
+
+  T map<T>({required T Function(_ChapterSlotChapter value) chapter, required T Function(_ChapterSlotEmpty value) empty}) {
+    if (summary != null) {
+      return chapter(_ChapterSlotChapter(summary!));
+    }
+    return empty(_ChapterSlotEmpty(index ?? 0));
+  }
+}
+
+class _ChapterSlotChapter {
+  const _ChapterSlotChapter(this.summary);
+  final ChapterSummary summary;
+}
+
+class _ChapterSlotEmpty {
+  const _ChapterSlotEmpty(this.index);
+  final int index;
 }
 
 const List<Color> _pastelPalette = <Color>[
@@ -229,4 +303,11 @@ Color _colorFor(String id) {
   }
   final hash = id.codeUnits.fold<int>(0, (acc, unit) => (acc * 31 + unit) & 0x7fffffff);
   return _pastelPalette[hash % _pastelPalette.length];
+}
+
+Color spineNotebookAccentColorFor(String? id) {
+  if (id == null) {
+    return _pastelPalette.first;
+  }
+  return _colorFor(id);
 }
