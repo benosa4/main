@@ -8,10 +8,12 @@ import 'package:voicebook/core/providers/app_providers.dart';
 import 'package:voicebook/core/providers/dictation_controller.dart';
 import 'package:voicebook/core/storage/ui_state_storage.dart';
 import 'package:voicebook/shared/tokens/design_tokens.dart';
-import 'widgets/editor/chapter_editor.dart';
-import 'widgets/fab_panel/fab_action_cluster.dart';
-import 'widgets/editor_gate.dart';
+import 'reading/chapter_reader_view.dart';
 import 'spine_notebook/spine_notebook_view.dart';
+import 'widgets/editor/chapter_editor.dart';
+import 'widgets/editor_gate.dart';
+import 'widgets/fab_panel/fab_action_cluster.dart';
+import 'widgets/top_taskbar.dart';
 
 class BookWorkspaceScreen extends ConsumerStatefulWidget {
   const BookWorkspaceScreen({super.key, required this.bookId});
@@ -22,7 +24,7 @@ class BookWorkspaceScreen extends ConsumerStatefulWidget {
   ConsumerState<BookWorkspaceScreen> createState() => _BookWorkspaceScreenState();
 }
 
-enum _WorkspaceMode { overview, edit }
+enum _WorkspaceMode { list, reading, editing }
 
 class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
   UiStateStorage? _uiStateStorage;
@@ -31,7 +33,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
   Duration? _recordingElapsed;
   DateTime? _recordingStartedAt;
   final EditorGateController _editorGateController = EditorGateController();
-  _WorkspaceMode _workspaceMode = _WorkspaceMode.overview;
+  _WorkspaceMode _workspaceMode = _WorkspaceMode.list;
   String? _pendingModeRaw;
   String? _deferredModeToPersist;
 
@@ -46,9 +48,11 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
     final storage = _uiStateStorage;
     final bookId = widget.bookId;
     final targetId = chapterId ?? ref.read(currentChapterProvider(bookId))?.id;
-    final raw = mode == _WorkspaceMode.overview
-        ? 'overview'
-        : (targetId != null ? 'edit::$targetId' : 'overview');
+    final raw = switch (mode) {
+      _WorkspaceMode.list => 'list',
+      _WorkspaceMode.reading => targetId != null ? 'reading::$targetId' : 'list',
+      _WorkspaceMode.editing => targetId != null ? 'editing::$targetId' : 'list',
+    };
     if (storage == null) {
       _deferredModeToPersist = raw;
       return;
@@ -70,41 +74,68 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
       if (!mounted) {
         return;
       }
-      if (raw.startsWith('edit::')) {
-        final targetId = raw.split('edit::').last;
+      if (raw.startsWith('editing::') || raw.startsWith('edit::')) {
+        final targetId = raw.contains('editing::') ? raw.split('editing::').last : raw.split('edit::').last;
         final exists = chapters.any((chapter) => chapter.id == targetId);
         if (exists) {
           if (currentChapter == null || currentChapter.id != targetId) {
             _updateActiveChapter(widget.bookId, targetId);
           }
-          if (_workspaceMode != _WorkspaceMode.edit) {
-            setState(() => _workspaceMode = _WorkspaceMode.edit);
+          if (_workspaceMode != _WorkspaceMode.editing) {
+            setState(() => _workspaceMode = _WorkspaceMode.editing);
           }
         } else {
-          if (_workspaceMode != _WorkspaceMode.overview) {
-            setState(() => _workspaceMode = _WorkspaceMode.overview);
+          if (_workspaceMode != _WorkspaceMode.list) {
+            setState(() => _workspaceMode = _WorkspaceMode.list);
           }
         }
-      } else if (raw == 'overview') {
-        if (_workspaceMode != _WorkspaceMode.overview) {
-          setState(() => _workspaceMode = _WorkspaceMode.overview);
+      } else if (raw.startsWith('reading::')) {
+        final targetId = raw.split('reading::').last;
+        final exists = chapters.any((chapter) => chapter.id == targetId);
+        if (exists) {
+          if (currentChapter == null || currentChapter.id != targetId) {
+            _updateActiveChapter(widget.bookId, targetId);
+          }
+          if (_workspaceMode != _WorkspaceMode.reading) {
+            setState(() => _workspaceMode = _WorkspaceMode.reading);
+          }
+        } else if (_workspaceMode != _WorkspaceMode.list) {
+          setState(() => _workspaceMode = _WorkspaceMode.list);
+        }
+      } else if (raw == 'list' || raw == 'overview') {
+        if (_workspaceMode != _WorkspaceMode.list) {
+          setState(() => _workspaceMode = _WorkspaceMode.list);
         }
       }
     });
   }
 
-  void _openChapterFromOverview(String chapterId) {
+  void _openChapterForReading(String chapterId) {
     final bookId = widget.bookId;
     _updateActiveChapter(bookId, chapterId);
-    _setWorkspaceMode(_WorkspaceMode.edit, chapterId: chapterId);
+    _setWorkspaceMode(_WorkspaceMode.reading, chapterId: chapterId);
   }
 
-  void _returnToOverview() {
+  void _startEditing(String chapterId) {
+    final bookId = widget.bookId;
+    _updateActiveChapter(bookId, chapterId);
+    _setWorkspaceMode(_WorkspaceMode.editing, chapterId: chapterId);
+  }
+
+  void _returnToList() {
     _editorGateController.close();
-    _setWorkspaceMode(_WorkspaceMode.overview);
+    _setWorkspaceMode(_WorkspaceMode.list);
   }
 
-  Future<void> _handleCreateChapter(BuildContext context) async {
+  void _handleBackNavigation(BuildContext context) {
+    if (_workspaceMode == _WorkspaceMode.list) {
+      context.pop();
+    } else {
+      _returnToList();
+    }
+  }
+
+  Future<void> _handleCreateChapter(BuildContext context, {int? slotIndex}) async {
     final bookId = widget.bookId;
     final notifier = ref.read(voicebookStoreProvider.notifier);
     try {
@@ -113,7 +144,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
         return;
       }
       _updateActiveChapter(bookId, chapter.id);
-      _setWorkspaceMode(_WorkspaceMode.edit, chapterId: chapter.id);
+      _setWorkspaceMode(_WorkspaceMode.reading, chapterId: chapter.id);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Глава «${chapter.title}» добавлена.')),
       );
@@ -352,14 +383,15 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= 1024;
         final editingChapter = currentChapter;
-        if (editingChapter == null && _workspaceMode != _WorkspaceMode.overview) {
+        if (editingChapter == null && _workspaceMode == _WorkspaceMode.editing) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              setState(() => _workspaceMode = _WorkspaceMode.overview);
+              setState(() => _workspaceMode = _WorkspaceMode.list);
             }
           });
         }
-        final activeChapterId = editingChapter?.id ?? (summaries.isNotEmpty ? summaries.first.id : null);
+        final activeChapterId = currentChapter?.id ?? (summaries.isNotEmpty ? summaries.first.id : null);
+        final accentColor = activeChapterId != null ? spineNotebookAccentColorFor(activeChapterId) : null;
 
         final gateInitiallyOpen = editingChapter != null
             ? _uiStateStorage?.readEditorGateOpened(bookId, editingChapter.id) ?? false
@@ -392,8 +424,38 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
                 child: Text('Выберите главу, чтобы начать редактирование.'),
               );
 
-        final showOverview = editingChapter == null || _workspaceMode == _WorkspaceMode.overview;
-        final showFabCluster = !showOverview;
+        final showEditor = _workspaceMode == _WorkspaceMode.editing && editingChapter != null;
+        final showFabCluster = showEditor;
+
+        final notebookView = SpineNotebookView(
+          key: ValueKey('spine_notebook_${_workspaceMode.name}'),
+          bookTitle: book.title,
+          chapters: summaries,
+          activeId: activeChapterId,
+          onOpen: _openChapterForReading,
+          onAdd: (index) => _handleCreateChapter(context, slotIndex: index),
+          accentColor: accentColor,
+          collapsed: _workspaceMode == _WorkspaceMode.reading,
+        );
+
+        Widget overviewOrReading;
+        if (_workspaceMode == _WorkspaceMode.reading && currentChapter != null) {
+          overviewOrReading = Stack(
+            children: [
+              notebookView,
+              Positioned.fill(
+                left: SpineNotebookView.collapsedSpineWidth + 48,
+                child: ChapterReaderView(
+                  chapter: currentChapter,
+                  onEdit: () => _startEditing(currentChapter.id),
+                  accentColor: accentColor,
+                ),
+              ),
+            ],
+          );
+        } else {
+          overviewOrReading = notebookView;
+        }
 
         final editorArea = isDesktop
             ? Row(
@@ -440,84 +502,45 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
                 ],
               );
 
-        final overview = SpineNotebookView(
-          key: const ValueKey('spine_notebook_overview'),
-          bookTitle: book.title,
-          chapters: summaries,
-          activeId: activeChapterId,
-          onOpen: _openChapterFromOverview,
-          onAdd: () => _handleCreateChapter(context),
-        );
-
-        final mainContent = AnimatedSwitcher(
+        final mainSwitcher = AnimatedSwitcher(
           duration: const Duration(milliseconds: 220),
           switchInCurve: Curves.easeOutCubic,
-          child: showOverview
-              ? overview
-              : KeyedSubtree(key: const ValueKey('editor_area'), child: editorArea),
+          child: KeyedSubtree(
+            key: ValueKey(_workspaceMode),
+            child: showEditor ? editorArea : overviewOrReading,
+          ),
         );
 
-        final appBar = AppBar(
-          titleSpacing: 16,
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(book.title),
-              if (editingChapter != null)
-                !showOverview
-                    ? Hero(
-                        tag: 'chapter_title_${editingChapter.id}',
-                        child: Material(
-                          color: Colors.transparent,
-                          child: Text(
-                            editingChapter.title,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      )
-                    : Text(
-                        editingChapter.title,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-            ],
-          ),
-          actions: [
-            if (!showOverview)
-              TextButton.icon(
-                onPressed: _returnToOverview,
-                icon: const Icon(Icons.menu_book_outlined),
-                label: const Text('Оглавление'),
-                style: TextButton.styleFrom(foregroundColor: Colors.white),
-              ),
-            IconButton(
-              tooltip: 'Экспорт',
-              onPressed: () => context.pushNamed('export', queryParameters: {'bookId': bookId}),
-              icon: const Icon(Icons.ios_share_outlined),
+        final body = Column(
+          children: [
+            TopTaskbar(
+              onBack: () => _handleBackNavigation(context),
+              actions: [
+                IconButton(
+                  tooltip: 'Экспорт',
+                  onPressed: () => context.pushNamed('export', queryParameters: {'bookId': bookId}),
+                  icon: const Icon(Icons.ios_share_outlined),
+                ),
+                IconButton(
+                  tooltip: 'Настройки',
+                  onPressed: () => context.pushNamed('settings'),
+                  icon: const Icon(Icons.settings_outlined),
+                ),
+              ],
             ),
-            IconButton(
-              tooltip: 'Настройки',
-              onPressed: () => context.pushNamed('settings'),
-              icon: const Icon(Icons.settings_outlined),
+            Expanded(
+              child: SafeArea(
+                top: false,
+                child: mainSwitcher,
+              ),
             ),
           ],
         );
 
-        final body = SafeArea(child: mainContent);
-
-        if (isDesktop) {
-          return Scaffold(
-            appBar: appBar,
-            body: body,
-          );
-        }
-
         return Scaffold(
-          appBar: appBar,
           body: body,
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          floatingActionButton: showFabCluster
+          floatingActionButton: !isDesktop && showFabCluster
               ? FabActionCluster(
                   onToggleRecording: () => ref
                       .read(dictationControllerProvider.notifier)

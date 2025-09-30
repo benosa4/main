@@ -1,20 +1,24 @@
-import 'dart:math';
-import 'dart:ui' as ui;
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class RuledViewport extends StatelessWidget {
   const RuledViewport({
     super.key,
     required this.controller,
-    this.lineHeight = 28,
-    this.spineWidth = 104,
+    required this.lineHeight,
+    required this.spineWidth,
     required this.child,
+    this.actionZoneWidth = 40,
+    this.accentColor,
+    this.textBands = const <Rect>[],
   });
 
   final ScrollController controller;
   final double lineHeight;
   final double spineWidth;
+  final double actionZoneWidth;
+  final Color? accentColor;
+  final List<Rect> textBands;
   final Widget child;
 
   @override
@@ -26,6 +30,9 @@ class RuledViewport extends StatelessWidget {
             controller: controller,
             lineHeight: lineHeight,
             spineWidth: spineWidth,
+            actionZoneWidth: actionZoneWidth,
+            accentColor: accentColor,
+            textBands: textBands,
           ),
         ),
         child,
@@ -39,11 +46,17 @@ class _RuledBackground extends StatefulWidget {
     required this.controller,
     required this.lineHeight,
     required this.spineWidth,
+    required this.actionZoneWidth,
+    required this.accentColor,
+    required this.textBands,
   });
 
   final ScrollController controller;
   final double lineHeight;
   final double spineWidth;
+  final double actionZoneWidth;
+  final Color? accentColor;
+  final List<Rect> textBands;
 
   @override
   State<_RuledBackground> createState() => _RuledBackgroundState();
@@ -85,6 +98,9 @@ class _RuledBackgroundState extends State<_RuledBackground> {
         offset: offset,
         lineHeight: widget.lineHeight,
         spineWidth: widget.spineWidth,
+        actionZoneWidth: widget.actionZoneWidth,
+        accentColor: widget.accentColor,
+        textBands: widget.textBands,
       ),
     );
   }
@@ -95,11 +111,17 @@ class _RuledPainter extends CustomPainter {
     required this.offset,
     required this.lineHeight,
     required this.spineWidth,
+    required this.actionZoneWidth,
+    required this.accentColor,
+    required this.textBands,
   });
 
   final double offset;
   final double lineHeight;
   final double spineWidth;
+  final double actionZoneWidth;
+  final Color? accentColor;
+  final List<Rect> textBands;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -111,32 +133,38 @@ class _RuledPainter extends CustomPainter {
       canvas.drawLine(Offset(spineWidth, y), Offset(size.width, y), linePaint);
     }
 
+    final marginX = spineWidth + actionZoneWidth + 12;
     final marginPaint = Paint()
       ..color = const Color(0xFFEF4444).withOpacity(0.40)
       ..strokeWidth = 2;
     canvas.drawLine(
-      Offset(spineWidth + 24, 0),
-      Offset(spineWidth + 24, size.height),
+      Offset(marginX, 0),
+      Offset(marginX, size.height),
       marginPaint,
     );
 
-    final noisePaint = Paint()
-      ..color = const Color(0xFF1E293B).withOpacity(0.06)
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 1;
-    final random = Random(137);
-    for (double y = 0; y < size.height; y += 6) {
-      for (double x = spineWidth; x < size.width; x += 6) {
-        if (random.nextDouble() > 0.55) {
-          final dx = random.nextDouble() * 2;
-          final dy = random.nextDouble() * 2;
-          canvas.drawPoints(
-            ui.PointMode.points,
-            [Offset(x + dx, y + dy)],
-            noisePaint,
-          );
-        }
-      }
+    final accent = accentColor;
+    if (accent != null) {
+      final bandPaint = Paint()
+        ..color = accent.withOpacity(0.35)
+        ..style = PaintingStyle.fill;
+      final bandRect = Rect.fromLTWH(spineWidth + 4, 0, 6, size.height);
+      final rrect = RRect.fromRectAndCorners(
+        bandRect,
+        topLeft: const Radius.circular(3),
+        bottomLeft: const Radius.circular(3),
+        topRight: const Radius.circular(3),
+        bottomRight: const Radius.circular(3),
+      );
+      canvas.drawRRect(rrect, bandPaint);
+    }
+
+    final whitePaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    for (final band in textBands) {
+      final rrect = RRect.fromRectAndRadius(band, const Radius.circular(6));
+      canvas.drawRRect(rrect, whitePaint);
     }
   }
 
@@ -144,6 +172,9 @@ class _RuledPainter extends CustomPainter {
   bool shouldRepaint(covariant _RuledPainter oldDelegate) {
     return oldDelegate.offset != offset ||
         oldDelegate.lineHeight != lineHeight ||
-        oldDelegate.spineWidth != spineWidth;
+        oldDelegate.spineWidth != spineWidth ||
+        oldDelegate.actionZoneWidth != actionZoneWidth ||
+        oldDelegate.accentColor != accentColor ||
+        !listEquals(oldDelegate.textBands, textBands);
   }
 }
