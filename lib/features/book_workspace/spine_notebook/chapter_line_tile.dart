@@ -67,20 +67,18 @@ class _ChapterLineTileState extends State<ChapterLineTile> {
           );
         }
 
-        final double textAreaWidth = math.max(
-          0.0,
+        final textAreaWidth = math.max(
+          0,
           constraints.maxWidth - widget.spineWidth - ChapterLineTile._horizontalPadding * 2,
         );
 
-        double fontSize = 18.0;
+        double fontSize = 18;
         int linesNeeded = _measureLines(fontSize, textAreaWidth);
         if (linesNeeded > 2) {
-          fontSize = math.max(14.0, 18.0 - 1.5 * (linesNeeded - 2));
+          fontSize = math.max(14, 18 - 1.5 * (linesNeeded - 2));
           linesNeeded = _measureLines(fontSize, textAreaWidth);
         }
-        final int lines = math
-            .min(ChapterLineTile._maxLines, math.max(1, linesNeeded))
-            .toInt();
+        final lines = math.min(ChapterLineTile._maxLines, math.max(1, linesNeeded));
         final rowHeight = lines * widget.lineHeight + ChapterLineTile._verticalPadding;
         final paddingTop = ChapterLineTile._verticalPadding / 2;
 
