@@ -18,8 +18,9 @@
 |-------|------|--------------------------------|----------|
 | Онбординг | `/onboarding` | – | После подтверждения разрешений → `/library` |
 | Библиотека | `/library` | – | Tap по книге → `/book/:bookId` |
-| Рабочее пространство | `/book/:bookId` | `structure` (modal), `ai/composer` (drawer), `export?bookId`, `voice/training`, `settings` | Из FAB-панели и шапки |
-| Mindmap | `/book/:bookId/structure?chapterId=` | `state.extra` — `List<SceneNode>` | Открывается из кнопки «Структура» |
+| Оглавление книги | `/book/:bookId` | `editor`, `editor/structure` | Содержит биллинг, мета-блок и список глав |
+| Рабочее пространство | `/book/:bookId/editor` | `structure` (modal), `ai/composer` (drawer), `export?bookId`, `voice/training`, `settings` | Из FAB-панели и шапки |
+| Mindmap | `/book/:bookId/editor/structure?chapterId=` | `state.extra` — `List<SceneNode>` | Открывается из кнопки «Структура» |
 | AI-Composer | `/ai/composer` | Drawer-панель | Жест/кнопка «Сформировать текст» |
 | Тренировка голоса | `/voice/training` | – | FAB → «Озвучить» без профиля |
 | Экспорт | `/export?bookId=` | – | Меню книги или FAB → «Экспорт» |

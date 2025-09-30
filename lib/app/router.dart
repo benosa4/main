@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:voicebook/core/providers/app_providers.dart';
 import 'package:voicebook/features/ai_composer/ai_composer_drawer.dart';
+import 'package:voicebook/features/book_outline/book_outline_screen.dart';
 import 'package:voicebook/features/book_workspace/book_workspace_screen.dart';
 import 'package:voicebook/features/export/export_screen.dart';
 import 'package:voicebook/features/library/library_screen.dart';
@@ -58,7 +59,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final bookId = state.pathParameters['bookId']!;
           return CustomTransitionPage(
             key: state.pageKey,
-            child: BookWorkspaceScreen(bookId: bookId),
+            child: BookOutlineScreen(bookId: bookId),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               final tween = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
                   .chain(CurveTween(curve: Curves.easeOutCubic));
@@ -68,27 +69,45 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
         routes: [
           GoRoute(
-            parentNavigatorKey: _rootNavigatorKey,
-            path: 'structure',
-            name: 'mindmap',
+            path: 'editor',
+            name: 'bookEditor',
             pageBuilder: (context, state) {
               final bookId = state.pathParameters['bookId']!;
-              final fallbackChapterId = ref.read(currentChapterIdProvider(bookId));
-              final chapterId = state.uri.queryParameters['chapterId'] ?? fallbackChapterId;
               return CustomTransitionPage(
                 key: state.pageKey,
-                barrierDismissible: true,
-                barrierColor: Colors.black54,
-                opaque: false,
-                child: StructureMindmapScreen(bookId: bookId, chapterId: chapterId),
+                child: BookWorkspaceScreen(bookId: bookId),
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: ScaleTransition(scale: Tween(begin: 0.98, end: 1.0).animate(animation), child: child),
-                  );
+                  final tween = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+                      .chain(CurveTween(curve: Curves.easeOutCubic));
+                  return SlideTransition(position: animation.drive(tween), child: child);
                 },
               );
             },
+            routes: [
+              GoRoute(
+                parentNavigatorKey: _rootNavigatorKey,
+                path: 'structure',
+                name: 'mindmap',
+                pageBuilder: (context, state) {
+                  final bookId = state.pathParameters['bookId']!;
+                  final fallbackChapterId = ref.read(currentChapterIdProvider(bookId));
+                  final chapterId = state.uri.queryParameters['chapterId'] ?? fallbackChapterId;
+                  return CustomTransitionPage(
+                    key: state.pageKey,
+                    barrierDismissible: true,
+                    barrierColor: Colors.black54,
+                    opaque: false,
+                    child: StructureMindmapScreen(bookId: bookId, chapterId: chapterId),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(scale: Tween(begin: 0.98, end: 1.0).animate(animation), child: child),
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),

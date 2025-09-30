@@ -58,9 +58,10 @@ lib/
 | Route | Экран | Переход | Примечание |
 | --- | --- | --- | --- |
 | `/onboarding` | Onboarding / Permissions | Fade → Library | Гард перенаправит обратно, если не выданы все разрешения. |
-| `/library` | Library | Default | Карточки книг открывают рабочее пространство, меню ведёт в экспорт. |
-| `/book/:bookId` | Book Workspace | Slide from right | Содержит линейку глав, редактор и панель действий. |
-| `/book/:bookId/structure` | Mindmap Modal | Fade + Scale | Модальное дерево сцен поверх workspace. |
+| `/library` | Library | Default | Карточки книг открывают оглавление, меню ведёт в экспорт. |
+| `/book/:bookId` | Book Outline | Slide from right | Витрина книги: биллинг, мета, прогресс и список глав. |
+| `/book/:bookId/editor` | Book Workspace | Slide from right | Содержит линейку глав, редактор и панель действий. |
+| `/book/:bookId/editor/structure` | Mindmap Modal | Fade + Scale | Модальное дерево сцен поверх workspace. |
 | `/ai/composer` | AI Composer Drawer | Slide from right | Открывается как выезжающий сайдбар. |
 | `/voice/training` | Voice Training | Slide | Используется, если профиль голоса не готов. |
 | `/export` | Export | Slide up | Требует `bookId`, иначе редиректит в библиотеку. |
