@@ -9,11 +9,29 @@ import '../widgets/chapter_card.dart';
 class NotebookOutlineView extends StatefulWidget {
   final Work work;
   final List<Chapter> chapters;
+  final VoidCallback? onDictate;
+  final VoidCallback? onEdit;
+  final VoidCallback? onOpenMap;
+  final VoidCallback? onAddNode;
+  final VoidCallback? onMore;
+  final void Function(Chapter chapter)? onReadChapter;
+  final void Function(Chapter chapter)? onEditChapter;
+  final void Function(Chapter chapter)? onVoiceChapter;
+  final void Function(Chapter chapter)? onOpenChapter;
 
   const NotebookOutlineView({
     super.key,
     required this.work,
     required this.chapters,
+    this.onDictate,
+    this.onEdit,
+    this.onOpenMap,
+    this.onAddNode,
+    this.onMore,
+    this.onReadChapter,
+    this.onEditChapter,
+    this.onVoiceChapter,
+    this.onOpenChapter,
   });
 
   /// Демонстрационный экран
@@ -87,11 +105,12 @@ class _NotebookOutlineViewState extends State<NotebookOutlineView> {
                 WorkMetaHeader(
                   work: widget.work,
                   // для book
-                  onDictate: () {/* TODO: диктовка */},
-                  onEdit: () {/* TODO: редактирование */},
+                  onDictate: widget.onDictate ?? () {},
+                  onEdit: widget.onEdit ?? () {},
                   // для mindmap
-                  onOpenMap: widget.work.isMindmap ? () {/* TODO: открыть карту */} : null,
-                  onAddNode: widget.work.isMindmap ? () {/* TODO: добавить узел */} : null,
+                  onOpenMap: widget.work.isMindmap ? widget.onOpenMap : null,
+                  onAddNode: widget.work.isMindmap ? widget.onAddNode : null,
+                  onMore: widget.onMore,
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -102,10 +121,10 @@ class _NotebookOutlineViewState extends State<NotebookOutlineView> {
                 const SizedBox(height: 4),
                 ...widget.chapters.map((c) => ChapterCard(
                       ch: c,
-                      onRead: () {/* TODO */},
-                      onEditOrContinue: () {/* TODO */},
-                      onVoice: () {/* TODO */},
-                      onOpen: () {/* TODO: переход к чтению/узлу */},
+                      onRead: () => widget.onReadChapter?.call(c),
+                      onEditOrContinue: () => widget.onEditChapter?.call(c),
+                      onVoice: () => widget.onVoiceChapter?.call(c),
+                      onOpen: widget.onOpenChapter != null ? () => widget.onOpenChapter!(c) : null,
                     )),
                 const SizedBox(height: 24),
               ],
