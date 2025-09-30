@@ -669,15 +669,17 @@ class _PinnedTitleHeader extends SliverPersistentHeaderDelegate {
           ]
         : null;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: shadow,
-        border: const Border(
-          bottom: BorderSide(color: AppColors.border),
+    return SizedBox.expand(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: shadow,
+          border: const Border(
+            bottom: BorderSide(color: AppColors.border),
+          ),
         ),
+        child: child,
       ),
-      child: child,
     );
   }
 
