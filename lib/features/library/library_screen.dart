@@ -80,21 +80,42 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-          child: Row(
-            children: [
-              Text(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 400;
+              final title = Text(
                 'Библиотека коллекций',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w800,
                       color: AppColors.textPrimary,
                     ),
-              ),
-              const Spacer(),
-              ViewToggle(
+              );
+              final toggle = ViewToggle(
                 mode: libraryState.viewMode,
                 onChanged: (mode) => controller.setViewMode(mode),
-              ),
-            ],
+              );
+
+              if (isCompact) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    title,
+                    const SizedBox(height: 12),
+                    toggle,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: title),
+                  const SizedBox(width: 12),
+                  toggle,
+                ],
+              );
+            },
           ),
         ),
         Padding(
