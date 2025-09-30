@@ -95,13 +95,18 @@ class _ChapterReadViewState extends State<ChapterReadView> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
+        // ВАЖНО: отключаем tint/overlay у M3 и красим градиентом из prefs
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         elevation: 2,
+        scrolledUnderElevation: 0,
+        shadowColor: Colors.transparent,
         foregroundColor: prefs.chromeForeground,
         systemOverlayStyle:
             prefs.isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-        flexibleSpace:
-            Container(decoration: BoxDecoration(gradient: prefs.chromeGradient)),
+        flexibleSpace: DecoratedBox(
+          decoration: BoxDecoration(gradient: prefs.chromeGradient),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           tooltip: 'Назад',
