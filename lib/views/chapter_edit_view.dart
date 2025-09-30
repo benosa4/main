@@ -5,6 +5,7 @@ import '../models/reading_prefs.dart';
 import '../shared/tokens/design_tokens.dart';
 import '../widgets/billing_bar.dart';
 import '../widgets/compact_text_settings_bar.dart';
+import '../widgets/measure_size.dart';
 
 class ChapterEditView extends StatefulWidget {
   final String workId;
@@ -47,6 +48,7 @@ class ChapterEditView extends StatefulWidget {
 class _ChapterEditViewState extends State<ChapterEditView> {
   late final ReadingPrefs prefs;
   late final TextEditingController editorController;
+  double _bottomChromeHeight = 0;
 
   @override
   void initState() {
@@ -77,7 +79,15 @@ class _ChapterEditViewState extends State<ChapterEditView> {
       fontFamilyFallback: prefs.fontFallback,
     );
 
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    final viewPadding = MediaQuery.of(context).padding.bottom;
+    final keyboardInset = viewInsets > viewPadding ? viewInsets - viewPadding : 0.0;
+
+    final contentBottomPadding =
+        _bottomChromeHeight + viewPadding + keyboardInset + 12;
+
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -98,75 +108,101 @@ class _ChapterEditViewState extends State<ChapterEditView> {
           IconButton(onPressed: () {}, tooltip: 'Настройки', icon: const Icon(Icons.settings_outlined)),
         ],
       ),
-      bottomNavigationBar: DecoratedBox(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          border: Border(top: BorderSide(color: theme.dividerColor.withOpacity(.25))),
-        ),
-        child: SafeArea(
-          top: false,
-          minimum: const EdgeInsets.only(bottom: 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+      body: Stack(
+        children: [
+          Column(
             children: [
-              CompactTextSettingsBar(prefs: prefs),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: widget.onEditMode ?? () {},
-                        icon: const Icon(Icons.edit_outlined),
-                        label: const Text('Редактировать'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              const BillingBar(credits: 2450, micTime: Duration(minutes: 45), requests: 120),
+              _ChapterHeader(title: widget.chapter.title, words: widget.chapter.words),
+              Expanded(
+                child: Container(
+                  color: prefs.bgColor,
+                  child: Scrollbar(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.fromLTRB(16, 8, 16, contentBottomPadding),
+                      child: TextField(
+                        controller: editorController,
+                        maxLines: null,
+                        keyboardType: TextInputType.multiline,
+                        scrollPadding:
+                            EdgeInsets.only(bottom: contentBottomPadding + 24),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          isCollapsed: true,
                         ),
+                        style: editorStyle,
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: widget.onVoice ?? () {},
-                        icon: const Icon(Icons.graphic_eq_rounded),
-                        label: const Text('Озвучить'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-      ),
-      body: Column(
-        children: [
-          const BillingBar(credits: 2450, micTime: Duration(minutes: 45), requests: 120),
-          _ChapterHeader(title: widget.chapter.title, words: widget.chapter.words),
-          Expanded(
-            child: Container(
-              color: prefs.bgColor,
-              child: Scrollbar(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 160),
-                  child: TextField(
-                    controller: editorController,
-                    maxLines: null,
-                    minLines: 12,
-                    keyboardType: TextInputType.multiline,
-                    scrollPadding: const EdgeInsets.only(bottom: 200),
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      isCollapsed: true,
-                    ),
-                    style: editorStyle,
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AnimatedPadding(
+              duration: const Duration(milliseconds: 160),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.only(bottom: viewInsets),
+              child: SafeArea(
+                top: false,
+                child: MeasureSize(
+                  onChange: (size) {
+                    if (!mounted) return;
+                    setState(() => _bottomChromeHeight = size.height);
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CompactTextSettingsBar(prefs: prefs),
+                      Material(
+                        color: theme.colorScheme.surface,
+                        elevation: 2,
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              top: BorderSide(color: theme.dividerColor.withOpacity(.12)),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: widget.onEditMode ?? () {},
+                                  icon: const Icon(Icons.edit_outlined),
+                                  label: const Text('Редактировать'),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: widget.onVoice ?? () {},
+                                  icon: const Icon(Icons.graphic_eq_rounded),
+                                  label: const Text('Озвучить'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
