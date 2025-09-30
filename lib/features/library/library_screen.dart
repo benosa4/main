@@ -104,6 +104,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           SliverPersistentHeader(
             pinned: true,
             delegate: _PinnedTitleHeader(
+              height: 64,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
                 child: Row(
@@ -634,6 +635,55 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   void _togglePermission(AppPermission permission) {
     ref.read(permissionsProvider.notifier).toggle(permission);
+  }
+}
+
+class _PinnedTitleHeader extends SliverPersistentHeaderDelegate {
+  const _PinnedTitleHeader({
+    required this.child,
+    this.height = 64,
+  });
+
+  final Widget child;
+  final double height;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    final shadow = overlapsContent
+        ? [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ]
+        : null;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: shadow,
+        border: const Border(
+          bottom: BorderSide(color: AppColors.border),
+        ),
+      ),
+      child: child,
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _PinnedTitleHeader oldDelegate) {
+    return oldDelegate.child != child || oldDelegate.height != height;
   }
 }
 
