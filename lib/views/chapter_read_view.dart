@@ -4,8 +4,9 @@ import '../models/chapter.dart';
 import '../models/reading_prefs.dart';
 import '../shared/tokens/design_tokens.dart';
 import '../widgets/billing_bar.dart';
+import '../widgets/compact_text_settings_bar.dart';
+import '../widgets/measure_size.dart';
 import '../widgets/reading_progress_bar.dart';
-import '../widgets/reading_settings_panel.dart';
 
 class ChapterReadView extends StatefulWidget {
   final String workId;
@@ -51,6 +52,7 @@ class _ChapterReadViewState extends State<ChapterReadView> {
   late final ReadingPrefs prefs;
   final ScrollController scrollController = ScrollController();
   double progress = 0;
+  double bottomChromeHeight = 0;
 
   @override
   void initState() {
@@ -84,7 +86,13 @@ class _ChapterReadViewState extends State<ChapterReadView> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final viewInsets = mediaQuery.viewInsets.bottom;
+    final viewPadding = mediaQuery.padding.bottom;
+    final contentBottomPadding = bottomChromeHeight + viewPadding + 12;
+
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -107,64 +115,83 @@ class _ChapterReadViewState extends State<ChapterReadView> {
           IconButton(onPressed: () {}, tooltip: 'Настройки', icon: const Icon(Icons.settings_outlined)),
         ],
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border(top: BorderSide(color: Theme.of(context).dividerColor.withOpacity(.4))),
-        ),
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-        child: SafeArea(
-          top: false,
-          child: Row(
+      body: Stack(
+        children: [
+          Column(
             children: [
+              const BillingBar(credits: 2450, micTime: Duration(minutes: 45), requests: 120),
+              _ChapterHeader(title: widget.chapter.title, words: widget.chapter.words),
+              ReadingProgressBar(progress: progress, words: widget.chapter.words),
               Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: widget.onEdit,
-                  icon: const Icon(Icons.edit_outlined),
-                  label: const Text('Редактировать'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: widget.onVoice,
-                  icon: const Icon(Icons.graphic_eq_rounded),
-                  label: const Text('Озвучить'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Container(
+                  color: prefs.bgColor,
+                  child: Scrollbar(
+                    controller: scrollController,
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      padding: EdgeInsets.fromLTRB(16, 4, 16, contentBottomPadding),
+                      child: _ReadingBody(text: widget.body, prefs: prefs),
+                    ),
                   ),
                 ),
               ),
             ],
           ),
-        ),
-      ),
-      body: Column(
-        children: [
-          const BillingBar(credits: 2450, micTime: Duration(minutes: 45), requests: 120),
-          _ChapterHeader(title: widget.chapter.title, words: widget.chapter.words),
-          ReadingProgressBar(progress: progress, words: widget.chapter.words),
-          Expanded(
-            child: Container(
-              color: prefs.bgColor,
-              child: Scrollbar(
-                controller: scrollController,
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AnimatedPadding(
+              duration: const Duration(milliseconds: 160),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.only(bottom: viewInsets),
+              child: SafeArea(
+                top: false,
+                child: MeasureSize(
+                  onChange: (size) => setState(() => bottomChromeHeight = size.height),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      _ReadingBody(text: widget.body, prefs: prefs),
-                      const SizedBox(height: 20),
-                      ReadingSettingsPanel(prefs: prefs),
+                      CompactTextSettingsBar(prefs: prefs),
+                      Material(
+                        color: Theme.of(context).cardColor,
+                        elevation: 2,
+                        child: Container(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                          decoration: BoxDecoration(
+                            border: Border(top: BorderSide(color: Theme.of(context).dividerColor.withOpacity(.4))),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: widget.onEdit,
+                                  icon: const Icon(Icons.edit_outlined),
+                                  label: const Text('Редактировать'),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: widget.onVoice,
+                                  icon: const Icon(Icons.graphic_eq_rounded),
+                                  label: const Text('Озвучить'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
