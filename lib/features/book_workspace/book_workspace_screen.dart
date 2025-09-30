@@ -11,6 +11,8 @@ import 'package:voicebook/shared/tokens/design_tokens.dart';
 import 'widgets/editor/chapter_editor.dart';
 import 'widgets/fab_panel/fab_action_cluster.dart';
 import 'widgets/editor_gate.dart';
+import 'widgets/top_taskbar.dart';
+import 'spine_notebook/chapter_reader_view.dart';
 import 'spine_notebook/spine_notebook_view.dart';
 
 class BookWorkspaceScreen extends ConsumerStatefulWidget {
@@ -22,7 +24,7 @@ class BookWorkspaceScreen extends ConsumerStatefulWidget {
   ConsumerState<BookWorkspaceScreen> createState() => _BookWorkspaceScreenState();
 }
 
-enum _WorkspaceMode { overview, edit }
+enum _WorkspaceMode { list, reading, edit }
 
 class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
   UiStateStorage? _uiStateStorage;
@@ -31,7 +33,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
   Duration? _recordingElapsed;
   DateTime? _recordingStartedAt;
   final EditorGateController _editorGateController = EditorGateController();
-  _WorkspaceMode _workspaceMode = _WorkspaceMode.overview;
+  _WorkspaceMode _workspaceMode = _WorkspaceMode.list;
   String? _pendingModeRaw;
   String? _deferredModeToPersist;
 
@@ -46,9 +48,18 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
     final storage = _uiStateStorage;
     final bookId = widget.bookId;
     final targetId = chapterId ?? ref.read(currentChapterProvider(bookId))?.id;
-    final raw = mode == _WorkspaceMode.overview
-        ? 'overview'
-        : (targetId != null ? 'edit::$targetId' : 'overview');
+    String raw;
+    switch (mode) {
+      case _WorkspaceMode.list:
+        raw = 'list';
+        break;
+      case _WorkspaceMode.reading:
+        raw = targetId != null ? 'reading::$targetId' : 'list';
+        break;
+      case _WorkspaceMode.edit:
+        raw = targetId != null ? 'edit::$targetId' : 'list';
+        break;
+    }
     if (storage == null) {
       _deferredModeToPersist = raw;
       return;
@@ -81,27 +92,42 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
             setState(() => _workspaceMode = _WorkspaceMode.edit);
           }
         } else {
-          if (_workspaceMode != _WorkspaceMode.overview) {
-            setState(() => _workspaceMode = _WorkspaceMode.overview);
+          if (_workspaceMode != _WorkspaceMode.list) {
+            setState(() => _workspaceMode = _WorkspaceMode.list);
           }
         }
-      } else if (raw == 'overview') {
-        if (_workspaceMode != _WorkspaceMode.overview) {
-          setState(() => _workspaceMode = _WorkspaceMode.overview);
+      } else if (raw.startsWith('reading::')) {
+        final targetId = raw.split('reading::').last;
+        final exists = chapters.any((chapter) => chapter.id == targetId);
+        if (exists) {
+          if (currentChapter == null || currentChapter.id != targetId) {
+            _updateActiveChapter(widget.bookId, targetId);
+          }
+          if (_workspaceMode != _WorkspaceMode.reading) {
+            setState(() => _workspaceMode = _WorkspaceMode.reading);
+          }
+        } else {
+          if (_workspaceMode != _WorkspaceMode.list) {
+            setState(() => _workspaceMode = _WorkspaceMode.list);
+          }
+        }
+      } else if (raw == 'list' || raw == 'overview') {
+        if (_workspaceMode != _WorkspaceMode.list) {
+          setState(() => _workspaceMode = _WorkspaceMode.list);
         }
       }
     });
   }
 
-  void _openChapterFromOverview(String chapterId) {
+  void _openChapterFromList(String chapterId) {
     final bookId = widget.bookId;
     _updateActiveChapter(bookId, chapterId);
-    _setWorkspaceMode(_WorkspaceMode.edit, chapterId: chapterId);
+    _setWorkspaceMode(_WorkspaceMode.reading, chapterId: chapterId);
   }
 
-  void _returnToOverview() {
+  void _returnToList() {
     _editorGateController.close();
-    _setWorkspaceMode(_WorkspaceMode.overview);
+    _setWorkspaceMode(_WorkspaceMode.list);
   }
 
   Future<void> _handleCreateChapter(BuildContext context) async {
@@ -351,21 +377,43 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= 1024;
-        final editingChapter = currentChapter;
-        if (editingChapter == null && _workspaceMode != _WorkspaceMode.overview) {
+        final Chapter? activeChapter = currentChapter;
+        if (activeChapter == null && _workspaceMode != _WorkspaceMode.list) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              setState(() => _workspaceMode = _WorkspaceMode.overview);
+              setState(() => _workspaceMode = _WorkspaceMode.list);
             }
           });
         }
-        final activeChapterId = editingChapter?.id ?? (summaries.isNotEmpty ? summaries.first.id : null);
+        final activeChapterId = activeChapter?.id ?? (summaries.isNotEmpty ? summaries.first.id : null);
 
-        final gateInitiallyOpen = editingChapter != null
+        final bool showList = activeChapter == null || _workspaceMode == _WorkspaceMode.list;
+        final bool showReader = activeChapter != null && _workspaceMode == _WorkspaceMode.reading;
+        final bool showEditor = activeChapter != null && _workspaceMode == _WorkspaceMode.edit;
+
+        final overview = SpineNotebookView(
+          key: const ValueKey('spine_notebook_overview'),
+          bookTitle: book.title,
+          chapters: summaries,
+          activeId: activeChapterId,
+          onOpen: _openChapterFromList,
+          onAdd: () => _handleCreateChapter(context),
+        );
+
+        final Widget reader = showReader
+            ? ChapterReaderView(
+                key: ValueKey('reader_${activeChapter!.id}'),
+                chapter: activeChapter,
+                onEdit: () => _setWorkspaceMode(_WorkspaceMode.edit, chapterId: activeChapter.id),
+              )
+            : const SizedBox.shrink();
+
+        final Chapter? editingChapter = showEditor ? activeChapter : null;
+        final bool gateInitiallyOpen = editingChapter != null
             ? _uiStateStorage?.readEditorGateOpened(bookId, editingChapter.id) ?? false
             : false;
 
-        final editorGate = editingChapter != null
+        final Widget editorGate = editingChapter != null
             ? EditorGate(
                 key: ValueKey('editor_gate_${editingChapter.id}'),
                 controller: _editorGateController,
@@ -388,155 +436,117 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
                 ),
                 onOpen: () => _handleEditorOpened(bookId, editingChapter.id),
               )
-            : const Center(
-                child: Text('Выберите главу, чтобы начать редактирование.'),
-              );
+            : const SizedBox.shrink();
 
-        final showOverview = editingChapter == null || _workspaceMode == _WorkspaceMode.overview;
-        final showFabCluster = !showOverview;
-
-        final editorArea = isDesktop
-            ? Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(child: editorGate),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        const SizedBox.expand(),
-                        if (showFabCluster)
-                          Align(
-                            alignment: Alignment.bottomRight,
-                            child: Padding(
-                              padding: const EdgeInsets.all(AppSpacing.outer),
-                              child: FabActionCluster(
-                                onToggleRecording: () => ref
-                                    .read(dictationControllerProvider.notifier)
-                                    .toggle(bookId: bookId, chapterId: editingChapter!.id),
-                                onOpenComposer: () => context.pushNamed('aiComposer'),
-                                onPreviewTts: () {
-                                  if (voiceProfile.status == VoiceProfileStatus.ready) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Готовим предпрослушку голосом ${voiceProfile.name}...')),
-                                    );
-                                  } else {
-                                    context.pushNamed('voiceTraining');
-                                  }
-                                },
-                                isRecording: dictationState.isListening,
-                                isConnecting: dictationState.isConnecting,
-                                elapsed: _recordingElapsed,
+        final Widget editorArea = showEditor
+            ? (isDesktop
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(child: editorGate),
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            const SizedBox.expand(),
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: Padding(
+                                padding: const EdgeInsets.all(AppSpacing.outer),
+                                child: FabActionCluster(
+                                  onToggleRecording: () => ref
+                                      .read(dictationControllerProvider.notifier)
+                                      .toggle(bookId: bookId, chapterId: editingChapter!.id),
+                                  onOpenComposer: () => context.pushNamed('aiComposer'),
+                                  onPreviewTts: () {
+                                    if (voiceProfile.status == VoiceProfileStatus.ready) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Готовим предпрослушку голосом ${voiceProfile.name}...')),
+                                      );
+                                    } else {
+                                      context.pushNamed('voiceTraining');
+                                    }
+                                  },
+                                  isRecording: dictationState.isListening,
+                                  isConnecting: dictationState.isConnecting,
+                                  elapsed: _recordingElapsed,
+                                ),
                               ),
                             ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              )
-            : Column(
-                children: [
-                  Expanded(child: editorGate),
-                ],
-              );
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(children: [Expanded(child: editorGate)]))
+            : const SizedBox.shrink();
 
-        final overview = SpineNotebookView(
-          key: const ValueKey('spine_notebook_overview'),
-          bookTitle: book.title,
-          chapters: summaries,
-          activeId: activeChapterId,
-          onOpen: _openChapterFromOverview,
-          onAdd: () => _handleCreateChapter(context),
-        );
+        final Widget stage;
+        if (showList) {
+          stage = overview;
+        } else if (showReader) {
+          stage = reader;
+        } else {
+          stage = KeyedSubtree(key: const ValueKey('editor_area'), child: editorArea);
+        }
 
         final mainContent = AnimatedSwitcher(
           duration: const Duration(milliseconds: 220),
           switchInCurve: Curves.easeOutCubic,
-          child: showOverview
-              ? overview
-              : KeyedSubtree(key: const ValueKey('editor_area'), child: editorArea),
+          child: stage,
         );
 
-        final appBar = AppBar(
-          titleSpacing: 16,
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(book.title),
-              if (editingChapter != null)
-                !showOverview
-                    ? Hero(
-                        tag: 'chapter_title_${editingChapter.id}',
-                        child: Material(
-                          color: Colors.transparent,
-                          child: Text(
-                            editingChapter.title,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      )
-                    : Text(
-                        editingChapter.title,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-            ],
-          ),
-          actions: [
-            if (!showOverview)
-              TextButton.icon(
-                onPressed: _returnToOverview,
-                icon: const Icon(Icons.menu_book_outlined),
-                label: const Text('Оглавление'),
-                style: TextButton.styleFrom(foregroundColor: Colors.white),
-              ),
-            IconButton(
-              tooltip: 'Экспорт',
-              onPressed: () => context.pushNamed('export', queryParameters: {'bookId': bookId}),
-              icon: const Icon(Icons.ios_share_outlined),
+        final Widget body = Column(
+          children: [
+            TopTaskbar(
+              title: book.title,
+              isListMode: _workspaceMode == _WorkspaceMode.list,
+              activeChapter: activeChapter,
+              onBack: () {
+                if (_workspaceMode == _WorkspaceMode.list) {
+                  context.pop();
+                } else {
+                  _returnToList();
+                }
+              },
+              onShowList: _returnToList,
+              onExport: () => context.pushNamed('export', queryParameters: {'bookId': bookId}),
+              onOpenSettings: () => context.pushNamed('settings'),
             ),
-            IconButton(
-              tooltip: 'Настройки',
-              onPressed: () => context.pushNamed('settings'),
-              icon: const Icon(Icons.settings_outlined),
-            ),
+            Expanded(child: SafeArea(child: mainContent)),
           ],
         );
 
-        final body = SafeArea(child: mainContent);
+        final Widget? floatingFab = (!isDesktop && showEditor)
+            ? FabActionCluster(
+                onToggleRecording: () => ref
+                    .read(dictationControllerProvider.notifier)
+                    .toggle(bookId: bookId, chapterId: editingChapter!.id),
+                onOpenComposer: () => context.pushNamed('aiComposer'),
+                onPreviewTts: () {
+                  if (voiceProfile.status == VoiceProfileStatus.ready) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Готовим предпрослушку голосом ${voiceProfile.name}...')),
+                    );
+                  } else {
+                    context.pushNamed('voiceTraining');
+                  }
+                },
+                isRecording: dictationState.isListening,
+                isConnecting: dictationState.isConnecting,
+                elapsed: _recordingElapsed,
+              )
+            : null;
 
         if (isDesktop) {
           return Scaffold(
-            appBar: appBar,
             body: body,
           );
         }
 
         return Scaffold(
-          appBar: appBar,
           body: body,
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-          floatingActionButton: showFabCluster
-              ? FabActionCluster(
-                  onToggleRecording: () => ref
-                      .read(dictationControllerProvider.notifier)
-                      .toggle(bookId: bookId, chapterId: editingChapter!.id),
-                  onOpenComposer: () => context.pushNamed('aiComposer'),
-                  onPreviewTts: () {
-                    if (voiceProfile.status == VoiceProfileStatus.ready) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Готовим предпрослушку голосом ${voiceProfile.name}...')),
-                      );
-                    } else {
-                      context.pushNamed('voiceTraining');
-                    }
-                  },
-                  isRecording: dictationState.isListening,
-                  isConnecting: dictationState.isConnecting,
-                  elapsed: _recordingElapsed,
-                )
-              : null,
+          floatingActionButton: floatingFab,
         );
       },
     );
