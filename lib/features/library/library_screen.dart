@@ -6,7 +6,7 @@ import 'package:voicebook/core/providers/app_providers.dart';
 import 'package:voicebook/features/library/controllers/library_controller.dart';
 import 'package:voicebook/features/library/models/collection.dart';
 import 'package:voicebook/features/library/widgets/collection_card.dart';
-import 'package:voicebook/features/library/widgets/promo_create_panel.dart';
+import 'package:voicebook/features/library/widgets/collapsible_promo_header.dart';
 import 'package:voicebook/features/library/widgets/status_filter_chips.dart';
 import 'package:voicebook/features/library/widgets/view_toggle.dart';
 import 'package:voicebook/shared/tokens/design_tokens.dart';
@@ -59,91 +59,96 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       );
     }
 
-    final body = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (libraryState.errorMessage != null)
-          _ErrorBanner(
-            message: libraryState.errorMessage!,
-            onRetry: controller.retry,
-          ),
-        PromoCreatePanel(
-          onCreate: () => _createCollection(context, controller),
-          onRequestMicrophone: () =>
-              _togglePermission(AppPermission.microphone),
-          onRequestStorage: () => _togglePermission(AppPermission.files),
-          onRequestNotifications: () =>
-              _togglePermission(AppPermission.notifications),
-          microphoneGranted: permissions.microphone,
-          storageGranted: permissions.files,
-          notificationsGranted: permissions.notifications,
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isCompact = constraints.maxWidth < 400;
-              final title = Text(
-                'Библиотека коллекций',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
-                    ),
-              );
-              final toggle = ViewToggle(
-                mode: libraryState.viewMode,
-                onChanged: (mode) => controller.setViewMode(mode),
-              );
-
-              if (isCompact) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    title,
-                    const SizedBox(height: 12),
-                    toggle,
-                  ],
-                );
-              }
-
-              return Row(
-                children: [
-                  Expanded(child: title),
-                  const SizedBox(width: 12),
-                  toggle,
-                ],
-              );
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: StatusFilterChips(
-            selected: libraryState.statusFilter,
-            onChanged: controller.setStatusFilter,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Expanded(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: _buildContent(
-                context, libraryState, storeState.isLoading, controller),
-          ),
-        ),
-      ],
-    );
+    final width = MediaQuery.of(context).size.width;
+    final showSearchField = width >= 480;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar(context),
-      body: body,
+      appBar: _buildAppBar(context, showSearchField),
+      body: CustomScrollView(
+        slivers: [
+          if (libraryState.errorMessage != null)
+            SliverToBoxAdapter(
+              child: _ErrorBanner(
+                message: libraryState.errorMessage!,
+                onRetry: controller.retry,
+              ),
+            ),
+          SliverPersistentHeader(
+            pinned: false,
+            floating: false,
+            delegate: CollapsiblePromoHeader(
+              onCreate: () => _createCollection(context, controller),
+              micGranted: permissions.microphone,
+              storageGranted: permissions.files,
+              notifGranted: permissions.notifications,
+              onAskMic: () {
+                if (!permissions.microphone) {
+                  _togglePermission(AppPermission.microphone);
+                }
+              },
+              onAskStorage: () {
+                if (!permissions.files) {
+                  _togglePermission(AppPermission.files);
+                }
+              },
+              onAskNotif: () {
+                if (!permissions.notifications) {
+                  _togglePermission(AppPermission.notifications);
+                }
+              },
+              max: width < 600 ? 220 : 260,
+              min: 76,
+            ),
+          ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _PinnedTitleHeader(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+                child: Row(
+                  children: [
+                    Text(
+                      'Библиотека коллекций',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary),
+                    ),
+                    const Spacer(),
+                    ViewToggle(
+                      mode: libraryState.viewMode,
+                      onChanged: (mode) => controller.setViewMode(mode),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+              child: StatusFilterChips(
+                selected: libraryState.statusFilter,
+                onChanged: controller.setStatusFilter,
+              ),
+            ),
+          ),
+          ..._buildContentSlivers(
+            context: context,
+            state: libraryState,
+            isLoading: storeState.isLoading,
+            controller: controller,
+            width: width,
+          ),
+        ],
+      ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(BuildContext context, bool showSearchField) {
     return AppBar(
       backgroundColor: AppColors.appBarBackground,
       elevation: 0,
@@ -163,29 +168,41 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
             ),
             const Spacer(),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 360),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Поиск по коллекциям…',
-                  isDense: true,
-                  prefixIcon: const Icon(Icons.search, size: 18),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        BorderSide(color: Colors.black.withOpacity(0.08)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        BorderSide(color: Colors.black.withOpacity(0.08)),
+            if (showSearchField)
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 360),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Поиск по коллекциям…',
+                    isDense: true,
+                    prefixIcon: const Icon(Icons.search, size: 18),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide:
+                          BorderSide(color: Colors.black.withOpacity(0.08)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide:
+                          BorderSide(color: Colors.black.withOpacity(0.08)),
+                    ),
                   ),
                 ),
+              )
+            else
+              IconButton(
+                tooltip: 'Поиск',
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Поиск скоро появится.')),
+                  );
+                },
+                icon:
+                    const Icon(Icons.search, color: AppColors.textPrimary),
               ),
-            ),
             const SizedBox(width: 12),
             IconButton(
               tooltip: 'Уведомления',
@@ -210,45 +227,213 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     );
   }
 
-  Widget _buildContent(
-    BuildContext context,
-    LibraryState libraryState,
-    bool isLoading,
-    LibraryController controller,
-  ) {
+  List<Widget> _buildContentSlivers({
+    required BuildContext context,
+    required LibraryState state,
+    required bool isLoading,
+    required LibraryController controller,
+    required double width,
+  }) {
     if (isLoading) {
-      return const _SkeletonGrid();
+      return [_skeletonSliver(width)];
     }
 
-    if (libraryState.collections.isEmpty) {
-      return _EmptyState(
-          onCreate: () => _createCollection(context, controller));
+    if (state.collections.isEmpty) {
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _EmptyState(
+            onCreate: () => _createCollection(context, controller),
+          ),
+        ),
+      ];
     }
 
-    if (libraryState.visibleCollections.isEmpty) {
-      final query = libraryState.searchQuery;
-      return _NoResultsMessage(query: query);
+    if (state.visibleCollections.isEmpty) {
+      final query = state.searchQuery;
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _NoResultsMessage(query: query),
+        ),
+      ];
     }
 
-    if (libraryState.viewMode == LibraryViewMode.list) {
-      return _ListView(
-        collections: libraryState.visibleCollections,
+    if (state.viewMode == LibraryViewMode.list) {
+      return [
+        _listSliver(
+          state.visibleCollections,
+          onOpen: (collection) => _openCollection(context, collection.id),
+          onRename: (collection) => _renameCollection(context, collection),
+          onDuplicate: (collection) => _duplicateCollection(context, collection),
+          onExport: (collection) => _exportCollection(context, collection),
+          onDelete: (collection) => _deleteCollection(context, collection),
+        ),
+      ];
+    }
+
+    return [
+      _gridSliver(
+        state.visibleCollections,
+        width,
         onOpen: (collection) => _openCollection(context, collection.id),
         onRename: (collection) => _renameCollection(context, collection),
         onDuplicate: (collection) => _duplicateCollection(context, collection),
         onExport: (collection) => _exportCollection(context, collection),
         onDelete: (collection) => _deleteCollection(context, collection),
-      );
-    }
+      ),
+    ];
+  }
 
-    return _GridView(
-      collections: libraryState.visibleCollections,
-      onOpen: (collection) => _openCollection(context, collection.id),
-      onRename: (collection) => _renameCollection(context, collection),
-      onDuplicate: (collection) => _duplicateCollection(context, collection),
-      onExport: (collection) => _exportCollection(context, collection),
-      onDelete: (collection) => _deleteCollection(context, collection),
+  Widget _gridSliver(
+    List<Collection> collections,
+    double width, {
+    required ValueChanged<Collection> onOpen,
+    required ValueChanged<Collection> onRename,
+    required ValueChanged<Collection> onDuplicate,
+    required ValueChanged<Collection> onExport,
+    required ValueChanged<Collection> onDelete,
+  }) {
+    final columns = _columnsFor(width);
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      sliver: SliverGrid.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: columns,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 0.8,
+        ),
+        itemCount: collections.length,
+        itemBuilder: (context, index) {
+          final collection = collections[index];
+          return CollectionCard(
+            collection: collection,
+            onOpen: () => onOpen(collection),
+            onRename: () => onRename(collection),
+            onDuplicate: () => onDuplicate(collection),
+            onExport: () => onExport(collection),
+            onDelete: () => onDelete(collection),
+          );
+        },
+      ),
     );
+  }
+
+  Widget _listSliver(
+    List<Collection> collections, {
+    required ValueChanged<Collection> onOpen,
+    required ValueChanged<Collection> onRename,
+    required ValueChanged<Collection> onDuplicate,
+    required ValueChanged<Collection> onExport,
+    required ValueChanged<Collection> onDelete,
+  }) {
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      sliver: SliverList.separated(
+        itemCount: collections.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (context, index) {
+          final collection = collections[index];
+          return CollectionListTile(
+            collection: collection,
+            onOpen: () => onOpen(collection),
+            onRename: () => onRename(collection),
+            onDuplicate: () => onDuplicate(collection),
+            onExport: () => onExport(collection),
+            onDelete: () => onDelete(collection),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _skeletonSliver(double width) {
+    final columns = _columnsFor(width);
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      sliver: SliverGrid.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: columns,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 0.8,
+        ),
+        itemCount: columns * 2,
+        itemBuilder: (context, index) {
+          return Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.notebookLine.withOpacity(0.4),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 16,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppColors.notebookLine.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          height: 10,
+                          width: 140,
+                          decoration: BoxDecoration(
+                            color: AppColors.notebookLine.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          height: 26,
+                          width: 120,
+                          decoration: BoxDecoration(
+                            color: AppColors.notebookLine.withOpacity(0.4),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  int _columnsFor(double width) {
+    if (width >= 1200) {
+      return 5;
+    }
+    if (width >= 900) {
+      return 4;
+    }
+    if (width >= 600) {
+      return 3;
+    }
+    return 2;
   }
 
   Future<void> _createCollection(
@@ -452,87 +637,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   }
 }
 
-class _GridView extends StatelessWidget {
-  const _GridView({
-    required this.collections,
-    required this.onOpen,
-    required this.onRename,
-    required this.onDuplicate,
-    required this.onExport,
-    required this.onDelete,
-  });
-
-  final List<Collection> collections;
-  final ValueChanged<Collection> onOpen;
-  final ValueChanged<Collection> onRename;
-  final ValueChanged<Collection> onDuplicate;
-  final ValueChanged<Collection> onExport;
-  final ValueChanged<Collection> onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 320,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.8,
-      ),
-      itemCount: collections.length,
-      itemBuilder: (context, index) {
-        final collection = collections[index];
-        return CollectionCard(
-          collection: collection,
-          onOpen: () => onOpen(collection),
-          onRename: () => onRename(collection),
-          onDuplicate: () => onDuplicate(collection),
-          onExport: () => onExport(collection),
-          onDelete: () => onDelete(collection),
-        );
-      },
-    );
-  }
-}
-
-class _ListView extends StatelessWidget {
-  const _ListView({
-    required this.collections,
-    required this.onOpen,
-    required this.onRename,
-    required this.onDuplicate,
-    required this.onExport,
-    required this.onDelete,
-  });
-
-  final List<Collection> collections;
-  final ValueChanged<Collection> onOpen;
-  final ValueChanged<Collection> onRename;
-  final ValueChanged<Collection> onDuplicate;
-  final ValueChanged<Collection> onExport;
-  final ValueChanged<Collection> onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-      itemCount: collections.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final collection = collections[index];
-        return CollectionListTile(
-          collection: collection,
-          onOpen: () => onOpen(collection),
-          onRename: () => onRename(collection),
-          onDuplicate: () => onDuplicate(collection),
-          onExport: () => onExport(collection),
-          onDelete: () => onDelete(collection),
-        );
-      },
-    );
-  }
-}
-
 class _EmptyState extends StatelessWidget {
   const _EmptyState({required this.onCreate});
 
@@ -605,76 +709,6 @@ class _NoResultsMessage extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SkeletonGrid extends StatelessWidget {
-  const _SkeletonGrid();
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-      itemCount: 4,
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 320,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.8,
-      ),
-      itemBuilder: (context, index) {
-        return Card(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 2,
-                child:
-                    Container(color: AppColors.notebookLine.withOpacity(0.4)),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 16,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: AppColors.notebookLine.withOpacity(0.7),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        height: 10,
-                        width: 140,
-                        decoration: BoxDecoration(
-                          color: AppColors.notebookLine.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                      ),
-                      const Spacer(),
-                      Container(
-                        height: 26,
-                        width: 120,
-                        decoration: BoxDecoration(
-                          color: AppColors.notebookLine.withOpacity(0.4),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
