@@ -113,7 +113,11 @@ class _ChapterReadViewState extends State<ChapterReadView> {
                 words: widget.chapter.words,
                 prefs: prefs,
               ),
-              ReadingProgressBar(progress: progress, words: widget.chapter.words),
+              ReadingProgressBar(
+                progress: progress,
+                words: widget.chapter.words,
+                prefs: prefs,
+              ),
               Expanded(
                 child: Container(
                   color: prefs.bgColor,
