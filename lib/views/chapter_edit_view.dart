@@ -98,49 +98,53 @@ class _ChapterEditViewState extends State<ChapterEditView> {
           IconButton(onPressed: () {}, tooltip: 'Настройки', icon: const Icon(Icons.settings_outlined)),
         ],
       ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CompactTextSettingsBar(prefs: prefs),
-            Container(
-              decoration: BoxDecoration(
-                color: theme.cardColor,
-                border: Border(top: BorderSide(color: theme.dividerColor.withOpacity(.4))),
-              ),
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: widget.onEditMode ?? () {},
-                      icon: const Icon(Icons.edit_outlined),
-                      label: const Text('Редактировать'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(top: BorderSide(color: theme.dividerColor.withOpacity(.25))),
+        ),
+        child: SafeArea(
+          top: false,
+          minimum: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CompactTextSettingsBar(prefs: prefs),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: widget.onEditMode ?? () {},
+                        icon: const Icon(Icons.edit_outlined),
+                        label: const Text('Редактировать'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: widget.onVoice ?? () {},
-                      icon: const Icon(Icons.graphic_eq_rounded),
-                      label: const Text('Озвучить'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: widget.onVoice ?? () {},
+                        icon: const Icon(Icons.graphic_eq_rounded),
+                        label: const Text('Озвучить'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       body: Column(
