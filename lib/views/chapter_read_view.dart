@@ -92,7 +92,7 @@ class _ChapterReadViewState extends State<ChapterReadView> {
     final contentBottomPadding = bottomChromeHeight + viewPadding + 12;
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: false, // нижние панели поднимаем сами
       appBar: ReadingChromeAppBar(
         prefs: prefs,
         onBack: () => Navigator.pop(context),
@@ -113,17 +113,13 @@ class _ChapterReadViewState extends State<ChapterReadView> {
                 words: widget.chapter.words,
                 prefs: prefs,
               ),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: prefs.bgColor,
-                  border: Border(top: BorderSide(color: prefs.chromeBorder)),
-                ),
-                child: ReadingProgressBar(
-                  progress: progress,
-                  words: widget.chapter.words,
-                  prefs: prefs,
-                ),
+              // Секция прогресса — без дополнительных контейнеров, фон задаёт ниже общий блок
+              ReadingProgressBar(
+                progress: progress,
+                words: widget.chapter.words,
+                prefs: prefs,
               ),
+              // Весь читательский блок под шапкой — одного цвета, без «белых» стыков
               Expanded(
                 child: Container(
                   color: prefs.bgColor,
