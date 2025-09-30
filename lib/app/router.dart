@@ -6,6 +6,7 @@ import 'package:voicebook/core/providers/app_providers.dart';
 import 'package:voicebook/features/ai_composer/ai_composer_drawer.dart';
 import 'package:voicebook/features/book_outline/book_outline_screen.dart';
 import 'package:voicebook/features/book_workspace/book_workspace_screen.dart';
+import 'package:voicebook/features/chapter_read/chapter_read_screen.dart';
 import 'package:voicebook/features/export/export_screen.dart';
 import 'package:voicebook/features/library/library_screen.dart';
 import 'package:voicebook/features/onboarding/onboarding_screen.dart';
@@ -68,6 +69,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           );
         },
         routes: [
+          GoRoute(
+            path: 'chapter/:chapterId/read',
+            name: 'chapterRead',
+            pageBuilder: (context, state) {
+              final bookId = state.pathParameters['bookId']!;
+              final chapterId = state.pathParameters['chapterId']!;
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: ChapterReadScreen(bookId: bookId, chapterId: chapterId),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  final tween = Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
+                      .chain(CurveTween(curve: Curves.easeOutCubic));
+                  return SlideTransition(position: animation.drive(tween), child: child);
+                },
+              );
+            },
+          ),
           GoRoute(
             path: 'editor',
             name: 'bookEditor',

@@ -11,12 +11,16 @@ class ChapterReadView extends StatefulWidget {
   final String workId;
   final Chapter chapter;
   final String body;
+  final VoidCallback? onEdit;
+  final VoidCallback? onVoice;
 
   const ChapterReadView({
     super.key,
     required this.workId,
     required this.chapter,
     required this.body,
+    this.onEdit,
+    this.onVoice,
   });
 
   factory ChapterReadView.demo() {
@@ -115,7 +119,7 @@ class _ChapterReadViewState extends State<ChapterReadView> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: widget.onEdit,
                   icon: const Icon(Icons.edit_outlined),
                   label: const Text('Редактировать'),
                   style: OutlinedButton.styleFrom(
@@ -127,7 +131,7 @@ class _ChapterReadViewState extends State<ChapterReadView> {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: widget.onVoice,
                   icon: const Icon(Icons.graphic_eq_rounded),
                   label: const Text('Озвучить'),
                   style: ElevatedButton.styleFrom(
