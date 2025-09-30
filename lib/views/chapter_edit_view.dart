@@ -91,12 +91,16 @@ class _ChapterEditViewState extends State<ChapterEditView> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         elevation: 2,
+        scrolledUnderElevation: 0,
+        shadowColor: Colors.transparent,
         foregroundColor: prefs.chromeForeground,
         systemOverlayStyle:
             prefs.isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-        flexibleSpace:
-            Container(decoration: BoxDecoration(gradient: prefs.chromeGradient)),
+        flexibleSpace: DecoratedBox(
+          decoration: BoxDecoration(gradient: prefs.chromeGradient),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           tooltip: 'Назад',
