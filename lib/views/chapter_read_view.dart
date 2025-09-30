@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../models/chapter.dart';
 import '../models/reading_prefs.dart';
@@ -94,6 +95,13 @@ class _ChapterReadViewState extends State<ChapterReadView> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 2,
+        foregroundColor: prefs.chromeForeground,
+        systemOverlayStyle:
+            prefs.isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+        flexibleSpace:
+            Container(decoration: BoxDecoration(gradient: prefs.chromeGradient)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           tooltip: 'Назад',
@@ -152,43 +160,48 @@ class _ChapterReadViewState extends State<ChapterReadView> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Компактная панель настроек чтения уже содержит градиент и обводку
                       CompactTextSettingsBar(prefs: prefs),
+                      // Кнопки действий — под ту же тему
                       Material(
-                        color: Theme.of(context).cardColor,
+                        color: Colors.transparent,
                         elevation: 2,
-                        child: Container(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                        child: DecoratedBox(
                           decoration: BoxDecoration(
-                            border: Border(top: BorderSide(color: Theme.of(context).dividerColor.withOpacity(.4))),
+                            gradient: prefs.chromeGradient,
+                            border: Border(top: BorderSide(color: prefs.chromeBorder)),
                           ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  onPressed: widget.onEdit,
-                                  icon: const Icon(Icons.edit_outlined),
-                                  label: const Text('Редактировать'),
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: Container(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: widget.onEdit,
+                                    icon: const Icon(Icons.edit_outlined),
+                                    label: const Text('Редактировать'),
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: widget.onVoice,
-                                  icon: const Icon(Icons.graphic_eq_rounded),
-                                  label: const Text('Озвучить'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: widget.onVoice,
+                                    icon: const Icon(Icons.graphic_eq_rounded),
+                                    label: const Text('Озвучить'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),

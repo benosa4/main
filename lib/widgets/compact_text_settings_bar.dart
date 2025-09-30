@@ -16,18 +16,23 @@ class CompactTextSettingsBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Theme.of(context).cardColor,
+      color: Colors.transparent,
       elevation: 2,
-      borderRadius: const BorderRadius.only(
-        topLeft: Radius.circular(12),
-        topRight: Radius.circular(12),
-      ),
-      child: Padding(
-        padding: padding,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: prefs.chromeGradient,
+          border: Border(top: BorderSide(color: prefs.chromeBorder)),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
+          ),
+        ),
+        child: Padding(
+          padding: padding,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
               children: [
                 _chip('Размер', Icons.text_fields),
                 const SizedBox(width: 8),
@@ -109,7 +114,8 @@ class CompactTextSettingsBar extends StatelessWidget {
                 ),
               ],
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

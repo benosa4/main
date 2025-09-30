@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../shared/tokens/design_tokens.dart'; // для AppColors.primary
 
 enum ReadingTheme { light, sepia, dark }
 enum ReadingFont { sans, serif, mono }
@@ -78,5 +79,44 @@ class ReadingPrefs extends ChangeNotifier {
       case ReadingFont.mono:
         return const ['Menlo', 'Consolas', 'Roboto Mono'];
     }
+  }
+
+  // ====== Chrome (верх/низ панелей) ======
+  bool get isDark => theme == ReadingTheme.dark;
+
+  /// База под панели: чуть светлее фон текста
+  Color get chromeBase {
+    final double k = switch (theme) {
+      ReadingTheme.dark => 0.10,
+      ReadingTheme.sepia => 0.06,
+      ReadingTheme.light => 0.04,
+    };
+    return Color.lerp(bgColor, Colors.white, k)!;
+  }
+
+  /// Контур панелей
+  Color get chromeBorder =>
+      isDark ? Colors.white.withOpacity(.08) : Colors.black.withOpacity(.06);
+
+  /// Цвет иконок/текстов на AppBar
+  Color get chromeForeground =>
+      isDark ? Colors.white : const Color(0xFF111827);
+
+  /// Градиент панелей (легкая лавандово-бирюзовая вуаль поверх chromeBase)
+  LinearGradient get chromeGradient {
+    // Легкая лавандово-бирюзовая вуаль поверх chromeBase
+    final c1 = Color.alphaBlend(
+      AppColors.primary.withOpacity(0.16),
+      chromeBase,
+    );
+    final c2 = Color.alphaBlend(
+      AppColors.accent.withOpacity(0.12),
+      chromeBase,
+    );
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [c1, c2],
+    );
   }
 }
