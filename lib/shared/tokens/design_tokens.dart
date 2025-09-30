@@ -3,10 +3,27 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static const primary = Color(0xFF6366F1);
-  static const secondary = Color(0xFF8B5CF6);
+  /// Primary lavender accent used across CTAs and highlights.
+  static const primary = Color(0xFF7C3AED);
+
+  /// Secondary tint that complements the primary gradient.
+  static const secondary = Color(0xFFA78BFA);
+
+  /// Informational turquoise accent (for progress in 30–69% range).
   static const accent = Color(0xFF06B6D4);
-  static const error = Color(0xFFDF3F40);
+
+  static const error = Color(0xFFEF4444);
+  static const warning = Color(0xFFF59E0B);
+  static const success = Color(0xFF10B981);
+
+  static const neutralGrey = Color(0xFF9CA3AF);
+
+  static const textPrimary = Color(0xFF111827);
+  static const textOnDark = Color(0xFFFFFFFF);
+
+  static const notebookLine = Color(0xFFE0E6ED);
+  static const appBarBackground = Color(0xFFF3F4F6);
+
   static const border = Color(0xFFE3E6EA);
 
   static const darkSurface = Color(0xFF0B0D12);
