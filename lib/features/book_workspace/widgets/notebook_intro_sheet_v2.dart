@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 import 'package:voicebook/core/models/chapter_summary.dart';
@@ -23,153 +24,126 @@ class NotebookIntroSheetV2 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) {
-        final scale = 0.98 + 0.02 * value;
-        return Opacity(
-          opacity: value.clamp(0, 1),
-          child: Transform.scale(
-            scale: scale,
-            alignment: Alignment.topCenter,
-            child: child,
-          ),
-        );
-      },
-      child: _NotebookCard(
-        bookTitle: bookTitle,
-        chapters: chapters,
-        onOpenChapter: onOpenChapter,
-        onCreateChapter: onCreateChapter,
-        onStartDictation: onStartDictation,
-      ),
-    );
-  }
-}
-
-class _NotebookCard extends StatelessWidget {
-  const _NotebookCard({
-    required this.bookTitle,
-    required this.chapters,
-    required this.onOpenChapter,
-    required this.onCreateChapter,
-    required this.onStartDictation,
-  });
-
-  final String bookTitle;
-  final List<ChapterSummary> chapters;
-  final ValueChanged<String> onOpenChapter;
-  final VoidCallback onCreateChapter;
-  final VoidCallback onStartDictation;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final surface = theme.colorScheme.surface;
+    final media = MediaQuery.of(context);
+    final isWide = media.size.width >= 900;
+    final cardPadding = EdgeInsets.fromLTRB(isWide ? 32 : 24, 24, isWide ? 32 : 24, 12);
 
     return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 760),
-        margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-        decoration: BoxDecoration(
-          color: surface,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: _RuledPaper(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 40),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 720),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Card(
+            elevation: 8,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: CustomPaint(
+                painter: const _RuledPaperPainter(),
+                child: Padding(
+                  padding: cardPadding,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final viewportHeight = constraints.maxHeight;
+                      double minHeight;
+                      if (viewportHeight.isFinite && viewportHeight > 0) {
+                        minHeight = viewportHeight * 0.72;
+                      } else {
+                        final screenHeight = media.size.height;
+                        minHeight = (screenHeight.isFinite && screenHeight > 0) ? screenHeight * 0.72 : 480.0;
+                      }
+                      minHeight = math.max(360.0, minHeight);
+
+                      final hasChapters = chapters.isNotEmpty;
+
+                      return ConstrainedBox(
+                        constraints: BoxConstraints(minHeight: minHeight),
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            AutoSizeText(
                               bookTitle,
-                              style: theme.textTheme.displaySmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: const Color(0xFF0F172A),
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(fontWeight: FontWeight.w700, color: const Color(0xFF0F172A)),
+                              maxLines: 2,
+                              minFontSize: 18,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 8),
-                            Text(
+                            const Text(
                               'Выберите главу',
-                              style: theme.textTheme.titleMedium?.copyWith(color: const Color(0xFF64748B)),
+                              style: TextStyle(color: Color(0xFF64748B)),
+                            ),
+                            const SizedBox(height: 16),
+                            Expanded(
+                              child: Scrollbar(
+                                thumbVisibility: true,
+                                child: SingleChildScrollView(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: ListView.separated(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: hasChapters ? chapters.length : 1,
+                                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                    itemBuilder: (context, index) {
+                                      if (!hasChapters) {
+                                        return _EmptyChapters(onCreateChapter: onCreateChapter);
+                                      }
+                                      final chapter = chapters[index];
+                                      final accent = _chapterAccentColor(chapter.id);
+                                      return _ChapterRow(
+                                        index: index + 1,
+                                        chapter: chapter,
+                                        color: accent,
+                                        onTap: () => onOpenChapter(chapter.id),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SafeArea(
+                              top: false,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      icon: const Icon(Icons.mic),
+                                      label: const Text('Начать диктовку'),
+                                      onPressed: onStartDictation,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    OutlinedButton.icon(
+                                      icon: const Icon(Icons.edit),
+                                      label: const Text('Открыть редактор'),
+                                      onPressed: () {
+                                        if (chapters.isNotEmpty) {
+                                          onOpenChapter(chapters.first.id);
+                                        } else {
+                                          onCreateChapter();
+                                        }
+                                      },
+                                    ),
+                                    const Spacer(),
+                                    TextButton.icon(
+                                      icon: const Icon(Icons.add),
+                                      label: const Text('Создать главу'),
+                                      onPressed: onCreateChapter,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      FilledButton.icon(
-                        onPressed: onCreateChapter,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFFE0E7FF),
-                          foregroundColor: const Color(0xFF4338CA),
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          textStyle: theme.textTheme.labelLarge,
-                        ),
-                        icon: const Icon(Icons.add_rounded),
-                        label: const Text('Добавить главу'),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                  const SizedBox(height: 32),
-                  Expanded(
-                    child: chapters.isEmpty
-                        ? _EmptyChapters(onCreateChapter: onCreateChapter)
-                        : _ChapterList(
-                            chapters: chapters,
-                            onOpenChapter: onOpenChapter,
-                          ),
-                  ),
-                  const SizedBox(height: 32),
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 12,
-                    children: [
-                      FilledButton.icon(
-                        onPressed: onStartDictation,
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        icon: const Icon(Icons.mic_rounded),
-                        label: const Text('Начать диктовку'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          if (chapters.isNotEmpty) {
-                            onOpenChapter(chapters.first.id);
-                          } else {
-                            onCreateChapter();
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        ),
-                        icon: const Icon(Icons.edit_outlined),
-                        label: const Text('Открыть редактор'),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -179,50 +153,24 @@ class _NotebookCard extends StatelessWidget {
   }
 }
 
-class _ChapterList extends StatelessWidget {
-  const _ChapterList({required this.chapters, required this.onOpenChapter});
-
-  final List<ChapterSummary> chapters;
-  final ValueChanged<String> onOpenChapter;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.separated(
-      padding: EdgeInsets.zero,
-      itemBuilder: (context, index) {
-        final chapter = chapters[index];
-        final accent = _chapterAccentColor(chapter.id);
-        return _ChapterTile(
-          index: index,
-          chapter: chapter,
-          accent: accent,
-          onTap: () => onOpenChapter(chapter.id),
-        );
-      },
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
-      itemCount: chapters.length,
-    );
-  }
-}
-
-class _ChapterTile extends StatefulWidget {
-  const _ChapterTile({
+class _ChapterRow extends StatefulWidget {
+  const _ChapterRow({
     required this.index,
     required this.chapter,
-    required this.accent,
+    required this.color,
     required this.onTap,
   });
 
   final int index;
   final ChapterSummary chapter;
-  final Color accent;
+  final Color color;
   final VoidCallback onTap;
 
   @override
-  State<_ChapterTile> createState() => _ChapterTileState();
+  State<_ChapterRow> createState() => _ChapterRowState();
 }
 
-class _ChapterTileState extends State<_ChapterTile> {
+class _ChapterRowState extends State<_ChapterRow> {
   bool _hovered = false;
 
   void _setHovered(bool value) {
@@ -236,7 +184,7 @@ class _ChapterTileState extends State<_ChapterTile> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final number = Text(
-      '${widget.index + 1}'.padLeft(2, '0'),
+      '${widget.index}'.padLeft(2, '0'),
       style: theme.textTheme.titleMedium?.copyWith(
         fontFeatures: const [FontFeature.tabularFigures()],
         fontWeight: FontWeight.w600,
@@ -259,6 +207,7 @@ class _ChapterTileState extends State<_ChapterTile> {
           widget.chapter.title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
+          softWrap: false,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
             color: const Color(0xFF0F172A),
@@ -298,7 +247,7 @@ class _ChapterTileState extends State<_ChapterTile> {
                 width: 10,
                 height: 10,
                 decoration: BoxDecoration(
-                  color: widget.accent,
+                  color: widget.color,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -336,20 +285,6 @@ class _EmptyChapters extends StatelessWidget {
           label: const Text('Создать первую главу'),
         ),
       ],
-    );
-  }
-}
-
-class _RuledPaper extends StatelessWidget {
-  const _RuledPaper({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: const _RuledPaperPainter(),
-      child: child,
     );
   }
 }

@@ -209,8 +209,10 @@ class _ChapterRulerV3State extends State<ChapterRulerV3> {
                           final accent = _chapterAccentColor(chapter.id);
                           final canDrag = _hoverCapable;
                           final itemKey = ValueKey('chapter_${chapter.id}');
+                          final dx = (index % 3) * 2.0;
+                          final dy = (index % 4 == 0) ? 2.0 : 0.0;
                           final tile = Transform.translate(
-                            offset: Offset((index % 3) * 2.0, index % 4 == 0 ? 3.0 : 0.0),
+                            offset: Offset(dx, dy),
                             child: _BookmarkTab(
                               key: canDrag ? null : itemKey,
                               index: index,
@@ -246,14 +248,17 @@ class _ChapterRulerV3State extends State<ChapterRulerV3> {
                 Positioned(
                   left: 0,
                   right: 0,
-                  bottom: 20,
-                  child: _AddChapterFab(
-                    key: _fabKey,
-                    onPressed: () {
-                      widget.onAddChapter();
-                      _fabKey.currentState?.pulse();
-                    },
-                    labelStyle: theme.textTheme.labelLarge,
+                  bottom: 0,
+                  child: SafeArea(
+                    top: false,
+                    bottom: true,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                      child: _AddChapterFab(
+                        key: _fabKey,
+                        onPressed: widget.onAddChapter,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -461,10 +466,12 @@ class _BookmarkTabState extends State<_BookmarkTab> with SingleTickerProviderSta
       widget.title,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: textColor,
-          ),
+      softWrap: false,
+      style: TextStyle(
+        fontSize: 14.5,
+        fontWeight: FontWeight.w700,
+        color: textColor,
+      ),
     );
 
     final handle = widget.showHandle
@@ -598,10 +605,9 @@ class _BookmarkShape extends ShapeBorder {
 }
 
 class _AddChapterFab extends StatefulWidget {
-  const _AddChapterFab({super.key, required this.onPressed, required this.labelStyle});
+  const _AddChapterFab({super.key, required this.onPressed});
 
   final VoidCallback onPressed;
-  final TextStyle? labelStyle;
 
   @override
   State<_AddChapterFab> createState() => _AddChapterFabState();
@@ -642,23 +648,32 @@ class _AddChapterFabState extends State<_AddChapterFab> with SingleTickerProvide
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ElevatedButton(
-            onPressed: () {
-              widget.onPressed();
-              pulse();
-            },
-            style: ElevatedButton.styleFrom(
-              shape: const CircleBorder(),
-              minimumSize: const Size(62, 62),
-              padding: EdgeInsets.zero,
+          SizedBox(
+            width: 62,
+            height: 62,
+            child: FloatingActionButton(
+              heroTag: 'chapter_ruler_add',
               backgroundColor: const Color(0xFF06B6D4),
               foregroundColor: Colors.white,
               elevation: 6,
+              shape: const CircleBorder(),
+              onPressed: () {
+                widget.onPressed();
+                pulse();
+              },
+              child: const Icon(Icons.add_rounded, size: 28),
             ),
-            child: const Icon(Icons.add_rounded, size: 28),
           ),
-          const SizedBox(height: 8),
-          Text('+ Глава', style: widget.labelStyle?.copyWith(color: Colors.white.withOpacity(0.86)) ?? const TextStyle(color: Colors.white)),
+          const SizedBox(height: 6),
+          const Text(
+            'Глава',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
         ],
       ),
     );

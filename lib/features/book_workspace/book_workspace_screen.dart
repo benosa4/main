@@ -114,6 +114,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
   }
 
   void _returnToOverview() {
+    _editorGateController.close();
     _setWorkspaceMode(_WorkspaceMode.overview);
   }
 
@@ -370,6 +371,13 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
         final contentPaddingLeft = isCollapsed ? _collapsedPeek : rulerWidth;
         final toggleLeft = math.max(0.0, rulerLeft + rulerWidth - _toggleButtonSize / 2);
         final editingChapter = currentChapter;
+        if (editingChapter == null && _workspaceMode != _WorkspaceMode.overview) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              setState(() => _workspaceMode = _WorkspaceMode.overview);
+            }
+          });
+        }
         final activeChapterId = editingChapter?.id ?? (summaries.isNotEmpty ? summaries.first.id : '');
 
         final ruler = ChapterRulerV3(
@@ -421,7 +429,8 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
                 child: Text('Выберите главу, чтобы начать редактирование.'),
               );
 
-        final showFabCluster = _workspaceMode == _WorkspaceMode.edit && editingChapter != null;
+        final showOverview = editingChapter == null || _workspaceMode == _WorkspaceMode.overview;
+        final showFabCluster = !showOverview;
 
         final editorArea = isDesktop
             ? Row(
@@ -493,7 +502,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
         final mainContent = AnimatedSwitcher(
           duration: const Duration(milliseconds: 220),
           switchInCurve: Curves.easeOutCubic,
-          child: _workspaceMode == _WorkspaceMode.overview
+          child: showOverview
               ? overview
               : KeyedSubtree(key: const ValueKey('editor_area'), child: editorArea),
         );
@@ -505,7 +514,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
             children: [
               Text(book.title),
               if (editingChapter != null)
-                _workspaceMode == _WorkspaceMode.edit
+                !showOverview
                     ? Hero(
                         tag: 'chapter_title_${editingChapter.id}',
                         child: Material(
@@ -525,7 +534,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
             ],
           ),
           actions: [
-            if (_workspaceMode == _WorkspaceMode.edit)
+            if (!showOverview)
               TextButton.icon(
                 onPressed: _returnToOverview,
                 icon: const Icon(Icons.menu_book_outlined),
