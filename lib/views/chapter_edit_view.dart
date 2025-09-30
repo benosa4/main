@@ -110,7 +110,6 @@ class _ChapterEditViewState extends State<ChapterEditView> {
             mainAxisSize: MainAxisSize.min,
             children: [
               CompactTextSettingsBar(prefs: prefs),
-              const SizedBox(height: 12),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
