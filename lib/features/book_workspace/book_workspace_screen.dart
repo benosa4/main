@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,11 +8,10 @@ import 'package:voicebook/core/providers/app_providers.dart';
 import 'package:voicebook/core/providers/dictation_controller.dart';
 import 'package:voicebook/core/storage/ui_state_storage.dart';
 import 'package:voicebook/shared/tokens/design_tokens.dart';
-import 'widgets/chapter_ruler_v3.dart';
 import 'widgets/editor/chapter_editor.dart';
 import 'widgets/fab_panel/fab_action_cluster.dart';
 import 'widgets/editor_gate.dart';
-import 'widgets/notebook_intro_sheet_v2.dart';
+import 'spine_notebook/spine_notebook_view.dart';
 
 class BookWorkspaceScreen extends ConsumerStatefulWidget {
   const BookWorkspaceScreen({super.key, required this.bookId});
@@ -28,11 +25,6 @@ class BookWorkspaceScreen extends ConsumerStatefulWidget {
 enum _WorkspaceMode { overview, edit }
 
 class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
-  static const double _collapsedPeek = 16.0;
-  static const double _toggleButtonSize = 40.0;
-  static const Duration _panelAnimationDuration = Duration(milliseconds: 280);
-
-  bool _isRulerCollapsed = false;
   UiStateStorage? _uiStateStorage;
   bool _restoredChapter = false;
   Timer? _recordingTicker;
@@ -42,12 +34,6 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
   _WorkspaceMode _workspaceMode = _WorkspaceMode.overview;
   String? _pendingModeRaw;
   String? _deferredModeToPersist;
-
-  void _toggleRuler() {
-    setState(() {
-      _isRulerCollapsed = !_isRulerCollapsed;
-    });
-  }
 
   void _setWorkspaceMode(_WorkspaceMode mode, {String? chapterId}) {
     if (_workspaceMode != mode) {
@@ -365,11 +351,6 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= 1024;
-        final rulerWidth = 124.0;
-        final isCollapsed = _isRulerCollapsed;
-        final rulerLeft = isCollapsed ? -rulerWidth + _collapsedPeek : 0.0;
-        final contentPaddingLeft = isCollapsed ? _collapsedPeek : rulerWidth;
-        final toggleLeft = math.max(0.0, rulerLeft + rulerWidth - _toggleButtonSize / 2);
         final editingChapter = currentChapter;
         if (editingChapter == null && _workspaceMode != _WorkspaceMode.overview) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -378,25 +359,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
             }
           });
         }
-        final activeChapterId = editingChapter?.id ?? (summaries.isNotEmpty ? summaries.first.id : '');
-
-        final ruler = ChapterRulerV3(
-          bookId: bookId,
-          chapters: summaries,
-          activeChapterId: activeChapterId,
-          onSelect: (chapterId) {
-            _updateActiveChapter(bookId, chapterId);
-            _setWorkspaceMode(_WorkspaceMode.edit, chapterId: chapterId);
-          },
-          onReorder: (oldIndex, newIndex) {
-            ref.read(voicebookStoreProvider.notifier).reorderChapters(
-              bookId: bookId,
-              oldIndex: oldIndex,
-              newIndex: newIndex,
-            );
-          },
-          onAddChapter: () => _handleCreateChapter(context),
-        );
+        final activeChapterId = editingChapter?.id ?? (summaries.isNotEmpty ? summaries.first.id : null);
 
         final gateInitiallyOpen = editingChapter != null
             ? _uiStateStorage?.readEditorGateOpened(bookId, editingChapter.id) ?? false
@@ -477,26 +440,13 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
                 ],
               );
 
-        final overview = NotebookIntroSheetV2(
-          key: const ValueKey('notebook_overview'),
+        final overview = SpineNotebookView(
+          key: const ValueKey('spine_notebook_overview'),
           bookTitle: book.title,
           chapters: summaries,
-          onOpenChapter: _openChapterFromOverview,
-          onCreateChapter: () => _handleCreateChapter(context),
-          onStartDictation: () {
-            final targetId = editingChapter?.id ?? (summaries.isNotEmpty ? summaries.first.id : null);
-            if (targetId == null) {
-              return;
-            }
-            _openChapterFromOverview(targetId);
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _editorGateController.open();
-              ref.read(dictationControllerProvider.notifier).toggle(
-                    bookId: bookId,
-                    chapterId: targetId,
-                  );
-            });
-          },
+          activeId: activeChapterId,
+          onOpen: _openChapterFromOverview,
+          onAdd: () => _handleCreateChapter(context),
         );
 
         final mainContent = AnimatedSwitcher(
@@ -554,45 +504,7 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
           ],
         );
 
-        final body = SafeArea(
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: AnimatedPadding(
-                  duration: _panelAnimationDuration,
-                  curve: Curves.easeOutCubic,
-                  padding: EdgeInsets.only(left: contentPaddingLeft),
-                  child: mainContent,
-                ),
-              ),
-              AnimatedPositioned(
-                duration: _panelAnimationDuration,
-                curve: Curves.easeOutCubic,
-                top: 0,
-                bottom: 0,
-                left: rulerLeft,
-                child: SizedBox(
-                  width: rulerWidth,
-                  child: IgnorePointer(
-                    ignoring: isCollapsed,
-                    child: ruler,
-                  ),
-                ),
-              ),
-              AnimatedPositioned(
-                duration: _panelAnimationDuration,
-                curve: Curves.easeOutCubic,
-                top: 16,
-                left: toggleLeft,
-                child: _RulerToggleButton(
-                  collapsed: isCollapsed,
-                  size: _toggleButtonSize,
-                  onPressed: _toggleRuler,
-                ),
-              ),
-            ],
-          ),
-        );
+        final body = SafeArea(child: mainContent);
 
         if (isDesktop) {
           return Scaffold(
@@ -627,46 +539,6 @@ class _BookWorkspaceScreenState extends ConsumerState<BookWorkspaceScreen> {
               : null,
         );
       },
-    );
-  }
-}
-
-class _RulerToggleButton extends StatelessWidget {
-  const _RulerToggleButton({
-    required this.collapsed,
-    required this.size,
-    required this.onPressed,
-  });
-
-  final bool collapsed;
-  final double size;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final message = collapsed ? 'Показать переплёт' : 'Скрыть переплёт';
-
-    return Tooltip(
-      message: message,
-      waitDuration: const Duration(milliseconds: 400),
-      child: Material(
-        color: colorScheme.surface,
-        elevation: 4,
-        shape: const CircleBorder(),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onPressed,
-          child: SizedBox(
-            width: size,
-            height: size,
-            child: Icon(
-              collapsed ? Icons.chevron_right : Icons.chevron_left,
-              color: colorScheme.onSurface,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
