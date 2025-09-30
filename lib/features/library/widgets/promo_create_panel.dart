@@ -6,27 +6,35 @@ class PromoCreatePanel extends StatelessWidget {
   const PromoCreatePanel({
     super.key,
     required this.onCreate,
-    required this.onRequestMicrophone,
-    required this.onRequestStorage,
-    required this.onRequestNotifications,
-    required this.microphoneGranted,
+    required this.micGranted,
     required this.storageGranted,
-    required this.notificationsGranted,
+    required this.notifGranted,
+    required this.onAskMic,
+    required this.onAskStorage,
+    required this.onAskNotif,
+    this.compact = false,
   });
 
   final VoidCallback onCreate;
-  final VoidCallback onRequestMicrophone;
-  final VoidCallback onRequestStorage;
-  final VoidCallback onRequestNotifications;
-  final bool microphoneGranted;
+  final bool micGranted;
   final bool storageGranted;
-  final bool notificationsGranted;
+  final bool notifGranted;
+  final VoidCallback onAskMic;
+  final VoidCallback onAskStorage;
+  final VoidCallback onAskNotif;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+    final padding = compact ? const EdgeInsets.all(12) : const EdgeInsets.all(16);
+    final titleSize = compact ? 16.0 : 18.0;
+
+    return Card(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 0,
       child: Container(
+        padding: padding,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
@@ -34,114 +42,76 @@ class PromoCreatePanel extends StatelessWidget {
             colors: [AppColors.primary, AppColors.secondary],
           ),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.18),
-              blurRadius: 26,
-              offset: const Offset(0, 16),
-            ),
-          ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isWide = constraints.maxWidth > 640;
-              final content = <Widget>[
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Icon(Icons.mic, color: Colors.white70),
-                              SizedBox(width: 8),
-                              Text(
-                                'Начните создавать',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 20,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Превратите мысли в структурированную коллекцию с помощью голосовых команд и ИИ.',
-                            style: TextStyle(
-                              color: Colors.white,
-                              height: 1.4,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: [
-                              _PermissionChip(
-                                label: 'Микрофон',
-                                granted: microphoneGranted,
-                                onTap: onRequestMicrophone,
-                              ),
-                              _PermissionChip(
-                                label: 'Хранилище',
-                                granted: storageGranted,
-                                onTap: onRequestStorage,
-                              ),
-                              _PermissionChip(
-                                label: 'Уведомления',
-                                granted: notificationsGranted,
-                                onTap: onRequestNotifications,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 18),
-                          SizedBox(
-                            height: 46,
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: AppColors.primary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 18),
-                              ),
-                              onPressed: onCreate,
-                              icon: const Icon(Icons.add),
-                              label: const Text(
-                                'Создать новую коллекцию',
-                                style: TextStyle(fontWeight: FontWeight.w700),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (isWide) ...[
-                      const SizedBox(width: 24),
-                      const _MicIllustration(),
-                    ],
-                  ],
-                ),
-                if (!isWide) ...[
-                  const SizedBox(height: 20),
-                  const _MicIllustration(),
-                ],
-              ];
-
-              return Column(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: content,
-              );
-            },
-          ),
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.mic_none, color: Colors.white70),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Начните создавать',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: titleSize,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Превратите мысли в структурированную коллекцию с помощью голосовых команд и ИИ.',
+                    style: TextStyle(color: Colors.white, height: 1.25),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _PermissionChip('Микрофон', micGranted, onAskMic),
+                      _PermissionChip('Хранилище', storageGranted, onAskStorage),
+                      _PermissionChip('Уведомления', notifGranted, onAskNotif),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                    onPressed: onCreate,
+                    icon: const Icon(Icons.add),
+                    label: const Text(
+                      'Создать новую коллекцию',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (!compact) ...[
+              const SizedBox(width: 12),
+              Container(
+                width: 72,
+                height: 96,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.graphic_eq_rounded, color: Colors.white, size: 36),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -149,11 +119,7 @@ class PromoCreatePanel extends StatelessWidget {
 }
 
 class _PermissionChip extends StatelessWidget {
-  const _PermissionChip({
-    required this.label,
-    required this.granted,
-    required this.onTap,
-  });
+  const _PermissionChip(this.label, this.granted, this.onTap);
 
   final String label;
   final bool granted;
@@ -161,9 +127,8 @@ class _PermissionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final background = granted
-        ? Colors.white.withOpacity(0.22)
-        : Colors.white.withOpacity(0.08);
+    final background =
+        granted ? Colors.white.withOpacity(0.22) : Colors.white.withOpacity(0.08);
     final borderColor =
         granted ? Colors.white.withOpacity(0.0) : Colors.white.withOpacity(0.4);
     final icon = granted ? Icons.check_circle : Icons.lock_outline;
@@ -197,18 +162,3 @@ class _PermissionChip extends StatelessWidget {
   }
 }
 
-class _MicIllustration extends StatelessWidget {
-  const _MicIllustration();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Icon(Icons.mic_none, color: Colors.white, size: 64),
-    );
-  }
-}

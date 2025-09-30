@@ -6,7 +6,7 @@ import 'package:voicebook/core/providers/app_providers.dart';
 import 'package:voicebook/features/library/controllers/library_controller.dart';
 import 'package:voicebook/features/library/models/collection.dart';
 import 'package:voicebook/features/library/widgets/collection_card.dart';
-import 'package:voicebook/features/library/widgets/collapsible_promo_header.dart';
+import 'package:voicebook/features/library/widgets/promo_create_panel.dart';
 import 'package:voicebook/features/library/widgets/status_filter_chips.dart';
 import 'package:voicebook/features/library/widgets/view_toggle.dart';
 import 'package:voicebook/shared/tokens/design_tokens.dart';
@@ -60,6 +60,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     }
 
     final width = MediaQuery.of(context).size.width;
+    final isMobile = width < 480;
     final showSearchField = width >= 480;
 
     return Scaffold(
@@ -74,10 +75,9 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 onRetry: controller.retry,
               ),
             ),
-          SliverPersistentHeader(
-            pinned: false,
-            floating: false,
-            delegate: CollapsiblePromoHeader(
+          SliverToBoxAdapter(
+            child: PromoCreatePanel(
+              compact: isMobile,
               onCreate: () => _createCollection(context, controller),
               micGranted: permissions.microphone,
               storageGranted: permissions.files,
@@ -97,8 +97,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   _togglePermission(AppPermission.notifications);
                 }
               },
-              max: width < 600 ? 220 : 260,
-              min: 76,
             ),
           ),
           SliverPersistentHeader(
@@ -296,14 +294,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     required ValueChanged<Collection> onDelete,
   }) {
     final columns = _columnsFor(width);
+    final aspect = _aspectFor(width);
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       sliver: SliverGrid.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: columns,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.8,
+          childAspectRatio: aspect,
         ),
         itemCount: collections.length,
         itemBuilder: (context, index) {
@@ -351,14 +350,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
 
   Widget _skeletonSliver(double width) {
     final columns = _columnsFor(width);
+    final aspect = _aspectFor(width);
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       sliver: SliverGrid.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: columns,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: 0.8,
+          childAspectRatio: aspect,
         ),
         itemCount: columns * 2,
         itemBuilder: (context, index) {
@@ -422,6 +422,22 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         },
       ),
     );
+  }
+
+  double _aspectFor(double width) {
+    if (width < 360) {
+      return 0.64;
+    }
+    if (width < 420) {
+      return 0.7;
+    }
+    if (width < 600) {
+      return 0.76;
+    }
+    if (width < 900) {
+      return 0.82;
+    }
+    return 0.88;
   }
 
   int _columnsFor(double width) {
