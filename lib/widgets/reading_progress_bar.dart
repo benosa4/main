@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/reading_prefs.dart';
+import '../shared/tokens/design_tokens.dart';
 
 class ReadingProgressBar extends StatelessWidget {
   final double progress;
@@ -63,9 +64,10 @@ class _GradientProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Трек: чуть контрастнее фона текста
     final track = prefs.isDark
-        ? Colors.white.withOpacity(.16)
-        : Colors.black.withOpacity(.08);
+        ? Colors.white.withOpacity(.18)
+        : Colors.black.withOpacity(.10);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(999),
@@ -80,7 +82,23 @@ class _GradientProgress extends StatelessWidget {
               child: FractionallySizedBox(
                 widthFactor: value.isNaN ? 0 : value,
                 child: DecoratedBox(
-                  decoration: BoxDecoration(gradient: prefs.chromeGradient),
+                  decoration: BoxDecoration(gradient: _valueGradient(prefs)),
+                ),
+              ),
+            ),
+            // лёгкий глянец сверху, чтобы полоса читалась на тёмном
+            IgnorePointer(
+              ignoring: true,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withOpacity(prefs.isDark ? .10 : .06),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -88,5 +106,29 @@ class _GradientProgress extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Насыщенный градиент заливки для каждой темы, чтобы не «пропадал» цвет
+  static LinearGradient _valueGradient(ReadingPrefs p) {
+    switch (p.theme) {
+      case ReadingTheme.light:
+        return const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [AppColors.primary, AppColors.accent],
+        );
+      case ReadingTheme.sepia:
+        return const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [Color(0xFF8B5CF6), Color(0xFF22D3EE)],
+        );
+      case ReadingTheme.dark:
+        return const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [Color(0xFF9F7AEA), Color(0xFF67E8F9)],
+        );
+    }
   }
 }
