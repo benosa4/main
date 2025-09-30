@@ -26,63 +26,100 @@ class WorkMetaHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(child: _TitleAndTags(work: work)),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              _StatsRow(work: work),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: work.isMindmap
-                    ? [
-                        // mindmap actions
-                        ElevatedButton.icon(
-                          onPressed: onOpenMap,
-                          icon: const Icon(Icons.account_tree_rounded),
-                          label: const Text('Открыть карту'),
-                        ),
-                        OutlinedButton.icon(
-                          onPressed: onAddNode,
-                          icon: const Icon(Icons.add_circle_outline),
-                          label: const Text('Добавить узел'),
-                        ),
-                      ]
-                    : [
-                        // book actions
-                        ElevatedButton.icon(
-                          onPressed: onDictate,
-                          icon: const Icon(Icons.mic_none_rounded),
-                          label: const Text('Диктовать'),
-                        ),
-                        OutlinedButton.icon(
-                          onPressed: onEdit,
-                          icon: const Icon(Icons.edit_outlined),
-                          label: const Text('Редактировать'),
-                        ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isCompact = constraints.maxWidth < 520;
+          final actionButtons = Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: isCompact ? WrapAlignment.start : WrapAlignment.end,
+            children: work.isMindmap
+                ? [
+                    // mindmap actions
+                    ElevatedButton.icon(
+                      onPressed: onOpenMap,
+                      icon: const Icon(Icons.account_tree_rounded),
+                      label: const Text('Открыть карту'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: onAddNode,
+                      icon: const Icon(Icons.add_circle_outline),
+                      label: const Text('Добавить узел'),
+                    ),
+                  ]
+                : [
+                    // book actions
+                    ElevatedButton.icon(
+                      onPressed: onDictate,
+                      icon: const Icon(Icons.mic_none_rounded),
+                      label: const Text('Диктовать'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: onEdit,
+                      icon: const Icon(Icons.edit_outlined),
+                      label: const Text('Редактировать'),
+                    ),
+                  ],
+          );
+
+          if (isCompact) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _TitleAndTags(work: work)),
+                    PopupMenuButton<String>(
+                      tooltip: 'Ещё',
+                      onSelected: (_) => onMore?.call(),
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(value: 'rename', child: Text('Переименовать')),
+                        PopupMenuItem(value: 'share', child: Text('Поделиться')),
+                        PopupMenuItem(value: 'export', child: Text('Экспорт')),
                       ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _StatsRow(work: work),
+                const SizedBox(height: 12),
+                actionButtons,
+              ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _TitleAndTags(work: work)),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    _StatsRow(work: work),
+                    const SizedBox(height: 12),
+                    actionButtons,
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              PopupMenuButton<String>(
+                tooltip: 'Ещё',
+                onSelected: (_) => onMore?.call(),
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'rename', child: Text('Переименовать')),
+                  PopupMenuItem(value: 'share', child: Text('Поделиться')),
+                  PopupMenuItem(value: 'export', child: Text('Экспорт')),
+                ],
               ),
             ],
-          ),
-          const SizedBox(width: 8),
-          PopupMenuButton<String>(
-            tooltip: 'Ещё',
-            onSelected: (_) => onMore?.call(),
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'rename', child: Text('Переименовать')),
-              PopupMenuItem(value: 'share', child: Text('Поделиться')),
-              PopupMenuItem(value: 'export', child: Text('Экспорт')),
-            ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -165,16 +202,13 @@ class _StatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gray = Colors.black.withOpacity(.55);
-    final dot = Text(' • ', style: TextStyle(color: gray));
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text('${_fmt(work.words)} ${work.wordsLabel}', style: TextStyle(color: gray)),
-        dot,
-        Text('${work.sections} ${work.kindLabel}', style: TextStyle(color: gray)),
-        dot,
-        Text('Обновлено ${_updatedAgo(work.updatedAt)}', style: TextStyle(color: gray)),
-      ],
+    final statsText = StringBuffer()
+      ..write('${_fmt(work.words)} ${work.wordsLabel}')
+      ..write(' • ${work.sections} ${work.kindLabel}')
+      ..write(' • Обновлено ${_updatedAgo(work.updatedAt)}');
+    return Text(
+      statsText.toString(),
+      style: TextStyle(color: gray),
     );
   }
 
