@@ -72,12 +72,9 @@ class _ChapterEditViewState extends State<ChapterEditView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final editorStyle = TextStyle(
+    final editorStyle = prefs.bodyTextStyle(
       fontSize: prefs.fontSize,
-      height: 1.6,
       color: prefs.textColor,
-      fontFamily: prefs.fontFamily,
-      fontFamilyFallback: prefs.fontFallback,
     );
 
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
