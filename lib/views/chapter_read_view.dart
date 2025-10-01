@@ -107,29 +107,45 @@ class _ChapterReadViewState extends State<ChapterReadView> {
         children: [
           Column(
             children: [
-              const BillingBar(credits: 2450, micTime: Duration(minutes: 45), requests: 120),
+              const BillingBar(
+                credits: 2450,
+                micTime: Duration(minutes: 45),
+                requests: 120,
+              ),
               _ChapterHeader(
                 title: widget.chapter.title,
                 words: widget.chapter.words,
                 prefs: prefs,
               ),
-              // Секция прогресса — без дополнительных контейнеров, фон задаёт ниже общий блок
-              ReadingProgressBar(
-                progress: progress,
-                words: widget.chapter.words,
-                prefs: prefs,
-              ),
-              // Весь читательский блок под шапкой — одного цвета, без «белых» стыков
+              // ВЕСЬ блок чтения (прогресс + текст) на едином фоне prefs.bgColor
               Expanded(
                 child: Container(
-                  color: prefs.bgColor,
-                  child: Scrollbar(
-                    controller: scrollController,
-                    child: SingleChildScrollView(
-                      controller: scrollController,
-                      padding: EdgeInsets.fromLTRB(16, 4, 16, contentBottomPadding),
-                      child: _ReadingBody(text: widget.body, prefs: prefs),
+                  decoration: BoxDecoration(
+                    color: prefs.bgColor,
+                    border: Border(
+                      top: BorderSide(color: prefs.chromeBorder),
                     ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Прогресс — теперь часть «читательской» области
+                      ReadingProgressBar(
+                        progress: progress,
+                        words: widget.chapter.words,
+                        prefs: prefs,
+                      ),
+                      // Текст
+                      Expanded(
+                        child: Scrollbar(
+                          controller: scrollController,
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            padding: EdgeInsets.fromLTRB(16, 4, 16, contentBottomPadding),
+                            child: _ReadingBody(text: widget.body, prefs: prefs),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
