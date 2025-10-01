@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import '../shared/tokens/design_tokens.dart'; // для AppColors.primary
 
 enum ReadingTheme { light, sepia, dark }
@@ -78,6 +80,21 @@ class ReadingPrefs extends ChangeNotifier {
         return const ['Georgia', 'Times New Roman', 'Noto Serif', 'RobotoSlab'];
       case ReadingFont.mono:
         return const ['Menlo', 'Consolas', 'Roboto Mono'];
+    }
+  }
+
+  /// Готовый стиль для основного текста чтения/редактирования с выбранным шрифтом.
+  TextStyle bodyTextStyle({
+    required double fontSize,
+    required Color color,
+  }) {
+    switch (font) {
+      case ReadingFont.sans:
+        return GoogleFonts.inter(fontSize: fontSize, height: 1.6, color: color);
+      case ReadingFont.serif:
+        return GoogleFonts.merriweather(fontSize: fontSize, height: 1.7, color: color);
+      case ReadingFont.mono:
+        return GoogleFonts.jetbrainsMono(fontSize: fontSize, height: 1.5, color: color);
     }
   }
 

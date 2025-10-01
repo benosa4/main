@@ -301,12 +301,9 @@ class _ReadingBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = TextStyle(
+    final style = prefs.bodyTextStyle(
       fontSize: prefs.fontSize,
-      height: 1.6,
       color: prefs.textColor,
-      fontFamily: prefs.fontFamily,
-      fontFamilyFallback: prefs.fontFallback,
     );
     return Text(text.trim(), style: style);
   }
