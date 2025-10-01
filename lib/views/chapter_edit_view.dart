@@ -7,6 +7,7 @@ import '../shared/tokens/design_tokens.dart';
 import '../widgets/billing_bar.dart';
 import '../widgets/compact_text_settings_bar.dart';
 import '../widgets/measure_size.dart';
+import '../widgets/chapter_meta_bar.dart';
 
 class ChapterEditView extends StatefulWidget {
   final String workId;
@@ -122,7 +123,27 @@ class _ChapterEditViewState extends State<ChapterEditView> {
           Column(
             children: [
               const BillingBar(credits: 2450, micTime: Duration(minutes: 45), requests: 120),
-              _ChapterHeader(title: widget.chapter.title, words: widget.chapter.words),
+              ChapterMetaBar(
+                prefs: prefs,
+                title: widget.chapter.title,
+                words: widget.chapter.words,
+                status: widget.chapter.status,
+                subtitle: 'Рабочий черновик',
+                genres: const ['Sci-fi'],
+                audience: '16+',
+                tags: const ['черновик'],
+                menuBuilder: (context) => const [
+                  PopupMenuItem(value: 'ai', child: Text('Сформировать текст')),
+                  PopupMenuItem(value: 'dictate', child: Text('Диктовать')),
+                  PopupMenuItem(value: 'export', child: Text('Экспорт')),
+                ],
+                onMenuSelected: (value) {
+                  // TODO: handle edit meta menu actions
+                },
+                onSave: (res) async {
+                  // TODO: сохранить метаинформацию
+                },
+              ),
               Expanded(
                 child: Container(
                   color: prefs.bgColor,
@@ -223,62 +244,5 @@ class _ChapterEditViewState extends State<ChapterEditView> {
         ],
       ),
     );
-  }
-}
-
-class _ChapterHeader extends StatelessWidget {
-  final String title;
-  final int words;
-
-  const _ChapterHeader({required this.title, required this.words});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final captionColor = theme.colorScheme.onSurface.withOpacity(.55);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 8, 6),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              children: [
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${_fmt(words)} слов',
-                  style: theme.textTheme.bodySmall?.copyWith(color: captionColor),
-                ),
-              ],
-            ),
-          ),
-          PopupMenuButton<String>(
-            tooltip: 'Ещё',
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'ai', child: Text('Сформировать текст')),
-              PopupMenuItem(value: 'dictate', child: Text('Диктовать')),
-              PopupMenuItem(value: 'export', child: Text('Экспорт')),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  static String _fmt(int value) {
-    final raw = value.toString();
-    final buffer = StringBuffer();
-    for (var i = 0; i < raw.length; i++) {
-      final remaining = raw.length - i;
-      buffer.write(raw[i]);
-      if (remaining > 1 && remaining % 3 == 1) {
-        buffer.write(' ');
-      }
-    }
-    return buffer.toString();
   }
 }
