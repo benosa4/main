@@ -94,7 +94,11 @@ class ReadingPrefs extends ChangeNotifier {
       case ReadingFont.serif:
         return GoogleFonts.merriweather(fontSize: fontSize, height: 1.7, color: color);
       case ReadingFont.mono:
-        return GoogleFonts.jetbrainsMono(fontSize: fontSize, height: 1.5, color: color);
+        return GoogleFonts.jetBrainsMono(
+          fontSize: fontSize,
+          height: 1.5,
+          color: color,
+        );
     }
   }
 
