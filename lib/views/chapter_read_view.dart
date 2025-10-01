@@ -7,6 +7,7 @@ import '../widgets/compact_text_settings_bar.dart';
 import '../widgets/measure_size.dart';
 import '../widgets/reading_chrome_app_bar.dart';
 import '../widgets/reading_progress_bar.dart';
+import '../widgets/chapter_meta_bar.dart';
 
 class ChapterReadView extends StatefulWidget {
   final String workId;
@@ -112,10 +113,26 @@ class _ChapterReadViewState extends State<ChapterReadView> {
                 micTime: Duration(minutes: 45),
                 requests: 120,
               ),
-              _ChapterHeader(
+              ChapterMetaBar(
+                prefs: prefs,
                 title: widget.chapter.title,
                 words: widget.chapter.words,
-                prefs: prefs,
+                status: widget.chapter.status,
+                subtitle: 'Как всё началось',
+                genres: const ['Sci-fi'],
+                audience: '16+',
+                tags: const ['станция', 'интервью'],
+                menuBuilder: (context) => const [
+                  PopupMenuItem(value: 'bookmark', child: Text('Добавить закладку')),
+                  PopupMenuItem(value: 'share', child: Text('Поделиться')),
+                  PopupMenuItem(value: 'export', child: Text('Экспорт')),
+                ],
+                onMenuSelected: (value) {
+                  // TODO: handle menu actions
+                },
+                onSave: (res) async {
+                  // TODO: сохранить мету в модель/бэкенд
+                },
               ),
               // ВЕСЬ блок чтения (прогресс + текст) на едином фоне prefs.bgColor
               Expanded(
@@ -128,7 +145,7 @@ class _ChapterReadViewState extends State<ChapterReadView> {
                   ),
                   child: Column(
                     children: [
-                      // Прогресс — теперь часть «читательской» области
+                      // Прогресс — часть «читательской» области
                       ReadingProgressBar(
                         progress: progress,
                         words: widget.chapter.words,
@@ -220,76 +237,6 @@ class _ChapterReadViewState extends State<ChapterReadView> {
         ],
       ),
     );
-  }
-}
-
-class _ChapterHeader extends StatelessWidget {
-  final String title;
-  final int words;
-  final ReadingPrefs prefs;
-
-  const _ChapterHeader({
-    required this.title,
-    required this.words,
-    required this.prefs,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final gray = prefs.isDark
-        ? Colors.white.withOpacity(.7)
-        : const Color(0xFF111827).withOpacity(.55);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 10, 8, 6),
-      decoration: BoxDecoration(
-        gradient: prefs.chromeGradient,
-        border: Border(bottom: BorderSide(color: prefs.chromeBorder)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              children: [
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: prefs.chromeForeground,
-                      ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${_fmt(words)} слов',
-                  style: theme.textTheme.bodySmall?.copyWith(color: gray),
-                ),
-              ],
-            ),
-          ),
-          PopupMenuButton<String>(
-            tooltip: 'Ещё',
-            color: Theme.of(context).cardColor,
-            itemBuilder: (_) => const [
-              PopupMenuItem(value: 'bookmark', child: Text('Добавить закладку')),
-              PopupMenuItem(value: 'share', child: Text('Поделиться')),
-              PopupMenuItem(value: 'export', child: Text('Экспорт')),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  static String _fmt(int n) {
-    final s = n.toString();
-    final buf = StringBuffer();
-    for (var i = 0; i < s.length; i++) {
-      final p = s.length - i;
-      buf.write(s[i]);
-      if (p > 1 && p % 3 == 1) buf.write(' ');
-    }
-    return buf.toString();
   }
 }
 
